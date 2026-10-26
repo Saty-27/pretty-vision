@@ -12,7 +12,7 @@ module.exports = {
       max_memory_restart: "280M",
       env: {
         NODE_ENV: "production",
-        PORT: 5055,
+        PORT: 5056,
         MONGO_URI: process.env.MONGO_URI || "mongodb://127.0.0.1:27017/prettyvision"
       },
       error_file: "./logs/pm2-err.log",
