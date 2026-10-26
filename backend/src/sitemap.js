@@ -2,14 +2,12 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import {
-  Course,
-  UpcomingClass,
-  Book,
-  Journey,
-  Pilgrimage,
+  Product,
+  Category,
+  Collection,
+  Brand,
+  Service,
   Blog,
-  VideoBlog,
-  Preacher,
   Page,
   LegalPage,
   SiteSetting
@@ -18,7 +16,7 @@ import {
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-export const DEFAULT_BASE_URL = "https://iskconselfexcellence.online";
+export const DEFAULT_BASE_URL = "https://prettyvision.in";
 
 /* Helper to escape XML special characters */
 export const xmlEscape = (str = "") => {
@@ -76,9 +74,9 @@ export const getBaseUrl = async (req) => {
 };
 
 /**
- * Generate fully dynamic, AI- and Google-optimized Sitemap XML.
+ * Generate fully dynamic, AI- and Google-optimized Sitemap XML for PrettyVision.
  * Automatically queries active/published records in real time.
- * If an item is deleted or unpublished, it is immediately omitted.
+ * If an item/card is deleted or deactivated, it is immediately omitted.
  */
 export const generateSitemapXml = async ({ baseUrl = DEFAULT_BASE_URL } = {}) => {
   const root = baseUrl.replace(/\/+$/, "");
@@ -86,60 +84,56 @@ export const generateSitemapXml = async ({ baseUrl = DEFAULT_BASE_URL } = {}) =>
 
   // Parallel live database queries for only active/published entities
   const [
-    courses,
-    classes,
-    books,
-    journeys,
-    pilgrimages,
+    products,
+    brands,
+    services,
+    collections,
+    categories,
     blogs,
-    videoBlogs,
-    preachers,
     pages,
     legalPages
   ] = await Promise.all([
-    Course.find({
-      status: { $ne: "archived" },
-      $or: [{ active: true }, { status: "published" }, { status: { $exists: false } }]
-    }).sort({ updatedAt: -1 }).lean().catch(() => []),
+    Product.find({
+      isActive: true,
+      status: { $ne: "archived" }
+    }).sort({ order: 1, updatedAt: -1 }).lean().catch(() => []),
 
-    UpcomingClass.find({
-      status: { $ne: "archived" },
-      $or: [{ active: true }, { status: "published" }, { status: { $exists: false } }]
-    }).sort({ date: -1, updatedAt: -1 }).lean().catch(() => []),
+    Brand.find({
+      isActive: true,
+      status: { $ne: "inactive" }
+    }).sort({ order: 1, updatedAt: -1 }).lean().catch(() => []),
 
-    Book.find({
-      status: { $in: ["active", "published"] }
-    }).sort({ updatedAt: -1 }).lean().catch(() => []),
+    Service.find({
+      isActive: true,
+      status: { $ne: "inactive" }
+    }).sort({ order: 1, updatedAt: -1 }).lean().catch(() => []),
 
-    Journey.find({
-      status: "published"
-    }).sort({ isFeatured: -1, updatedAt: -1 }).lean().catch(() => []),
+    Collection.find({
+      isActive: true,
+      status: { $ne: "inactive" }
+    }).sort({ order: 1, updatedAt: -1 }).lean().catch(() => []),
 
-    Pilgrimage.find({
-      status: "published"
-    }).sort({ isFeatured: -1, updatedAt: -1 }).lean().catch(() => []),
+    Category.find({
+      isActive: true,
+      status: { $ne: "inactive" }
+    }).sort({ order: 1, updatedAt: -1 }).lean().catch(() => []),
 
     Blog.find({
-      status: "published"
+      status: { $in: ["published", "active"] }
     }).sort({ publishedAt: -1, updatedAt: -1 }).lean().catch(() => []),
-
-    VideoBlog.find({
-      status: "published"
-    }).sort({ publishedAt: -1, updatedAt: -1 }).lean().catch(() => []),
-
-    Preacher.find({
-      active: { $ne: false }
-    }).sort({ updatedAt: -1 }).lean().catch(() => []),
 
     Page.find({
       status: { $ne: "archived" },
-      $or: [{ active: true }, { status: "published" }]
+      $or: [{ active: true }, { status: "published" }, { status: "active" }]
     }).sort({ updatedAt: -1 }).lean().catch(() => []),
 
-    LegalPage.find({}).sort({ updatedAt: -1 }).lean().catch(() => [])
+    LegalPage.find({
+      status: { $ne: "inactive" }
+    }).sort({ updatedAt: -1 }).lean().catch(() => [])
   ]);
 
   const items = [];
+  const seenUrls = new Set();
 
   const addUrl = ({
     loc,
@@ -152,6 +146,9 @@ export const generateSitemapXml = async ({ baseUrl = DEFAULT_BASE_URL } = {}) =>
   }) => {
     if (!loc) return;
     const url = loc.startsWith("http") ? loc : `${root}${loc.startsWith("/") ? loc : `/${loc}`}`;
+    if (seenUrls.has(url)) return;
+    seenUrls.add(url);
+
     items.push({
       loc: url,
       lastmod: formatDate(lastmod || now),
@@ -164,150 +161,195 @@ export const generateSitemapXml = async ({ baseUrl = DEFAULT_BASE_URL } = {}) =>
   };
 
   /* 1. Core High-Priority Static & Catalog Routes */
-  addUrl({ loc: "/", lastmod: now, changefreq: "daily", priority: "1.0", title: "ISKCON Juhu Self-Excellence — Vedic Wisdom & Youth Classes" });
-  addUrl({ loc: "/courses", lastmod: now, changefreq: "daily", priority: "0.9", title: "Transformative Self-Excellence Courses" });
-  addUrl({ loc: "/classes", lastmod: now, changefreq: "daily", priority: "0.9", title: "Sunday Youth Classes at ISKCON Juhu" });
-  addUrl({ loc: "/books", lastmod: now, changefreq: "daily", priority: "0.9", title: "Authentic Vedic Books & Publications" });
-  addUrl({ loc: "/trips", lastmod: now, changefreq: "weekly", priority: "0.9", title: "Sacred Pilgrimages & Spiritual Journeys" });
-  addUrl({ loc: "/blogs", lastmod: now, changefreq: "daily", priority: "0.85", title: "Spiritual Wisdom & Life Transformation Blogs" });
-  addUrl({ loc: "/video-blogs", lastmod: now, changefreq: "daily", priority: "0.85", title: "Spiritual Discourses & Video Lectures" });
-  addUrl({ loc: "/visionaries", lastmod: now, changefreq: "weekly", priority: "0.8", title: "Preachers & Mentors at ISKCON Juhu" });
-  addUrl({ loc: "/gallery/images", lastmod: now, changefreq: "weekly", priority: "0.75", title: "Sacred Image Gallery" });
-  addUrl({ loc: "/gallery/videos", lastmod: now, changefreq: "weekly", priority: "0.75", title: "Video Highlights & Kirtans" });
-  addUrl({ loc: "/about", lastmod: now, changefreq: "monthly", priority: "0.7", title: "About ISKCON Juhu Self-Excellence" });
-  addUrl({ loc: "/contact", lastmod: now, changefreq: "monthly", priority: "0.7", title: "Contact ISKCON Juhu Youth Wing" });
-  addUrl({ loc: "/sitemap", lastmod: now, changefreq: "weekly", priority: "0.6", title: "Sitemap Index" });
-  addUrl({ loc: "/privacy-policy", lastmod: now, changefreq: "monthly", priority: "0.5", title: "Privacy Policy" });
-  addUrl({ loc: "/terms-and-conditions", lastmod: now, changefreq: "monthly", priority: "0.5", title: "Terms and Conditions" });
+  addUrl({
+    loc: "/",
+    lastmod: now,
+    changefreq: "daily",
+    priority: "1.0",
+    title: "PrettyVision — Premium Eyewear & Optometry Clinic | Kalina, Mumbai",
+    caption: "Optometrist, Opticians & Contact Lens Clinic at Shop No 11, Agarwal Building, Market, Kalina, Santacruz East, Mumbai 400098."
+  });
 
-  /* 2. Dynamic Courses */
-  for (const c of courses) {
-    if (!c.slug) continue;
+  addUrl({
+    loc: "/eyewear",
+    lastmod: now,
+    changefreq: "daily",
+    priority: "0.95",
+    title: "Eyewear & Optical Frames Catalog — PrettyVision",
+    caption: "Browse handcrafted spectacle frames, luxury sunglasses, computer blue-light blockers, and reading glasses."
+  });
+
+  addUrl({
+    loc: "/brands",
+    lastmod: now,
+    changefreq: "weekly",
+    priority: "0.9",
+    title: "Iconic Eyewear Brands — Ray-Ban, Oakley, Vogue, Armani, Versace",
+    caption: "100% genuine luxury designer eyewear brands with official warranty and expert lens fitting."
+  });
+
+  addUrl({
+    loc: "/services",
+    lastmod: now,
+    changefreq: "weekly",
+    priority: "0.9",
+    title: "Clinical Optometry & Eye Care Services — PrettyVision",
+    caption: "Comprehensive computerized eye examinations, contact lens consultation, and precision lens dispensing."
+  });
+
+  addUrl({
+    loc: "/about",
+    lastmod: now,
+    changefreq: "monthly",
+    priority: "0.8",
+    title: "About PrettyVision — Trusted Opticians & Eye Clinic in Kalina",
+    caption: "Established showroom in Kalina, Santacruz East, committed to optical precision, genuine luxury, and clinical excellence."
+  });
+
+  addUrl({
+    loc: "/contact",
+    lastmod: now,
+    changefreq: "weekly",
+    priority: "0.85",
+    title: "Visit Our Store & Book Eye Test — PrettyVision Kalina",
+    caption: "Showroom location, phone: 095940 30310, opening hours, and direct Google Maps directions."
+  });
+
+  addUrl({
+    loc: "/guide",
+    lastmod: now,
+    changefreq: "monthly",
+    priority: "0.8",
+    title: "Comprehensive Eye Care & Frame Selection Guide — PrettyVision",
+    caption: "Expert optometrist guide on choosing the right frames, lens coatings, UV protection, and digital eye strain prevention."
+  });
+
+  addUrl({
+    loc: "/guide/comprehensive-eyecare",
+    lastmod: now,
+    changefreq: "monthly",
+    priority: "0.8",
+    title: "Comprehensive Eye Care Guide — PrettyVision Clinic",
+    caption: "Complete clinical recommendations for healthy vision, spectacle prescriptions, and contact lens hygiene."
+  });
+
+  addUrl({
+    loc: "/sitemap",
+    lastmod: now,
+    changefreq: "weekly",
+    priority: "0.6",
+    title: "PrettyVision Website Sitemap",
+    caption: "Full directory index of optical products, designer brands, clinical eye care services, and guides."
+  });
+
+  /* 2. Dynamic Optical Products */
+  for (const p of products) {
+    if (!p.slug) continue;
     addUrl({
-      loc: `/courses/${c.slug}`,
-      lastmod: c.updatedAt || c.createdAt,
+      loc: `/product/${p.slug}`,
+      lastmod: p.updatedAt || p.createdAt,
       changefreq: "weekly",
-      priority: "0.9",
-      image: c.thumbnail || c.bannerImage,
-      title: c.title,
-      caption: c.shortDescription || c.description
+      priority: p.isFeatured ? "0.95" : "0.85",
+      image: p.mainImage || (p.images && p.images[0]),
+      title: `${p.name} — ${p.brand || "PrettyVision"} Eyewear`,
+      caption: p.shortDescription || p.fullDescription || `Genuine ${p.brand || "luxury"} ${p.category || "eyewear"} frame available at PrettyVision Kalina.`
     });
   }
 
-  /* 3. Dynamic Sunday Classes / Upcoming Classes */
-  for (const item of classes) {
-    if (!item.slug) continue;
-    addUrl({
-      loc: `/classes/${item.slug}`,
-      lastmod: item.updatedAt || item.createdAt,
-      changefreq: "weekly",
-      priority: "0.9",
-      image: item.image,
-      title: item.title,
-      caption: `${item.speaker ? `By ${item.speaker}. ` : ""}${item.venue ? `Venue: ${item.venue}. ` : ""}${item.topic || ""}`.trim()
-    });
-  }
-
-  /* 4. Dynamic Books */
-  for (const b of books) {
+  /* 3. Dynamic Designer Brands */
+  for (const b of brands) {
     if (!b.slug) continue;
     addUrl({
-      loc: `/books/${b.slug}`,
+      loc: `/brands/${b.slug}`,
       lastmod: b.updatedAt || b.createdAt,
       changefreq: "weekly",
       priority: "0.85",
-      image: b.coverImage,
-      title: b.title,
-      caption: b.shortDescription || `${b.author ? `Author: ${b.author}. ` : ""}${b.description || ""}`.trim()
+      image: b.brandImage || b.bannerImage || b.logo,
+      title: `${b.name} Eyewear Collection at PrettyVision`,
+      caption: b.description || `Explore authentic ${b.name} sunglasses and prescription frames at PrettyVision Kalina, Mumbai.`
     });
   }
 
-  /* 5. Dynamic Upcoming Journeys */
-  const seenJourneySlugs = new Set();
-  for (const j of journeys) {
-    if (!j.slug || seenJourneySlugs.has(j.slug)) continue;
-    seenJourneySlugs.add(j.slug);
+  /* 4. Dynamic Clinical Services */
+  for (const s of services) {
+    if (!s.slug) continue;
     addUrl({
-      loc: `/journeys/${j.slug}`,
-      lastmod: j.updatedAt || j.createdAt,
+      loc: `/services/${s.slug}`,
+      lastmod: s.updatedAt || s.createdAt,
       changefreq: "weekly",
       priority: "0.85",
-      image: j.mainImage || j.floatingImage1,
-      title: j.title,
-      caption: j.routeText || j.shortDescription || j.description
+      image: s.image,
+      title: `${s.title} — PrettyVision Eye Care Clinic`,
+      caption: s.shortDescription || s.fullDescription || `Professional ${s.title} by qualified optometrists in Kalina, Santacruz East, Mumbai.`
     });
   }
 
-  /* 6. Dynamic Pilgrimages */
-  for (const p of pilgrimages) {
-    if (!p.slug || seenJourneySlugs.has(p.slug)) continue;
-    seenJourneySlugs.add(p.slug);
+  /* 5. Dynamic Eyewear Collections */
+  for (const c of collections) {
+    const slugOrUrl = c.destinationUrl?.startsWith("/")
+      ? c.destinationUrl
+      : (c.slug ? `/eyewear?collection=${c.slug}` : null);
+    if (!slugOrUrl) continue;
+
     addUrl({
-      loc: `/trips/${p.slug}`,
-      lastmod: p.updatedAt || p.createdAt,
+      loc: slugOrUrl,
+      lastmod: c.updatedAt || c.createdAt,
       changefreq: "weekly",
-      priority: "0.85",
-      image: p.image,
-      title: p.title,
-      caption: p.route || p.description
+      priority: "0.8",
+      image: c.image,
+      title: `${c.title} — PrettyVision Eyewear Collection`,
+      caption: c.description || c.subtitle || `Handpicked ${c.title} sunglasses and spectacle frames at PrettyVision.`
     });
   }
 
-  /* 7. Dynamic Blogs */
+  /* 6. Dynamic Eyewear Categories */
+  for (const cat of categories) {
+    const slugOrUrl = (cat.destinationUrl?.startsWith("/") && cat.destinationUrl !== "/eyewear")
+      ? cat.destinationUrl
+      : (cat.slug ? `/eyewear?category=${cat.slug}` : null);
+    if (!slugOrUrl) continue;
+
+    addUrl({
+      loc: slugOrUrl,
+      lastmod: cat.updatedAt || cat.createdAt,
+      changefreq: "weekly",
+      priority: "0.8",
+      image: cat.image,
+      title: `${cat.title} — PrettyVision Eyewear`,
+      caption: cat.subtitle || `Browse premium ${cat.title} at PrettyVision optical showroom Kalina.`
+    });
+  }
+
+  /* 7. Dynamic Vision & Optical Blogs */
   for (const blog of blogs) {
     if (!blog.slug) continue;
     addUrl({
       loc: `/blogs/${blog.slug}`,
       lastmod: blog.updatedAt || blog.publishedAt || blog.createdAt,
-      changefreq: "monthly",
-      priority: "0.8",
+      changefreq: "weekly",
+      priority: "0.75",
       image: blog.image,
       title: blog.title,
-      caption: blog.summary
+      caption: blog.shortDescription || blog.summary || blog.title
     });
   }
 
-  /* 8. Dynamic Video Blogs */
-  for (const v of videoBlogs) {
-    if (!v.slug) continue;
-    addUrl({
-      loc: `/video-blogs/${v.slug}`,
-      lastmod: v.updatedAt || v.publishedAt || v.createdAt,
-      changefreq: "monthly",
-      priority: "0.8",
-      image: v.thumbnail,
-      title: v.title,
-      caption: v.summary || v.description
-    });
-  }
-
-  /* 9. Dynamic Visionaries / Preachers */
-  for (const p of preachers) {
-    if (!p.slug) continue;
-    addUrl({
-      loc: `/visionaries/${p.slug}`,
-      lastmod: p.updatedAt || p.createdAt,
-      changefreq: "monthly",
-      priority: "0.75",
-      image: p.image,
-      title: p.name || p.title,
-      caption: p.title || p.bio
-    });
-  }
-
-  /* 10. Dynamic CMS Pages */
+  /* 8. Dynamic CMS Pages */
+  const reservedSlugs = new Set(["home", "about", "contact", "eyewear", "services", "brands", "guide", "sitemap"]);
   for (const pg of pages) {
-    if (!pg.slug || ["home", "about", "contact"].includes(pg.slug)) continue;
+    if (!pg.slug || reservedSlugs.has(pg.slug.toLowerCase())) continue;
     addUrl({
       loc: `/${pg.slug}`,
       lastmod: pg.updatedAt || pg.createdAt,
       changefreq: "monthly",
       priority: "0.7",
-      title: pg.title
+      image: pg.bannerImage,
+      title: pg.title,
+      caption: pg.excerpt
     });
   }
 
-  /* 11. Dynamic Legal Pages */
+  /* 9. Dynamic Legal & Policy Pages */
   for (const leg of legalPages) {
     if (!leg.slug) continue;
     addUrl({
@@ -315,18 +357,19 @@ export const generateSitemapXml = async ({ baseUrl = DEFAULT_BASE_URL } = {}) =>
       lastmod: leg.updatedAt || leg.createdAt,
       changefreq: "monthly",
       priority: "0.5",
-      title: leg.title
+      title: `${leg.title} — PrettyVision`,
+      caption: "Store policy, privacy, and customer terms of PrettyVision."
     });
   }
 
-  // Build XML payload with full schema namespaces (Google Image Sitemap, News, Video, XHTML)
+  // Build XML payload with full schema namespaces
   let xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
         xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"
         xmlns:news="http://www.google.com/schemas/sitemap-news/0.9"
         xmlns:video="http://www.google.com/schemas/sitemap-video/1.1"
         xmlns:xhtml="http://www.w3.org/1999/xhtml">
-  <!-- Dynamic AI- & Google-Optimized Sitemap for ISKCON Juhu Self-Excellence -->
+  <!-- Dynamic Real-Time Google- & AI-Optimized Sitemap for PrettyVision -->
   <!-- Total Indexed URLs: ${items.length} | Generated: ${new Date().toISOString()} -->
 `;
 
@@ -354,34 +397,36 @@ export const generateSitemapXml = async ({ baseUrl = DEFAULT_BASE_URL } = {}) =>
 
   xml += `</urlset>\n`;
 
-  return { xml, total: items.length, counts: {
-    courses: courses.length,
-    classes: classes.length,
-    books: books.length,
-    journeys: journeys.length,
-    blogs: blogs.length,
-    videoBlogs: videoBlogs.length,
-    preachers: preachers.length,
-    pages: pages.length
-  }};
+  return {
+    xml,
+    total: items.length,
+    counts: {
+      products: products.length,
+      brands: brands.length,
+      services: services.length,
+      collections: collections.length,
+      categories: categories.length,
+      blogs: blogs.length,
+      pages: pages.length,
+      legalPages: legalPages.length
+    }
+  };
 };
 
 /**
- * Generate robots.txt specifically optimized for:
+ * Generate robots.txt specifically optimized for PrettyVision:
  * - Googlebot, Bingbot, Slurp, DuckDuckBot
  * - AI Crawlers (GPTBot, ChatGPT-User, ClaudeBot, PerplexityBot, Applebot, Google-Extended)
  * - Declaring canonical Sitemap location
  */
 export const generateRobotsTxt = ({ baseUrl = DEFAULT_BASE_URL } = {}) => {
   const root = baseUrl.replace(/\/+$/, "");
-  return `# ISKCON Juhu Self-Excellence Robots Directive
+  return `# PrettyVision Robots Directive
 # Dynamically Generated for Maximum Search & AI Engine Optimization
 
 User-agent: *
 Allow: /
 Disallow: /admin/
-Disallow: /student/
-Disallow: /teacher/
 Disallow: /api/admin/
 Disallow: /login
 Disallow: /register
@@ -393,8 +438,7 @@ Disallow: /request-password-reset
 User-agent: GPTBot
 Allow: /
 Disallow: /admin/
-Disallow: /student/
-Disallow: /teacher/
+Disallow: /api/admin/
 
 User-agent: ChatGPT-User
 Allow: /
@@ -403,8 +447,7 @@ Allow: /
 User-agent: ClaudeBot
 Allow: /
 Disallow: /admin/
-Disallow: /student/
-Disallow: /teacher/
+Disallow: /api/admin/
 
 # Perplexity AI Engine
 User-agent: PerplexityBot
@@ -425,61 +468,60 @@ Sitemap: ${root}/sitemap.xml
 
 /**
  * Generate llms.txt (The Open AI Web Standard for Large Language Models).
- * When ChatGPT, Claude, Perplexity or AI assistants visit /llms.txt,
- * they receive a structured overview of all courses, classes, pilgrimages, and books.
+ * When ChatGPT, Claude, Perplexity visit /llms.txt,
+ * they receive a structured overview of PrettyVision optical showroom and clinic.
  */
 export const generateLlmsTxt = async ({ baseUrl = DEFAULT_BASE_URL } = {}) => {
   const root = baseUrl.replace(/\/+$/, "");
 
-  const [courses, classes, books, journeys, blogs] = await Promise.all([
-    Course.find({ status: { $ne: "archived" }, $or: [{ active: true }, { status: "published" }, { status: { $exists: false } }] }).limit(10).lean().catch(() => []),
-    UpcomingClass.find({ status: { $ne: "archived" }, $or: [{ active: true }, { status: "published" }, { status: { $exists: false } }] }).limit(10).lean().catch(() => []),
-    Book.find({ status: { $in: ["active", "published"] } }).limit(10).lean().catch(() => []),
-    Journey.find({ status: "published" }).limit(5).lean().catch(() => []),
-    Blog.find({ status: "published" }).limit(10).lean().catch(() => [])
+  const [products, brands, services, blogs] = await Promise.all([
+    Product.find({ isActive: true }).limit(10).lean().catch(() => []),
+    Brand.find({ isActive: true }).limit(10).lean().catch(() => []),
+    Service.find({ isActive: true }).limit(10).lean().catch(() => []),
+    Blog.find({ status: { $in: ["published", "active"] } }).limit(5).lean().catch(() => [])
   ]);
 
-  let md = `# ISKCON Juhu Self-Excellence LMS
+  let md = `# PrettyVision — Optometrist • Opticians • Contact Lens Clinic
 
-> Authentic Vedic wisdom, Self-Excellence courses, Sunday youth classes, sacred pilgrimage journeys, and spiritual books from ISKCON Juhu, Mumbai.
+> Premium optical showroom and eye care clinic located in Kalina, Santacruz East, Mumbai. Providing authentic luxury eyewear brands (Ray-Ban, Oakley, Vogue, Armani, etc.), computerized eye tests, and customized prescription glasses.
 
-Canonical Website: ${root}
-Sitemap: ${root}/sitemap.xml
+- Canonical Website: ${root}
+- Sitemap: ${root}/sitemap.xml
+- Store Address: Shop No 11, Agarwal Building, Market, opposite Nilesh Dryfruits, Kolivery Village, Vidya Nagari, Kalina, Santacruz East, Mumbai, Maharashtra 400098
+- Phone: 095940 30310
+- Hours: Monday – Saturday: 10:00 AM – 9:30 PM | Sunday: 11:00 AM – 8:00 PM
 
-## Key Offerings & Hubs
-- [Home Page](${root}/): Vedic spiritual learning platform, Sunday classes, and life transformation.
-- [Self-Excellence Courses](${root}/courses): Structured foundational and advanced spiritual courses.
-- [Sunday Youth Classes](${root}/classes): Weekly interactive youth sessions at ISKCON Juhu.
-- [Sacred Pilgrimages](${root}/trips): Guided spiritual journeys to Vrindavan, Mayapur, Jagannath Puri, and holy Dhamas.
-- [Spiritual Books](${root}/books): Authentic Vedic literature by Srila Prabhupada and senior devotees.
-- [Spiritual Blogs](${root}/blogs): Articles on fearlessness, mindfulness, overcoming anxiety, and bhakti-yoga.
-- [Video Lectures](${root}/video-blogs): Practical life guidance and scripture discourses.
+## Core Showroom Hubs
+- [Home Page](${root}/): Showroom highlights, featured eyewear, and store visit details.
+- [Eyewear Catalog](${root}/eyewear): Spectacle frames, sunglasses, computer blue-light lenses.
+- [Designer Brands](${root}/brands): 100% genuine luxury optical brands with warranty.
+- [Eye Care Services](${root}/services): Clinical optometrist consultations and lens fittings.
+- [About PrettyVision](${root}/about): Showroom heritage and optometry expertise in Kalina.
+- [Contact & Store Visit](${root}/contact): Directions, appointments, and contact form.
+- [Eye Care Guide](${root}/guide): Vision health, frame fitting, and lens care guides.
 
-## Active Courses
+## Featured Eyewear Products
 `;
 
-  for (const c of courses) {
-    md += `- [${c.title}](${root}/courses/${c.slug}): ${c.shortDescription || c.description || "Transformative spiritual curriculum."}\n`;
+  for (const p of products) {
+    md += `- [${p.name}](${root}/product/${p.slug}): ${p.brand || "PrettyVision"} - ${p.category || "Eyewear"} (${p.frameType || "Frame"})\n`;
   }
 
-  md += `\n## Upcoming Sunday Classes\n`;
-  for (const cl of classes) {
-    md += `- [${cl.title}](${root}/classes/${cl.slug}): Speaker: ${cl.speaker || "Senior Devotee"}, Venue: ${cl.venue || "ISKCON Juhu"}\n`;
+  md += `\n## Iconic Designer Brands\n`;
+  for (const b of brands) {
+    md += `- [${b.name}](${root}/brands/${b.slug}): ${b.description || "Authentic eyewear collection."}\n`;
   }
 
-  md += `\n## Sacred Pilgrimages & Journeys\n`;
-  for (const j of journeys) {
-    md += `- [${j.title}](${root}/journeys/${j.slug}): Route: ${j.routeText || "Sacred Dhama"}, Duration: ${j.durationDays || 5} Days\n`;
+  md += `\n## Clinical Optometry Services\n`;
+  for (const s of services) {
+    md += `- [${s.title}](${root}/services/${s.slug}): ${s.shortDescription || "Clinical eye care service."}\n`;
   }
 
-  md += `\n## Authentic Books & Publications\n`;
-  for (const b of books) {
-    md += `- [${b.title}](${root}/books/${b.slug}): ${b.author ? `By ${b.author}. ` : ""}${b.shortDescription || b.title}\n`;
-  }
-
-  md += `\n## Recent Wisdom Blogs\n`;
-  for (const bl of blogs) {
-    md += `- [${bl.title}](${root}/blogs/${bl.slug}): ${bl.summary || bl.title}\n`;
+  if (blogs.length > 0) {
+    md += `\n## Vision Health & Eyewear Articles\n`;
+    for (const bl of blogs) {
+      md += `- [${bl.title}](${root}/blogs/${bl.slug}): ${bl.summary || bl.title}\n`;
+    }
   }
 
   return md;
@@ -498,8 +540,7 @@ export const writeSitemapToDisk = async (baseUrl) => {
     const targetDirs = [
       path.resolve(__dirname, "../../frontend/dist"),
       path.resolve(__dirname, "../../frontend/public"),
-      "/var/www/self-excellence/frontend/dist",
-      "/var/www/self-excellence/frontend/public"
+      path.resolve(__dirname, "../public")
     ];
 
     for (const dir of targetDirs) {

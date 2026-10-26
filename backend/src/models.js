@@ -16,13 +16,36 @@ const socialLinks = new Schema(
 
 const heroBannerSchema = new Schema(
   {
-    title: String,
-    subtitle: String,
-    buttonText: String,
-    buttonLink: String,
+    title: { type: String, default: "" },
+    heading: { type: String, default: "" },
+    subtitle: { type: String, default: "" },
+    description: { type: String, default: "" },
+    eyebrowText: { type: String, default: "" },
+    eyebrow: { type: String, default: "" },
+    buttonText: { type: String, default: "" },
+    buttonLink: { type: String, default: "" },
+    button1Enabled: { type: Boolean, default: true },
+    button1Text: { type: String, default: "" },
+    button1Url: { type: String, default: "" },
+    button2Enabled: { type: Boolean, default: false },
+    button2Text: { type: String, default: "" },
+    button2Link: { type: String, default: "" },
+    button2Url: { type: String, default: "" },
+    destinationUrl: { type: String, default: "" },
+    bannerUrl: { type: String, default: "" },
+    altText: { type: String, default: "" },
+    locationBadge: { type: String, default: "" },
+    locationText: { type: String, default: "" },
+    textPosition: { type: String, default: "bottom-left" },
+    textAlignment: { type: String, default: "left" },
+    textColor: { type: String, default: "light" },
+    overlayType: { type: String, default: "dark" },
+    overlayStrength: { type: String, default: "medium" },
+    overlayOpacity: { type: Number, default: 0.4 },
+    height: { type: String, default: "large" },
     desktopImage: { type: String, required: true },
-    tabletImage: String,
-    mobileImage: String,
+    tabletImage: { type: String, default: "" },
+    mobileImage: { type: String, default: "" },
     order: { type: Number, default: 0, index: true },
     isActive: { type: Boolean, default: true, index: true }
   },
@@ -510,6 +533,9 @@ const pageSectionSchema = new Schema(
   {
     pageName: { type: String, required: true, lowercase: true, trim: true },
     sectionKey: { type: String, required: true, lowercase: true, trim: true },
+    sectionName: String,
+    routePath: String,
+    navLabel: String,
     sectionTitle: String,
     sectionSubtitle: String,
     content: Mixed,
@@ -520,6 +546,8 @@ const pageSectionSchema = new Schema(
     buttonLink: String,
     sortOrder: { type: Number, default: 0 },
     status: activeStatus,
+    homepageVisible: { type: Boolean, default: true },
+    websiteEnabled: { type: Boolean, default: true },
     settings: Mixed
   },
   { timestamps: true }
@@ -698,16 +726,34 @@ const siteSettingSchema = new Schema(
     singletonKey: { type: String, default: "site", unique: true },
     logo: String,
     favicon: String,
-    siteName: { type: String, default: "ISKCON Juhu Self-Excellence" },
-    primaryColor: { type: String, default: "#f52246" },
+    siteName: { type: String, default: "PrettyVision" },
+    tagline: { type: String, default: "Optometrist • Opticians • Contact Lens Clinic" },
+    primaryColor: { type: String, default: "#0B192C" },
     headerLinks: [{ label: String, url: String, sortOrder: Number, status: activeStatus }],
     loginButtonText: { type: String, default: "Login" },
     registerButtonText: { type: String, default: "Register" },
     socialLinks,
-    defaultSeoTitle: String,
-    defaultSeoDescription: String,
+    defaultSeoTitle: { type: String, default: "PrettyVision — Premium Eyewear & Eye Care Clinic Kalina Mumbai" },
+    defaultSeoDescription: { type: String, default: "Expert eye care, premium eyewear and contact lenses all under one roof in Kalina, Mumbai. Visit PrettyVision for comprehensive eye tests and genuine brands." },
     customHeaderHtml: String,
     googleSearchConsoleTag: String,
+    phone: { type: String, default: "095940 30310" },
+    email: { type: String, default: "prettyvisionkalina@gmail.com" },
+    address: { type: String, default: "Shop No 11, Agarwal Building, Market, opposite Nilesh Dryfruits, Kolivery Village, Vidya Nagari, Kalina, Santacruz East, Mumbai, Maharashtra 400098" },
+    businessHours: { type: String, default: "Mon – Sat: 10:00 AM – 9:30 PM | Sun: 11:00 AM – 8:00 PM" },
+    googleMapsEmbedUrl: { type: String, default: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3770.835948956972!2d72.8596646!3d19.0709405!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3be7c8e0a3f81e35%3A0xc3b09dc69fb4d23!2sPretty%20Vision!5e0!3m2!1sen!2sin!4v1700000000000!5m2!1sen!2sin" },
+    googleMapsUrl: { type: String, default: "https://maps.google.com/?q=Pretty+Vision+Kalina+Mumbai" },
+    instagramUrl: { type: String, default: "https://instagram.com/prettyvision_kalina" },
+    facebookUrl: { type: String, default: "https://facebook.com/prettyvision" },
+    youtubeUrl: { type: String, default: "" },
+    whatsappNumber: { type: String, default: "919594030310" },
+    whatsappDefaultMessage: { type: String, default: "Hi PrettyVision, I would like to enquire about eyewear / eye test appointment." },
+    primaryCtaText: { type: String, default: "Book Eye Test" },
+    primaryCtaUrl: { type: String, default: "/contact" },
+    topBarLocation: { type: String, default: "Kalina, Mumbai" },
+    topBarPhone: { type: String, default: "095940 30310" },
+    topBarCtaText: { type: String, default: "Visit Store" },
+    topBarCtaUrl: { type: String, default: "/contact" },
     aboutStats: {
       courses: { type: String, default: "6+" },
       teachers: { type: String, default: "6+" },
@@ -1690,9 +1736,296 @@ export const ExamAssignment = make("ExamAssignment", examAssignmentSchema);
 export const ExamAttempt = make("ExamAttempt", examAttemptSchema);
 export const ExamResponse = make("ExamResponse", examResponseSchema);
 
+// ==========================================
+// PRETTYVISION SCHEMAS & MODELS
+// ==========================================
+
+const featureHighlightSchema = new Schema(
+  {
+    icon: { type: String, default: "Eye" },
+    title: { type: String, required: true, trim: true },
+    subtitle: { type: String, trim: true },
+    linkUrl: { type: String, default: "" },
+    order: { type: Number, default: 0, index: true },
+    isActive: { type: Boolean, default: true, index: true },
+    status: { type: String, default: "active" }
+  },
+  { timestamps: true }
+);
+
+const collectionSchema = new Schema(
+  {
+    title: { type: String, required: true, trim: true },
+    subtitle: { type: String, trim: true },
+    image: { type: String, required: true },
+    buttonText: { type: String, default: "Explore" },
+    destinationUrl: { type: String, default: "/eyewear" },
+    badge: { type: String, default: "" },
+    hasEmbeddedText: { type: Boolean, default: false },
+    description: { type: String, default: "" },
+    seoTitle: { type: String, default: "" },
+    seoDescription: { type: String, default: "" },
+    seoContent: { type: String, default: "" },
+    order: { type: Number, default: 0, index: true },
+    isActive: { type: Boolean, default: true, index: true },
+    status: { type: String, default: "active" }
+  },
+  { timestamps: true }
+);
+
+const productTypeSchema = new Schema(
+  {
+    name: { type: String, required: true, trim: true, minlength: 2, maxlength: 100 },
+    slug: { type: String, required: true, trim: true, lowercase: true, index: true },
+    description: { type: String, default: "" },
+    order: { type: Number, default: 0, index: true },
+    isActive: { type: Boolean, default: true, index: true },
+    status: { type: String, default: "active" }
+  },
+  { timestamps: true }
+);
+
+const targetAudienceSchema = new Schema(
+  {
+    name: { type: String, required: true, trim: true, minlength: 2, maxlength: 100 },
+    slug: { type: String, required: true, trim: true, lowercase: true, index: true },
+    description: { type: String, default: "" },
+    order: { type: Number, default: 0, index: true },
+    isActive: { type: Boolean, default: true, index: true },
+    status: { type: String, default: "active" }
+  },
+  { timestamps: true }
+);
+
+const categorySchema = new Schema(
+  {
+    title: { type: String, trim: true },
+    name: { type: String, required: true, trim: true, minlength: 2, maxlength: 100 },
+    subtitle: { type: String, trim: true },
+    slug: { type: String, required: true, trim: true, lowercase: true, index: true },
+    categoryType: { type: String, default: "Eyewear", trim: true, index: true },
+    targetAudiences: [{ type: String, trim: true }],
+    description: { type: String, default: "" },
+    image: { type: String, default: "" },
+    icon: { type: String, default: "Glasses" },
+    destinationUrl: { type: String, default: "/eyewear" },
+    isFeatured: { type: Boolean, default: false, index: true },
+    order: { type: Number, default: 0, index: true },
+    isActive: { type: Boolean, default: true, index: true },
+    status: { type: String, default: "active" },
+    seoTitle: { type: String, default: "" },
+    seoDescription: { type: String, default: "" },
+    seoKeywords: { type: String, default: "" },
+    ogImage: { type: String, default: "" }
+  },
+  { timestamps: true }
+);
+
+const brandSchema = new Schema(
+  {
+    name: { type: String, required: true, trim: true, minlength: 2, maxlength: 100 },
+    slug: { type: String, required: true, trim: true, lowercase: true, index: true },
+    logo: { type: String, default: "" },
+    bannerImage: { type: String, default: "" },
+    brandImage: { type: String, default: "" },
+    description: { type: String, default: "" },
+    websiteUrl: { type: String, default: "" },
+    isFeatured: { type: Boolean, default: false, index: true },
+    order: { type: Number, default: 0, index: true },
+    isActive: { type: Boolean, default: true, index: true },
+    status: { type: String, default: "active" },
+    seoTitle: { type: String, default: "" },
+    seoDescription: { type: String, default: "" },
+    seoKeywords: { type: String, default: "" },
+    ogImage: { type: String, default: "" }
+  },
+  { timestamps: true }
+);
+
+const productSchema = new Schema(
+  {
+    name: { type: String, required: true, trim: true, minlength: 2, maxlength: 200 },
+    slug: { type: String, required: true, trim: true, lowercase: true, index: true },
+    sku: { type: String, trim: true, index: true },
+    brand: { type: String, required: true, trim: true, index: true },
+    category: { type: String, required: true, trim: true, index: true },
+    productType: { type: String, default: "Eyewear", trim: true, index: true },
+    targetAudience: { type: String, default: "Unisex", trim: true, index: true },
+    gender: { type: String, trim: true, default: "Unisex" },
+    collectionName: { type: String, trim: true },
+    subcategory: { type: String, trim: true },
+    mainImage: { type: String, required: true },
+    images: [{ type: String }],
+    thumbnail: { type: String, default: "" },
+    videoUrl: { type: String, default: "" },
+    shortDescription: { type: String, trim: true },
+    fullDescription: { type: String },
+    frameType: { type: String, trim: true },
+    frameShape: { type: String, trim: true },
+    frameMaterial: { type: String, trim: true },
+    frameColor: { type: String, trim: true },
+    lensType: { type: String, trim: true },
+    lensColor: { type: String, trim: true },
+    lensMaterial: { type: String, trim: true },
+    size: { type: String, trim: true },
+    fit: { type: String, trim: true },
+    uvProtection: { type: String, trim: true },
+    blueLightProtection: { type: Boolean, default: false },
+    polarized: { type: Boolean, default: false },
+    waterResistant: { type: Boolean, default: false },
+    prescriptionAvailable: { type: Boolean, default: true },
+    specifications: { type: Schema.Types.Mixed, default: {} },
+    tags: [{ type: String }],
+    price: { type: Number },
+    salePrice: { type: Number },
+    externalEcommerceUrl: { type: String, default: "" },
+    whatsappNumber: { type: String, default: "919594030310" },
+    enquiryEnabled: { type: Boolean, default: true },
+    isFeatured: { type: Boolean, default: false, index: true },
+    order: { type: Number, default: 0, index: true },
+    isActive: { type: Boolean, default: true, index: true },
+    status: { type: String, default: "active" },
+    seoTitle: { type: String, default: "" },
+    seoDescription: { type: String, default: "" },
+    seoKeywords: { type: String, default: "" },
+    ogImage: { type: String, default: "" }
+  },
+  { timestamps: true }
+);
+
+const serviceSchema = new Schema(
+  {
+    title: { type: String, required: true, trim: true },
+    slug: { type: String, required: true, trim: true, lowercase: true, index: true },
+    icon: { type: String, default: "Sparkles" },
+    image: { type: String, default: "" },
+    shortDescription: { type: String, trim: true },
+    fullDescription: { type: String },
+    ctaText: { type: String, default: "Book Appointment" },
+    ctaUrl: { type: String, default: "/contact" },
+    isFeatured: { type: Boolean, default: false, index: true },
+    order: { type: Number, default: 0, index: true },
+    isActive: { type: Boolean, default: true, index: true },
+    status: { type: String, default: "active" }
+  },
+  { timestamps: true }
+);
+
+const storeLocationSchema = new Schema(
+  {
+    name: { type: String, default: "Pretty Vision Kalina", trim: true },
+    eyebrow: { type: String, default: "VISIT OUR STORE" },
+    tagline: { type: String, default: "Premium Optical Store & Eye Care Clinic" },
+    address: { type: String, default: "Shop No 11, Agarwal Building, Market, opposite Nilesh Dryfruits, Kolivery Village, Vidya Nagari, Kalina, Santacruz East, Mumbai, Maharashtra 400098" },
+    phone: { type: String, default: "095940 30310" },
+    email: { type: String, default: "prettyvisionkalina@gmail.com" },
+    hours: { type: String, default: "Monday – Saturday: 10:00 AM – 9:30 PM\nSunday: 11:00 AM – 8:00 PM" },
+    directionsUrl: { type: String, default: "https://maps.google.com/?q=Pretty+Vision+Kalina+Mumbai" },
+    mapEmbedUrl: { type: String, default: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3770.835948956972!2d72.8596646!3d19.0709405!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3be7c8e0a3f81e35%3A0xc3b09dc69fb4d23!2sPretty%20Vision!5e0!3m2!1sen!2sin!4v1700000000000!5m2!1sen!2sin" },
+    interiorImage: { type: String, default: "/uploads/store_interior.jpg" },
+    exteriorImage: { type: String, default: "/uploads/store_exterior.jpg" },
+    button1Text: { type: String, default: "Get Directions" },
+    button1Url: { type: String, default: "https://maps.google.com/?q=Pretty+Vision+Kalina+Mumbai" },
+    button2Text: { type: String, default: "Call 095940 30310" },
+    button2Url: { type: String, default: "tel:09594030310" },
+    button3Text: { type: String, default: "WhatsApp" },
+    button3Url: { type: String, default: "https://wa.me/919594030310" },
+    isActive: { type: Boolean, default: true },
+    status: { type: String, default: "active" }
+  },
+  { timestamps: true }
+);
+
+const galleryItemSchema = new Schema(
+  {
+    title: { type: String, default: "" },
+    caption: { type: String, default: "" },
+    image: { type: String, required: true },
+    instagramUrl: { type: String, default: "https://instagram.com/prettyvision_kalina" },
+    destinationUrl: { type: String, default: "" },
+    order: { type: Number, default: 0, index: true },
+    isActive: { type: Boolean, default: true, index: true },
+    status: { type: String, default: "active" }
+  },
+  { timestamps: true }
+);
+
+const navigationItemSchema = new Schema(
+  {
+    label: { type: String, required: true, trim: true },
+    path: { type: String, required: true, trim: true },
+    isExternal: { type: Boolean, default: false },
+    openInNewTab: { type: Boolean, default: false },
+    isCta: { type: Boolean, default: false },
+    ctaStyle: { type: String, default: "solid" },
+    order: { type: Number, default: 0, index: true },
+    isActive: { type: Boolean, default: true, index: true },
+    status: { type: String, default: "active" },
+    children: [
+      {
+        label: { type: String, required: true },
+        path: { type: String, required: true },
+        isExternal: { type: Boolean, default: false },
+        openInNewTab: { type: Boolean, default: false },
+        order: { type: Number, default: 0 },
+        isActive: { type: Boolean, default: true }
+      }
+    ]
+  },
+  { timestamps: true }
+);
+
+const appointmentSchema = new Schema(
+  {
+    name: { type: String, required: true, trim: true },
+    phone: { type: String, required: true, trim: true },
+    email: { type: String, trim: true, lowercase: true },
+    preferredDate: { type: String, trim: true },
+    preferredTime: { type: String, trim: true },
+    serviceRequested: { type: String, trim: true, default: "Comprehensive Eye Examination" },
+    message: { type: String, trim: true },
+    status: {
+      type: String,
+      enum: ["pending", "confirmed", "completed", "cancelled"],
+      default: "pending",
+      index: true
+    },
+    adminNotes: { type: String, default: "" }
+  },
+  { timestamps: true }
+);
+
+export const FeatureHighlight = make("FeatureHighlight", featureHighlightSchema);
+export const Collection = make("Collection", collectionSchema);
+export const Category = make("Category", categorySchema);
+export const Brand = make("Brand", brandSchema);
+export const Product = make("Product", productSchema);
+export const ProductType = make("ProductType", productTypeSchema);
+export const TargetAudience = make("TargetAudience", targetAudienceSchema);
+export const Service = make("Service", serviceSchema);
+export const StoreLocation = make("StoreLocation", storeLocationSchema);
+export const GalleryItem = make("GalleryItem", galleryItemSchema);
+export const NavigationItem = make("NavigationItem", navigationItemSchema);
+export const Appointment = make("Appointment", appointmentSchema);
+
 export const modelRegistry = {
   users: User,
   banners: HeroBanner,
+  "hero-banners": HeroBanner,
+  "feature-highlights": FeatureHighlight,
+  collections: Collection,
+  categories: Category,
+  brands: Brand,
+  products: Product,
+  "product-types": ProductType,
+  "target-audiences": TargetAudience,
+  services: Service,
+  "store-locations": StoreLocation,
+  "gallery-items": GalleryItem,
+  "navigation-items": NavigationItem,
+  appointments: Appointment,
+  "site-settings": SiteSetting,
+  "footer-settings": FooterSetting,
   courses: Course,
   lessons: Lesson,
   enrollments: Enrollment,

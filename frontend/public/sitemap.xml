@@ -1,0 +1,343 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"
+        xmlns:news="http://www.google.com/schemas/sitemap-news/0.9"
+        xmlns:video="http://www.google.com/schemas/sitemap-video/1.1"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  <!-- Dynamic Real-Time Google- & AI-Optimized Sitemap for PrettyVision -->
+  <!-- Total Indexed URLs: 39 | Generated: 2026-10-26T20:19:08.170Z -->
+  <url>
+    <loc>https://prettyvision.in/</loc>
+    <lastmod>2026-10-26</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>https://prettyvision.in/eyewear</loc>
+    <lastmod>2026-10-26</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.95</priority>
+  </url>
+  <url>
+    <loc>https://prettyvision.in/brands</loc>
+    <lastmod>2026-10-26</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://prettyvision.in/services</loc>
+    <lastmod>2026-10-26</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://prettyvision.in/about</loc>
+    <lastmod>2026-10-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://prettyvision.in/contact</loc>
+    <lastmod>2026-10-26</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://prettyvision.in/guide</loc>
+    <lastmod>2026-10-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://prettyvision.in/guide/comprehensive-eyecare</loc>
+    <lastmod>2026-10-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://prettyvision.in/sitemap</loc>
+    <lastmod>2026-10-26</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://prettyvision.in/product/ray-ban-aviator-classic-gold</loc>
+    <lastmod>2026-10-26</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.95</priority>
+    <image:image>
+      <image:loc>https://prettyvision.in/uploads/cat_sunglasses.jpg</image:loc>
+      <image:title>Ray-Ban Aviator Classic Gold — Ray-Ban Eyewear</image:title>
+      <image:caption>Iconic teardrop shape with crystal green G-15 lenses and gold metal frame.</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://prettyvision.in/product/tom-ford-square-havana-acetate</loc>
+    <lastmod>2026-10-26</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.95</priority>
+    <image:image>
+      <image:loc>https://prettyvision.in/uploads/cat_optical_frames.jpg</image:loc>
+      <image:title>Tom Ford Square Havana Acetate — Tom Ford Eyewear</image:title>
+      <image:caption>Handcrafted dark Havana acetate optical glasses with signature metal T logo.</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://prettyvision.in/product/vogue-cat-eye-contemporary</loc>
+    <lastmod>2026-10-26</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.95</priority>
+    <image:image>
+      <image:loc>https://prettyvision.in/uploads/collection_womens.jpg</image:loc>
+      <image:title>Vogue Cat-Eye Contemporary — Vogue Eyewear Eyewear</image:title>
+      <image:caption>Feminine, stylish cat-eye frame in translucent rose crystal acetate.</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://prettyvision.in/product/essilor-eyezen-blue-light-digital</loc>
+    <lastmod>2026-10-26</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.95</priority>
+    <image:image>
+      <image:loc>https://prettyvision.in/uploads/cat_bluelight.jpg</image:loc>
+      <image:title>Essilor Eyezen Blue-Light Digital Frames — Essilor Eyewear</image:title>
+      <image:caption>Computer glasses equipped with Crizal Prevencia blue-violet light filtration.</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://prettyvision.in/product/oakley-flak-2-0-xl-sports</loc>
+    <lastmod>2026-10-26</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.95</priority>
+    <image:image>
+      <image:loc>https://prettyvision.in/uploads/cat_sports.jpg</image:loc>
+      <image:title>Oakley Flak 2.0 XL Sports Shield — Oakley Eyewear</image:title>
+      <image:caption>High-definition optics with Unobtainium nose pads that increase grip with sweat.</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://prettyvision.in/product/acuvue-oasys-hydraluxe-contact-lenses</loc>
+    <lastmod>2026-10-26</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.95</priority>
+    <image:image>
+      <image:loc>https://prettyvision.in/uploads/cat_contacts.jpg</image:loc>
+      <image:title>Acuvue Oasys HydraLuxe Contact Lenses — Essilor Eyewear</image:title>
+      <image:caption>Tear-infused daily disposable silicone hydrogel contact lenses for all-day hydration.</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://prettyvision.in/brands/ray-ban</loc>
+    <lastmod>2026-10-26</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://prettyvision.in/uploads/brand_showcase.jpg</image:loc>
+      <image:title>Ray-Ban Eyewear Collection at PrettyVision</image:title>
+      <image:caption>Iconic global eyewear brand famous for the Aviator, Wayfarer, Clubmaster and Meta smart glasses.</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://prettyvision.in/brands/oakley</loc>
+    <lastmod>2026-10-26</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://prettyvision.in/brands/vogue-eyewear</loc>
+    <lastmod>2026-10-26</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://prettyvision.in/brands/emporio-armani</loc>
+    <lastmod>2026-10-26</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://prettyvision.in/brands/versace</loc>
+    <lastmod>2026-10-26</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://prettyvision.in/brands/tom-ford</loc>
+    <lastmod>2026-10-26</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://prettyvision.in/brands/essilor</loc>
+    <lastmod>2026-10-26</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://prettyvision.in/brands/polaroid</loc>
+    <lastmod>2026-10-26</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://prettyvision.in/services/comprehensive-eye-examination</loc>
+    <lastmod>2026-10-26</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://prettyvision.in/service_exam.jpg</image:loc>
+      <image:title>Comprehensive Eye Examination — PrettyVision Eye Care Clinic</image:title>
+      <image:caption>Detailed eye tests with advanced equipment.</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://prettyvision.in/services/prescription-eyewear</loc>
+    <lastmod>2026-10-26</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://prettyvision.in/service_prescription.jpg</image:loc>
+      <image:title>Prescription Eyewear — PrettyVision Eye Care Clinic</image:title>
+      <image:caption>Expert guidance to find the right frames and lenses.</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://prettyvision.in/services/contact-lens-fitting</loc>
+    <lastmod>2026-10-26</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://prettyvision.in/service_fitting.jpg</image:loc>
+      <image:title>Contact Lens Fitting — PrettyVision Eye Care Clinic</image:title>
+      <image:caption>Wide range of contact lenses and professional fitting.</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://prettyvision.in/services/kids-and-family-eye-care</loc>
+    <lastmod>2026-10-26</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://prettyvision.in/service_kids.jpg</image:loc>
+      <image:title>Kids &amp; Family Eye Care — PrettyVision Eye Care Clinic</image:title>
+      <image:caption>Eye care for all ages, including children.</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://prettyvision.in/services/lens-and-coating-consultation</loc>
+    <lastmod>2026-10-26</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://prettyvision.in/service_coating.jpg</image:loc>
+      <image:title>Lens &amp; Coating Consultation — PrettyVision Eye Care Clinic</image:title>
+      <image:caption>Guidance on the best lenses, coatings and solutions for your needs.</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://prettyvision.in/eyewear?gender=Men</loc>
+    <lastmod>2026-10-26</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://prettyvision.in/square_card_1.png</image:loc>
+      <image:title>Men&apos;s Eyewear — PrettyVision Eyewear Collection</image:title>
+      <image:caption>Modern. Sharp. Versatile.</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://prettyvision.in/eyewear?gender=Women</loc>
+    <lastmod>2026-10-26</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://prettyvision.in/square_card_2.png</image:loc>
+      <image:title>Women&apos;s Eyewear — PrettyVision Eyewear Collection</image:title>
+      <image:caption>Elegant. Contemporary. Timeless.</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://prettyvision.in/eyewear?gender=Kids</loc>
+    <lastmod>2026-10-26</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://prettyvision.in/square_card_3.png</image:loc>
+      <image:title>Kids&apos; Eyewear — PrettyVision Eyewear Collection</image:title>
+      <image:caption>Safe. Stylish. Built for Growing Eyes.</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://prettyvision.in/eyewear?category=Sunglasses</loc>
+    <lastmod>2026-10-26</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://prettyvision.in/square_card_4.png</image:loc>
+      <image:title>Sunglasses Collection — PrettyVision Eyewear Collection</image:title>
+      <image:caption>Everyday to Iconic Styles.</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://prettyvision.in/eyewear?category=Contact+Lenses</loc>
+    <lastmod>2026-10-26</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://prettyvision.in/square_card_5.png</image:loc>
+      <image:title>Contact Lenses — PrettyVision Eyewear Collection</image:title>
+      <image:caption>Clearer Vision. Greater Freedom.</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://prettyvision.in/eyewear?category=Optical+Frames</loc>
+    <lastmod>2026-10-26</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://prettyvision.in/eyewear?category=Blue-Light+Glasses</loc>
+    <lastmod>2026-10-26</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://prettyvision.in/eyewear?category=Sports+Eyewear</loc>
+    <lastmod>2026-10-26</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://prettyvision.in/blogs/how-often-should-you-get-your-eyes-tested</loc>
+    <lastmod>2026-10-26</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.75</priority>
+    <image:image>
+      <image:loc>https://prettyvision.in/uploads/service_exam.jpg</image:loc>
+      <image:title>How Often Should You Get Your Eyes Tested? An Optometrist&apos;s Guide</image:title>
+      <image:caption>Vision changes gradually over time. Learn why annual check-ups are essential for both adults and children.</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://prettyvision.in/blogs/choosing-the-right-frames-for-your-face-shape</loc>
+    <lastmod>2026-10-26</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.75</priority>
+    <image:image>
+      <image:loc>https://prettyvision.in/uploads/collection_womens.jpg</image:loc>
+      <image:title>Choosing the Right Frames for Your Face Shape: The 2024 Style Guide</image:title>
+      <image:caption>From oval and square to heart and round faces, find the exact silhouettes that flatter your facial contours.</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://prettyvision.in/blogs/digital-eye-strain-blue-light-filtering-lenses</loc>
+    <lastmod>2026-10-26</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.75</priority>
+    <image:image>
+      <image:loc>https://prettyvision.in/uploads/cat_bluelight.jpg</image:loc>
+      <image:title>Digital Eye Strain: How Blue-Light Filtering Lenses Protect Your Eyes</image:title>
+      <image:caption>Spending 8+ hours in front of screens? Discover how specialized coatings reduce glare and improve sleep quality.</image:caption>
+    </image:image>
+  </url>
+</urlset>

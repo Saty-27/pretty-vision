@@ -4,41 +4,43 @@ export default {
     extend: {
       screens: { xs: "480px" },
       colors: {
-        /* ---- redesign token layer (single source of truth) ---- */
-        primary: "#C1121F",
-        "primary-dark": "#9B0D18",
-        saffron: "#E8590C",
-        gold: "#D4A017",
-        heading: "#1C1410",
-        body: "#3D3530",
-        "text-muted": "#7A6E66",
-        "bg-cream": "#FFF8F0",
-        "bg-warm": "#FDF1E4",
-        line: "#F0E2D3",
-        "footer-bg": "#1A1412",
+        /* ---- PrettyVision Luxury Optical Palette ---- */
+        primary: "#042041",
+        "primary-dark": "#021226",
+        navy: "#042041",
+        "navy-light": "#0B2A52",
+        "navy-deep": "#020F1F",
+        accent: "#1E3A8A",
+        gold: "#C5A880",
+        heading: "#0F172A",
+        body: "#334155",
+        "text-muted": "#64748B",
+        "bg-cool": "#F8FAFC",
+        "bg-light": "#F1F5F9",
+        line: "#E2E8F0",
+        "footer-bg": "#021226",
 
-        /* legacy aliases kept so untouched sections keep compiling */
-        ink: "#1C1410",
-        inkDeep: "#1C1410",
-        inkMuted: "#7A6E66",
-        muted: "#7A6E66",
-        soft: "#FFF8F0",
-        saffronDark: "#A8430B",
-        "primary-hover": "#9B0D18"
+        /* Aliases for compatibility */
+        ink: "#0F172A",
+        inkDeep: "#042041",
+        inkMuted: "#64748B",
+        muted: "#64748B",
+        soft: "#F8FAFC",
+        "primary-hover": "#0B2A52"
       },
       fontFamily: {
-        sans: ["var(--font-body)"],
-        ui: ["var(--font-body)"],
-        display: ["var(--font-display)"],
-        deva: ["var(--font-deva)"],
-        script: ["var(--font-script)"]
+        sans: ["var(--font-body)", "Plus Jakarta Sans", "Inter", "system-ui", "sans-serif"],
+        ui: ["var(--font-body)", "Plus Jakarta Sans", "Inter", "sans-serif"],
+        display: ["var(--font-display)", "Cormorant Garamond", "Playfair Display", "serif"],
+        serif: ["var(--font-display)", "Cormorant Garamond", "Playfair Display", "serif"],
+        script: ["var(--font-script)", "Great Vibes", "cursive"]
       },
-      maxWidth: { shell: "1320px" },
+      maxWidth: { shell: "1360px" },
       boxShadow: {
-        card: "0 12px 40px rgba(60, 30, 10, 0.08)",
-        cardHover: "0 20px 50px rgba(60, 30, 10, 0.14)",
-        cta: "0 10px 25px rgba(193, 18, 31, 0.25)",
-        premium: "0 12px 40px rgba(60, 30, 10, 0.08)"
+        card: "0 10px 30px rgba(4, 32, 65, 0.05)",
+        cardHover: "0 20px 45px rgba(4, 32, 65, 0.12)",
+        cta: "0 10px 25px rgba(4, 32, 65, 0.25)",
+        premium: "0 12px 35px rgba(4, 32, 65, 0.07)"
       }
     }
   },

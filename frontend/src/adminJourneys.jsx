@@ -875,7 +875,7 @@ export const AdminJourneysPage = () => {
               <div className="rounded-2xl border border-black/5 bg-white p-5 shadow-sm space-y-3">
                 <div className="flex items-center justify-between">
                   <h3 className="text-xs font-black uppercase text-ink">Main Hero Banner</h3>
-                  <span className="text-[10px] text-muted">1920×800 rec.</span>
+                  <span className="text-[10px] font-semibold text-sky-800 bg-sky-50 px-2 py-0.5 rounded border border-sky-200">🖥️ Desktop: 1920×800 px</span>
                 </div>
 
                 <div className="aspect-[16/9] w-full rounded-xl overflow-hidden border border-black/10 bg-soft relative group">
@@ -934,7 +934,7 @@ export const AdminJourneysPage = () => {
               <div className="rounded-2xl border border-black/5 bg-white p-5 shadow-sm space-y-3">
                 <div className="flex items-center justify-between">
                   <h3 className="text-xs font-black uppercase text-ink">Floating Postcard 1</h3>
-                  <span className="text-[10px] text-muted">Tilted -5°</span>
+                  <span className="text-[10px] font-semibold text-sky-800 bg-sky-50 px-2 py-0.5 rounded border border-sky-200">🖥️ & 📱 Screen: 600×750 px (4:5)</span>
                 </div>
 
                 <div className="aspect-[4/5] w-full rounded-xl overflow-hidden border-4 border-white shadow-md bg-soft relative flex items-center justify-center p-2">
@@ -993,7 +993,7 @@ export const AdminJourneysPage = () => {
               <div className="rounded-2xl border border-black/5 bg-white p-5 shadow-sm space-y-3">
                 <div className="flex items-center justify-between">
                   <h3 className="text-xs font-black uppercase text-ink">Floating Postcard 2</h3>
-                  <span className="text-[10px] text-muted">Tilted +7°</span>
+                  <span className="text-[10px] font-semibold text-sky-800 bg-sky-50 px-2 py-0.5 rounded border border-sky-200">🖥️ & 📱 Screen: 600×750 px (4:5)</span>
                 </div>
 
                 <div className="aspect-[4/5] w-full rounded-xl overflow-hidden border-4 border-white shadow-md bg-soft relative flex items-center justify-center p-2">
@@ -1242,7 +1242,12 @@ export const AdminJourneysPage = () => {
                 </div>
 
                 <div>
-                  <label className={labelCls}>Payment QR Code Image</label>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className={labelCls}>Payment QR Code Image</label>
+                    <span className="text-[10px] font-semibold text-amber-900 bg-amber-50 px-2 py-0.5 rounded border border-amber-200/70">
+                      📱 Mobile & 🖥️ Screen: 500 × 500 px (1:1)
+                    </span>
+                  </div>
                   <div className="flex gap-2">
                     <input
                       type="text"

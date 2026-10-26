@@ -340,7 +340,7 @@ export const AdminTripsPage = () => {
         <Card title="Main image" subtitle="Used on the trip card, the listing and the detail hero.">
           <div className="mb-3">
             <span className="inline-flex items-center gap-1 rounded-md bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-900 border border-amber-200/70">
-              📐 Recommended: 1200 × 800 px (3:2 ratio) or 1920 × 1080 px (16:9 ratio)
+              🖥️ Desktop & 📱 Mobile Card: 1200 × 800 px (3:2 ratio) or 1920 × 1080 px (16:9 ratio)
             </span>
           </div>
           <div className="flex flex-wrap items-start gap-4">
@@ -403,7 +403,7 @@ export const AdminTripsPage = () => {
                   <Field title="Day image (optional)">
                     <div className="mb-1">
                       <span className="inline-flex items-center gap-1 rounded-md bg-amber-50 px-1.5 py-0.5 text-[10px] font-semibold text-amber-900 border border-amber-200/70">
-                        📐 Recommended: 600 × 400 px (3:2 ratio)
+                        🖥️ & 📱 Screen Itinerary: 600 × 400 px (3:2 ratio)
                       </span>
                     </div>
                     <div className="flex items-center gap-2">
@@ -420,7 +420,7 @@ export const AdminTripsPage = () => {
         {/* Gallery */}
         <Card
           title="Gallery"
-          subtitle="Shown on the trip detail page. Drag order with the arrows. Recommended: 1200 × 900 px (4:3 ratio) or 1200 × 800 px (3:2 ratio)."
+          subtitle="Shown on the trip detail page. Drag order with the arrows. 🖥️ & 📱 Screen Gallery: 1200 × 900 px (4:3 ratio) or 1200 × 800 px (3:2 ratio)."
           actions={
             <>
               <input ref={galleryInput} type="file" multiple accept=".jpg,.jpeg,.png,.webp" onChange={(e) => addGallery(e.target.files)} className="hidden" />
@@ -499,7 +499,7 @@ export const AdminTripsPage = () => {
                   <div className="flex flex-wrap items-center justify-between gap-1">
                     <span className={label}>Payment QR image</span>
                     <span className="inline-flex items-center gap-1 rounded-md bg-amber-50 px-1.5 py-0.5 text-[10px] font-semibold text-amber-900 border border-amber-200/70">
-                      📐 Recommended: 500 × 500 px (1:1 square)
+                      📱 Mobile & 🖥️ Screen QR: 500 × 500 px (1:1 square)
                     </span>
                   </div>
                   <input type="file" accept=".jpg,.jpeg,.png,.webp" onChange={async (e) => { const up = await qrUpload.send(e.target.files?.[0]); if (up) set("paymentQrImage", up.url); }} className="text-xs" />

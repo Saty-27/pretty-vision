@@ -4,25 +4,26 @@
 
 @layer base {
   :root {
-    /* Typography roles — one family per role, nothing else */
-    --font-display: "Playfair Display", Georgia, serif;
-    --font-body: "Poppins", system-ui, -apple-system, sans-serif;
-    --font-deva: "Tiro Devanagari Hindi", serif;
+    /* Typography roles — refined luxury editorial typography */
+    --font-display: "Cormorant Garamond", "Playfair Display", Georgia, serif;
+    --font-body: "Plus Jakarta Sans", "Inter", system-ui, -apple-system, sans-serif;
     --font-script: "Great Vibes", cursive;
 
-    /* Colour tokens, mirrored from the Tailwind theme */
-    --primary: #C1121F;
-    --primary-dark: #9B0D18;
-    --saffron: #E8590C;
-    --gold: #D4A017;
-    --heading: #1C1410;
-    --text: #3D3530;
-    --text-muted: #7A6E66;
+    /* Colour tokens — deep navy, crisp white, subtle cool blue-gray */
+    --primary: #08264A;
+    --primary-dark: #05182F;
+    --navy: #08264A;
+    --navy-light: #0D315A;
+    --navy-deep: #05182F;
+    --gold: #C5A880;
+    --heading: #071B34;
+    --text: #071B34;
+    --text-muted: #68778A;
     --bg: #FFFFFF;
-    --bg-cream: #FFF8F0;
-    --bg-warm: #FDF1E4;
-    --border: #F0E2D3;
-    --footer-bg: #1A1412;
+    --bg-cool: #F6F8FA;
+    --bg-light: #F1F5F9;
+    --border: #DCE3EA;
+    --footer-bg: #05182F;
   }
 
   html, body {
@@ -52,6 +53,18 @@
 }
 
 @layer utilities {
+  .home-section {
+    width: 100%;
+    max-width: none;
+  }
+
+  .home-section-inner {
+    width: 100%;
+    max-width: none;
+    padding-left: clamp(20px, 4.5vw, 96px);
+    padding-right: clamp(20px, 4.5vw, 96px);
+  }
+
   .container-pad {
     @apply mx-auto max-w-7xl px-4 sm:px-6 lg:px-8;
   }

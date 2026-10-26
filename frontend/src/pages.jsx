@@ -83,6 +83,7 @@ import { VideoBlogTile } from "./videoBlogs";
 import { apiFetch, assetUrl, uploadFile, API_URL } from "./api";
 import { useAuth } from "./AuthContext";
 import { usePermissions } from "./usePermissions";
+import { useHomepageSections } from "./useHomepageSections";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import {
@@ -163,6 +164,7 @@ const splitHeading = (title, lead, accent) => {
 export const HomePage = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { isSectionVisible } = useHomepageSections();
   const sections = useList("/page-sections/home", fallbackHomeSections).items;
   const map = sectionMap(sections);
   const bannersState = useList("/banners/active", []);
@@ -252,9 +254,9 @@ export const HomePage = () => {
   return (
     <>
       <SEO title="ISKCON Juhu Self-Excellence LMS" description="Spiritual learning, Self-Excellence courses, Sunday classes, and student LMS." />
-      <ISKCONHero />
+      {isSectionVisible("hero") && <ISKCONHero />}
 
-      {active(map.upcoming_classes) && (
+      {isSectionVisible("upcoming_classes") && active(map.upcoming_classes) && (
         <UpcomingClassesSection
           items={upcoming}
           onActionClick={handleRegisterClick}
@@ -266,62 +268,72 @@ export const HomePage = () => {
         />
       )}
 
-      <PilgrimageSection
-        journey={
-          dynamicFeaturedJourney || (featuredPilgrimage
-            ? {
-                ...featuredJourney,
-                badge: featuredPilgrimage.badge || featuredJourney.badge,
-                badgeText: featuredPilgrimage.badge || featuredJourney.badge,
-                title: featuredPilgrimage.title,
-                route: featuredPilgrimage.route || featuredJourney.route,
-                routeText: featuredPilgrimage.route || featuredJourney.route,
-                mainImage: featuredPilgrimage.image,
-                floatingImage1: featuredPilgrimage.image,
-                floatingImage2: featuredPilgrimage.gallery?.[0]?.imageUrl || featuredPilgrimage.image,
-                duration: featuredPilgrimage.days ? `${featuredPilgrimage.days} Days` : featuredJourney.duration,
-                nights: featuredPilgrimage.nights ? `${featuredPilgrimage.nights} Nights` : featuredJourney.nights,
-                routeDetail: featuredPilgrimage.routeDetail || featuredJourney.routeDetail,
-                visitDetail: featuredPilgrimage.visitDetail || featuredJourney.visitDetail,
-                guideDetail: featuredPilgrimage.guideDetail || featuredJourney.guideDetail,
-                ctaText: "Book Now"
+      {isSectionVisible("featured_journey") && (
+        <>
+          <PilgrimageSection
+            journey={
+              dynamicFeaturedJourney || (featuredPilgrimage
+                ? {
+                    ...featuredJourney,
+                    badge: featuredPilgrimage.badge || featuredJourney.badge,
+                    badgeText: featuredPilgrimage.badge || featuredJourney.badge,
+                    title: featuredPilgrimage.title,
+                    route: featuredPilgrimage.route || featuredJourney.route,
+                    routeText: featuredPilgrimage.route || featuredJourney.route,
+                    mainImage: featuredPilgrimage.image,
+                    floatingImage1: featuredPilgrimage.image,
+                    floatingImage2: featuredPilgrimage.gallery?.[0]?.imageUrl || featuredPilgrimage.image,
+                    duration: featuredPilgrimage.days ? `${featuredPilgrimage.days} Days` : featuredJourney.duration,
+                    nights: featuredPilgrimage.nights ? `${featuredPilgrimage.nights} Nights` : featuredJourney.nights,
+                    routeDetail: featuredPilgrimage.routeDetail || featuredJourney.routeDetail,
+                    visitDetail: featuredPilgrimage.visitDetail || featuredJourney.visitDetail,
+                    guideDetail: featuredPilgrimage.guideDetail || featuredJourney.guideDetail,
+                    ctaText: "Book Now"
+                  }
+                : featuredJourney)
+            }
+            loading={journeyLoading}
+            onBook={() => {
+              if (dynamicFeaturedJourney?.slug) {
+                navigate(`/journeys/${dynamicFeaturedJourney.slug}`);
+              } else if (featuredPilgrimage?.slug) {
+                navigate(`/trips/${featuredPilgrimage.slug}`);
+              } else if (featuredPilgrimage) {
+                setBookingOpen(true);
+              } else {
+                navigate("/trips");
               }
-            : featuredJourney)
-        }
-        loading={journeyLoading}
-        onBook={() => {
-          if (dynamicFeaturedJourney?.slug) {
-            navigate(`/journeys/${dynamicFeaturedJourney.slug}`);
-          } else if (featuredPilgrimage?.slug) {
-            navigate(`/trips/${featuredPilgrimage.slug}`);
-          } else if (featuredPilgrimage) {
-            setBookingOpen(true);
-          } else {
-            navigate("/trips");
-          }
-        }}
-        onViewAll={() => navigate("/trips")}
-      />
+            }}
+            onViewAll={() => navigate("/trips")}
+          />
 
-      <PilgrimageBookingModal
-        pilgrimage={featuredPilgrimage}
-        open={bookingOpen && Boolean(featuredPilgrimage)}
-        onClose={() => setBookingOpen(false)}
-      />
+          <PilgrimageBookingModal
+            pilgrimage={featuredPilgrimage}
+            open={bookingOpen && Boolean(featuredPilgrimage)}
+            onClose={() => setBookingOpen(false)}
+          />
+        </>
+      )}
 
-      <FeaturedTripsSection trips={featuredTripsState.items} loading={featuredTripsState.loading} />
+      {isSectionVisible("trips") && (
+        <FeaturedTripsSection trips={featuredTripsState.items} loading={featuredTripsState.loading} />
+      )}
 
-      {active(map.courses) && (
+      {isSectionVisible("courses") && active(map.courses) && (
         <CoursesSection courses={courses} loading={coursesState.loading} />
       )}
 
-      <BooksSection />
+      {isSectionVisible("books") && (
+        <BooksSection />
+      )}
 
-      <WhyJoinSection />
+      {isSectionVisible("why_join") && (
+        <WhyJoinSection />
+      )}
 
       {/* The old Video Blogs band was merged into this one, so it now
           answers to that section's CMS toggle. */}
-      {active(map.video_blogs) && (
+      {isSectionVisible("video_blogs") && active(map.video_blogs) && (
         <LatestVideoSection
           videos={videoBlogs}
           /* Heading comes from Admin -> Home Sections, falling back to
@@ -334,19 +346,19 @@ export const HomePage = () => {
         />
       )}
 
-      {active(map.preachers) && (
+      {isSectionVisible("preachers") && active(map.preachers) && (
         <TeachersSection teachers={preachers} />
       )}
 
-      {active(map.benefits) && (
+      {isSectionVisible("benefits") && active(map.benefits) && (
         <BenefitsSection benefits={benefits} />
       )}
 
-      {active(map.blogs) && (
+      {isSectionVisible("blogs") && active(map.blogs) && (
         <LatestBlogsSection blogs={blogs} loading={blogsState.loading} />
       )}
 
-      {active(map.media_highlight) && (
+      {isSectionVisible("media_highlight") && active(map.media_highlight) && (
         <MediaReflectionsSection
           images={galleryImages}
           videos={galleryVideos}
@@ -2255,67 +2267,65 @@ export const LegalPage = ({ slug, title }) => {
 };
 
 export const SitemapPage = () => {
-  const courseItems = useList("/courses?limit=100", []).items;
-  const classItems = useList("/upcoming-classes?limit=100", []).items;
-  const bookItems = useList("/books?limit=100", []).items;
-  const journeyItems = useList("/journeys/upcoming?limit=100", []).items;
-  const blogItems = useList("/blogs?limit=100", fallbackBlogs).items;
-  const videoItems = useList("/video-blogs?limit=100", []).items;
-  const visionaryItems = useList("/visionaries?limit=100", fallbackPreachers).items;
+  const productItems = useList("/products?limit=200", []).items;
+  const brandItems = useList("/brands", []).items;
+  const serviceItems = useList("/services", []).items;
+  const categoryItems = useList("/categories", []).items;
+  const collectionItems = useList("/collections", []).items;
+  const blogItems = useList("/blogs?limit=100", []).items;
 
   const groups = [
     {
-      title: "Core Hubs",
+      title: "Core Showroom & Clinic Hubs",
       links: [
         ["Home Page", "/"],
-        ["About ISKCON Juhu", "/about"],
-        ["All Courses", "/courses"],
-        ["Sunday Classes", "/classes"],
-        ["Book Store", "/books"],
-        ["Sacred Journeys", "/trips"],
-        ["Wisdom Blogs", "/blogs"],
-        ["Video Lectures", "/video-blogs"],
-        ["Preachers & Mentors", "/visionaries"],
-        ["Contact Us", "/contact"]
+        ["Eyewear & Frames Catalog", "/eyewear"],
+        ["Designer Brands", "/brands"],
+        ["Eye Care Services", "/services"],
+        ["About PrettyVision", "/about"],
+        ["Visit Store & Contact Us", "/contact"],
+        ["Eye Care & Vision Guide", "/guide"],
+        ["Comprehensive Eye Care Guide", "/guide/comprehensive-eyecare"]
       ]
     },
     {
-      title: "Self-Excellence Courses",
-      links: courseItems.filter((c) => c.slug).map((item) => [item.title, `/courses/${item.slug}`])
+      title: "Optical Frames & Sunglasses",
+      links: productItems
+        .filter((p) => p.slug && p.isActive !== false)
+        .map((p) => [`${p.name}${p.brand ? ` — ${p.brand}` : ""}`, `/product/${p.slug}`])
     },
     {
-      title: "Sunday Youth Classes",
-      links: classItems.filter((cl) => cl.slug).map((item) => [item.title, `/classes/${item.slug}`])
+      title: "Iconic Designer Brands",
+      links: brandItems
+        .filter((b) => b.slug && b.isActive !== false)
+        .map((b) => [b.name, `/brands/${b.slug}`])
     },
     {
-      title: "Spiritual Books",
-      links: bookItems.filter((b) => b.slug).map((item) => [item.title, `/books/${item.slug}`])
+      title: "Clinical Optometry Services",
+      links: serviceItems
+        .filter((s) => s.slug && s.isActive !== false)
+        .map((s) => [s.title, `/services/${s.slug}`])
     },
     {
-      title: "Sacred Journeys & Yatras",
-      links: journeyItems.filter((j) => j.slug).map((item) => [item.title, `/journeys/${item.slug}`])
+      title: "Shop by Category",
+      links: categoryItems
+        .filter((c) => c.slug && c.isActive !== false)
+        .map((c) => [c.title, `/eyewear?category=${c.slug}`])
     },
     {
-      title: "Wisdom Blogs",
-      links: blogItems.filter((b) => b.slug).map((item) => [item.title, `/blogs/${item.slug}`])
+      title: "Curated Collections",
+      links: collectionItems
+        .filter((c) => c.slug && c.isActive !== false)
+        .map((c) => [c.title, `/eyewear?collection=${c.slug}`])
     },
     {
-      title: "Video Discourses",
-      links: videoItems.filter((v) => v.slug).map((item) => [item.title, `/video-blogs/${item.slug}`])
+      title: "Vision Health & Eyewear Blogs",
+      links: blogItems
+        .filter((b) => b.slug)
+        .map((b) => [b.title, `/blogs/${b.slug}`])
     },
     {
-      title: "Preachers & Mentors",
-      links: visionaryItems.filter((p) => p.slug).map((item) => [item.name || item.title, `/visionaries/${item.slug}`])
-    },
-    {
-      title: "Media & Highlights",
-      links: [
-        ["Sacred Image Gallery", "/gallery/images"],
-        ["Video Gallery", "/gallery/videos"]
-      ]
-    },
-    {
-      title: "Legal & Governance",
+      title: "Store Policies & Legal",
       links: [
         ["Privacy Policy", "/privacy-policy"],
         ["Terms and Conditions", "/terms-and-conditions"]
@@ -2326,13 +2336,13 @@ export const SitemapPage = () => {
   return (
     <>
       <SEO
-        title="Sitemap & AI Index | ISKCON Juhu Self-Excellence"
-        description="Dynamic directory and XML sitemap for search engines, ChatGPT, and seekers. Direct URLs for courses, Sunday classes, books, yatras, and blogs."
+        title="Sitemap & Live XML Index | PrettyVision Kalina"
+        description="Dynamic directory and XML sitemap for search engines, AI crawlers, and customers. Direct access to all eyewear products, designer brands, and optometry services."
       />
       <PageBanner
-        title="Sitemap & AI Directory"
-        subtitle="Complete live directory of courses, Sunday classes, sacred journeys, publications, and wisdom blogs."
-        image={images.learning}
+        title="PrettyVision Sitemap & Live XML Directory"
+        subtitle="Complete live directory of optical products, designer eyewear brands, clinical eye care services, and vision health guides."
+        image="/store_interior_ref.png"
       />
 
       <section className="section-pad bg-soft">
@@ -2341,11 +2351,11 @@ export const SitemapPage = () => {
           <div className="rounded-2xl border border-black/5 bg-white p-6 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
             <div>
               <span className="inline-block rounded-full bg-emerald-100 px-2.5 py-0.5 text-[10px] font-black uppercase text-emerald-800 tracking-wider">
-                Real-Time Feeds
+                100% Dynamic Real-Time Feeds
               </span>
-              <h2 className="mt-1 text-lg font-black text-ink">Search Engine & AI Discovery Channels</h2>
+              <h2 className="mt-1 text-lg font-black text-ink">Search Engine & AI Discovery Feeds</h2>
               <p className="text-xs text-muted">
-                Dynamically refreshed on every publish or delete. Fully compliant with Google XML Sitemap, robots.txt, and the Open LLMs Standard.
+                Automatically refreshed in real time whenever products, brands, or pages are added or removed.
               </p>
             </div>
 
@@ -2354,9 +2364,9 @@ export const SitemapPage = () => {
                 href="/sitemap.xml"
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center gap-1.5 rounded-xl bg-[#C1121F] px-4 py-2 text-xs font-bold text-white shadow hover:bg-[#9B0D18] transition"
+                className="inline-flex items-center gap-1.5 rounded-xl bg-[#08264A] px-4 py-2 text-xs font-bold text-white shadow hover:bg-[#0B3A6F] transition"
               >
-                <span>sitemap.xml</span>
+                <span>sitemap.xml (Live XML)</span>
                 <ExternalLink size={13} />
               </a>
               <a
@@ -2390,7 +2400,7 @@ export const SitemapPage = () => {
                     <div className="flex items-center justify-between border-b border-black/5 pb-3 mb-3">
                       <h3 className="text-base font-black text-ink">{group.title}</h3>
                       <span className="text-[10px] font-bold text-muted bg-soft px-2 py-0.5 rounded-full">
-                        {group.links.length} {group.links.length === 1 ? "page" : "pages"}
+                        {group.links.length} {group.links.length === 1 ? "link" : "links"}
                       </span>
                     </div>
                     <ul className="grid gap-2">
@@ -4391,7 +4401,7 @@ export const AdminTeachersPage = () => {
                   <div className="flex flex-wrap items-center justify-between gap-1 mb-1.5">
                     <label className="text-xs font-black text-ink uppercase">Profile Image URL / Upload</label>
                     <span className="inline-flex items-center gap-1 rounded-md bg-amber-50 px-2 py-0.5 text-[10px] font-semibold text-amber-900 border border-amber-200/70">
-                      📐 Recommended: 600 × 600 px (1:1 square) or 800 × 800 px
+                      🖥️ & 📱 Screen Profile: 600 × 600 px (1:1 square) or 800 × 800 px
                     </span>
                   </div>
                   <div className="flex gap-2">
@@ -5868,6 +5878,12 @@ const AdminModerationList = ({ title, items, update, renderText, meta, actionLab
 
 const adminConfig = {
   users: { title: "Users", fields: ["name", "email", "phone", "role", "password", "status"] },
+  brands: { title: "Brands", fields: ["name", "slug", "logo", "bannerImage", "description", "websiteUrl", "isFeatured", "order", "status"] },
+  services: { title: "Services", fields: ["title", "slug", "icon", "image", "shortDescription", "fullDescription", "ctaText", "ctaUrl", "isFeatured", "order", "status"] },
+  collections: { title: "Collections", fields: ["title", "subtitle", "image", "buttonText", "destinationUrl", "badge", "order", "status"] },
+  categories: { title: "Categories", fields: ["title", "subtitle", "slug", "image", "icon", "destinationUrl", "order", "status"] },
+  "gallery-items": { title: "Gallery Items", fields: ["title", "caption", "image", "instagramUrl", "destinationUrl", "order", "status"] },
+  "store-locations": { title: "Store Location & Map", fields: ["name", "eyebrow", "address", "phone", "email", "hours", "directionsUrl", "mapEmbedUrl", "interiorImage", "exteriorImage", "status"] },
   "home-sections": { title: "Home Sections", fields: ["pageName", "sectionKey", "sectionTitle", "sectionSubtitle", "content", "image", "videoUrl", "buttonText", "buttonLink", "sortOrder", "status"] },
   "video-intro": { title: "Video Intro", fields: ["sectionTitle", "sectionSubtitle", "videoUrl", "image"] },
   "about-sections": { title: "About Sections", fields: ["sectionTitle", "sectionSubtitle", "description", "image", "buttonText", "buttonLink", "sortOrder", "status"] },
@@ -5889,10 +5905,10 @@ const adminConfig = {
 };
 
 const fieldType = (field) => {
-  if (["content", "description", "fullDescription", "shortDescription", "bio", "fullBio", "message", "excerpt", "verificationInstructions", "paymentInstructions", "visitDetail", "note"].includes(field)) return "textarea";
-  if (["featured", "showOnHomepage", "isPreview", "showInMediaHighlight"].includes(field)) return "checkbox";
-  if (["thumbnail", "bannerImage", "image", "uploadedVideo", "pdfFile", "attachmentFile"].includes(field)) return "file";
-  if (["price", "sortOrder", "maxFileSize", "pricePerPerson", "maxTravellers", "days", "nights", "value"].includes(field)) return "number";
+  if (["content", "description", "fullDescription", "shortDescription", "bio", "fullBio", "message", "excerpt", "verificationInstructions", "paymentInstructions", "visitDetail", "note", "hours", "address"].includes(field)) return "textarea";
+  if (["featured", "isFeatured", "showOnHomepage", "isPreview", "showInMediaHighlight", "isActive"].includes(field)) return "checkbox";
+  if (["thumbnail", "bannerImage", "image", "uploadedVideo", "pdfFile", "attachmentFile", "logo", "interiorImage", "exteriorImage"].includes(field)) return "file";
+  if (["price", "sortOrder", "maxFileSize", "pricePerPerson", "maxTravellers", "days", "nights", "value", "order"].includes(field)) return "number";
   if (["date", "startDate", "endDate"].includes(field)) return "date";
   return "text";
 };
@@ -5901,8 +5917,8 @@ const normalizeForm = (form, fields) => {
   const data = { ...form };
   fields.forEach((field) => {
     if (["tags", "seoKeywords", "listItems", "specialization", "expertise", "allowedFileTypes"].includes(field) && typeof data[field] === "string") data[field] = data[field].split(",").map((item) => item.trim()).filter(Boolean);
-    if (["featured", "showOnHomepage", "isPreview", "showInMediaHighlight"].includes(field)) data[field] = Boolean(data[field]);
-    if (["price", "sortOrder", "maxFileSize", "pricePerPerson", "maxTravellers", "days", "nights", "value"].includes(field) && data[field] !== "" && data[field] !== undefined) data[field] = Number(data[field]);
+    if (["featured", "isFeatured", "showOnHomepage", "isPreview", "showInMediaHighlight", "isActive"].includes(field)) data[field] = Boolean(data[field]);
+    if (["price", "sortOrder", "maxFileSize", "pricePerPerson", "maxTravellers", "days", "nights", "value", "order"].includes(field) && data[field] !== "" && data[field] !== undefined) data[field] = Number(data[field]);
   });
   return data;
 };
@@ -5916,12 +5932,55 @@ export const getMediaSizeRecommendation = (folder = "", label = "") => {
   const f = (folder || "").toLowerCase();
   const l = (label || "").toLowerCase();
 
+  // PrettyVision Optical Brands
+  if (f.includes("brand") || l.includes("brand")) {
+    return "🖥️ Desktop & 📱 Mobile Logo: 400 × 200 px (2:1 ratio) • Transparent PNG or SVG • Displayed in Brand Showcase & Strips";
+  }
+
+  // PrettyVision Eyewear Products
+  if (f.includes("product") || l.includes("product") || l.includes("eyewear") || l.includes("frame")) {
+    return "🖥️ Desktop / 📱 Tablet / 📱 Mobile Product Card: 1000 × 1000 px (1:1 Square) or 800 × 1000 px (4:5 Editorial) • JPG/PNG/WebP";
+  }
+
+  // PrettyVision Collections (Explore Our Collections)
+  if (f.includes("collection") || l.includes("collection")) {
+    return "🖥️ Desktop & 📱 Mobile Collection Card: 800 × 1000 px (4:5 Editorial Portrait ratio) • High Fashion Eyewear";
+  }
+
+  // PrettyVision Categories (Shop By Type)
+  if (f.includes("categor") || l.includes("categor") || l.includes("type")) {
+    return "🖥️ Desktop & 📱 Mobile Category Card: 800 × 600 px (4:3 ratio) or 600 × 600 px (1:1) • Shop By Type";
+  }
+
+  // PrettyVision Services (Complete Eye Care)
+  if (f.includes("service") || l.includes("service") || l.includes("exam") || l.includes("fitting")) {
+    return "🖥️ Desktop & 📱 Mobile Service Card: 800 × 550 px (16:11 ratio) • Eye Exam & Clinical Photography";
+  }
+
+  // PrettyVision Store Location (Kalina Clinic)
+  if (f.includes("store") || l.includes("store") || l.includes("exterior") || l.includes("interior") || l.includes("clinic")) {
+    return "🖥️ Desktop & 📱 Mobile Storefront: 1200 × 800 px (3:2 ratio) • Exterior & Interior Store Showcase";
+  }
+
+  // PrettyVision Instagram Gallery & Media Items
+  if (f.includes("gallery") || l.includes("gallery") || l.includes("instagram") || l.includes("lifestyle")) {
+    return "🖥️ Desktop & 📱 Mobile Lifestyle: 1080 × 1080 px (1:1 Square ratio) • Instagram Lifestyle & Store Proof";
+  }
+
+  // Brand Identity / Logo / Favicon
+  if (f.includes("logo") || l.includes("logo")) {
+    return "🖥️ Desktop Header (52px height) & 📱 Mobile Header (44px height): 500 × 150 px • Transparent PNG or SVG";
+  }
+  if (f.includes("favicon") || l.includes("favicon")) {
+    return "🌐 Browser Tab Favicon: 64 × 64 px or 32 × 32 px • PNG or ICO";
+  }
+
   // Banners
   if (f.includes("banner") || l.includes("banner")) {
-    if (l.includes("desktop") || l.includes("laptop")) return "Recommended: 1920 × 1080 px (16:9 ratio) or 1920 × 800 px";
-    if (l.includes("tablet")) return "Recommended: 1200 × 800 px (3:2 ratio) or 1024 × 768 px (4:3 ratio)";
-    if (l.includes("mobile")) return "Recommended: 800 × 1000 px (4:5 ratio) or 750 × 1000 px (3:4 ratio)";
-    return "Recommended: 1920 × 1080 px (16:9 widescreen)";
+    if (l.includes("desktop") || l.includes("laptop")) return "🖥️ Desktop Screen (≥ 1024px): 1920 × 820 px (16:7 aspect) or 1920 × 1080 px";
+    if (l.includes("tablet")) return "📱 Tablet Screen (640px – 1023px): 1024 × 600 px (16:9.5 aspect) or 1200 × 800 px";
+    if (l.includes("mobile")) return "📱 Mobile Screen (< 640px): 750 × 1000 px (3:4 portrait) or 640 × 800 px";
+    return "🖥️ Full-Width Responsive Screen Banner: 1920 × 820 px (16:7 widescreen)";
   }
 
   // QR Codes
@@ -5938,8 +5997,8 @@ export const getMediaSizeRecommendation = (folder = "", label = "") => {
 
   // Videos
   if (f.includes("video") || l.includes("video")) {
-    if (l.includes("thumbnail") || l.includes("poster")) return "Recommended: 1280 × 720 px (16:9 widescreen)";
-    return "Recommended: 1080p (1920 × 1080) or 720p • MP4, WebM (Max 30MB)";
+    if (l.includes("thumbnail") || l.includes("poster")) return "🖥️ 16:9 Screen Thumbnail: 1280 × 720 px (16:9 widescreen)";
+    return "🖥️ 1080p Video: 1920 × 1080 px • MP4, WebM (Max 30MB)";
   }
 
   // PDFs & Handouts
@@ -5959,7 +6018,7 @@ export const getMediaSizeRecommendation = (folder = "", label = "") => {
 
   // Blogs
   if (f.includes("blog") || l.includes("blog")) {
-    return "Recommended: 1200 × 630 px (landscape ratio) • JPG, WebP";
+    return "🖥️ Editorial Article Cover: 1200 × 675 px (16:9 landscape) • JPG, WebP";
   }
 
   // Classes / Trips / Pilgrimages
@@ -5972,19 +6031,35 @@ export const getMediaSizeRecommendation = (folder = "", label = "") => {
 
   // Thumbnails generic
   if (l.includes("thumbnail")) {
-    return "Recommended: 1280 × 720 px (16:9 widescreen)";
+    return "🖥️ 16:9 Widescreen Thumbnail: 1280 × 720 px";
   }
 
-  return "";
+  return "Recommended Screen Size: 1200 × 800 px (High-resolution, web optimized)";
 };
 
 const FileField = ({ label, value, folder, accept, onChange, hint }) => {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
+  const [detectedDimensions, setDetectedDimensions] = useState(null);
   const sizeHint = hint || getMediaSizeRecommendation(folder, label);
 
-  const upload = async (file) => {
+  const handleFileChange = async (event) => {
+    const file = event.target.files?.[0];
     if (!file) return;
+
+    // Detect image dimensions
+    if (file.type.startsWith("image/")) {
+      const img = new window.Image();
+      img.onload = () => {
+        setDetectedDimensions({
+          width: img.naturalWidth,
+          height: img.naturalHeight,
+          kb: (file.size / 1024).toFixed(1)
+        });
+      };
+      img.src = URL.createObjectURL(file);
+    }
+
     setUploading(true);
     setError("");
     try {
@@ -5996,22 +6071,69 @@ const FileField = ({ label, value, folder, accept, onChange, hint }) => {
       setUploading(false);
     }
   };
+
+  const isImage = value && (typeof value === "string") && (value.match(/\.(jpg|jpeg|png|webp|svg|gif|avif)$/i) || value.startsWith("/uploads/"));
+
   return (
-    <label className="grid gap-2 rounded-xl border border-black/10 px-4 py-3 text-sm font-bold">
+    <div className="grid gap-2.5 rounded-2xl border border-black/10 p-4 text-sm font-bold bg-white shadow-2xs">
       <div className="flex flex-wrap items-center justify-between gap-1.5">
-        <span>{label}</span>
+        <span className="text-slate-800">{label}</span>
         {sizeHint && (
-          <span className="inline-flex items-center gap-1 rounded-md bg-amber-50 px-2 py-0.5 text-[11px] font-semibold text-amber-900 border border-amber-200/70">
-            📐 {sizeHint}
+          <span className="inline-flex items-center gap-1 rounded-md bg-sky-50 px-2.5 py-1 text-[11px] font-semibold text-sky-950 border border-sky-200">
+            {sizeHint}
           </span>
         )}
       </div>
-      <input type="file" accept={accept} onChange={(event) => upload(event.target.files?.[0])} className="text-sm font-normal" />
-      <input value={value || ""} onChange={(event) => onChange(event.target.value)} placeholder="Uploaded URL" className="rounded-lg border border-black/10 px-3 py-2 text-sm font-normal" />
-      {uploading && <span className="text-xs text-primary">Uploading...</span>}
-      {error && <span className="text-xs text-rose-600">{error}</span>}
-      {value && <a href={assetUrl(value)} target="_blank" rel="noreferrer" className="text-xs font-black text-primary">Preview uploaded file</a>}
-    </label>
+
+      <div className="flex flex-wrap items-center gap-3">
+        {isImage && (
+          <div className="h-12 w-16 shrink-0 rounded-lg overflow-hidden bg-slate-100 border border-black/10 relative">
+            <img src={assetUrl(value)} alt="" className="w-full h-full object-cover" />
+          </div>
+        )}
+        <div className="flex-1 flex items-center gap-2">
+          <input
+            type="file"
+            accept={accept}
+            onChange={handleFileChange}
+            className="text-xs text-slate-600 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-[#042041] file:text-white hover:file:bg-[#0B2A52] cursor-pointer"
+          />
+        </div>
+        {value && (
+          <button
+            type="button"
+            onClick={() => onChange("")}
+            className="text-xs font-bold text-rose-600 hover:text-rose-700 underline shrink-0"
+          >
+            Clear
+          </button>
+        )}
+      </div>
+
+      {detectedDimensions && (
+        <div className="flex items-center justify-between text-xs font-semibold text-emerald-800 bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-200">
+          <span className="flex items-center gap-1.5">
+            <span>✓ Auto-measured Screen Size:</span>
+            <strong className="font-mono text-emerald-950">{detectedDimensions.width} × {detectedDimensions.height} px</strong>
+            <span className="text-emerald-700">({detectedDimensions.kb} KB)</span>
+          </span>
+        </div>
+      )}
+
+      <input
+        value={value || ""}
+        onChange={(event) => onChange(event.target.value)}
+        placeholder="Uploaded media URL or paste asset link"
+        className="rounded-xl border border-black/10 px-3.5 py-2 text-xs font-normal"
+      />
+      {uploading && <span className="text-xs text-[#042041] font-bold animate-pulse">Uploading file to server...</span>}
+      {error && <span className="text-xs text-rose-600 font-bold">{error}</span>}
+      {value && (
+        <a href={assetUrl(value)} target="_blank" rel="noreferrer" className="text-xs font-bold text-[#042041] underline">
+          Preview uploaded media file ↗
+        </a>
+      )}
+    </div>
   );
 };
 
@@ -6866,34 +6988,27 @@ export const AdminCrud = ({ resource, title, teacherMode = false }) => {
             if (field === "videoType") return <label key={field} className="grid gap-1 text-xs font-black uppercase tracking-wide text-muted">Video source<select value={form[field] || "youtube"} onChange={(e) => setForm({ ...form, [field]: e.target.value })} className="rounded-xl border border-black/10 px-4 py-3 text-sm font-normal normal-case text-ink"><option value="youtube">Paste a YouTube or Vimeo link</option><option value="upload">Upload a video file</option></select></label>;
             /* The poster is optional: left blank it is taken from the video. */
             if (field === "thumbnail" && resource === "video-blogs") return (
-              <label key={field} className="grid gap-2 rounded-xl border border-black/10 px-4 py-3 text-sm font-bold">
-                <div className="flex flex-wrap items-center justify-between gap-1.5">
-                  <span>Thumbnail <span className="font-normal normal-case text-muted">— optional. Leave blank for video still.</span></span>
-                  <span className="inline-flex items-center gap-1 rounded-md bg-amber-50 px-2 py-0.5 text-[11px] font-semibold text-amber-900 border border-amber-200/70">
-                    📐 Recommended: 1280 × 720 px (16:9 widescreen)
-                  </span>
-                </div>
-                <input type="file" accept="image/jpeg,image/png,image/webp" onChange={(e) => handleFile(field, e.target.files?.[0])} />
-                <input value={form[field] || ""} onChange={(e) => setForm({ ...form, [field]: e.target.value })} placeholder="Auto from video" className="rounded-lg border border-black/10 px-3 py-2 text-sm font-normal" />
-                {form.thumbnail ? <button type="button" onClick={() => setForm({ ...form, thumbnail: "" })} className="justify-self-start rounded-lg border border-black/10 px-3 py-1.5 text-xs font-bold">Clear and use the video still</button> : null}
-              </label>
+              <FileField
+                key={field}
+                label="Video Thumbnail (Optional — blank uses video still)"
+                value={form[field]}
+                folder="video-blogs"
+                accept="image/jpeg,image/png,image/webp"
+                onChange={(url) => setForm({ ...form, [field]: url })}
+                hint="🖥️ 16:9 Screen Thumbnail: 1280 × 720 px (16:9 widescreen)"
+              />
             );
             if (type === "checkbox") return <label key={field} className="flex items-center gap-3 rounded-xl border border-black/10 px-4 py-3 text-sm font-bold"><input type="checkbox" checked={Boolean(form[field])} onChange={(e) => setForm({ ...form, [field]: e.target.checked })} />{label}</label>;
             if (type === "file") {
-              const sizeHint = getMediaSizeRecommendation(resource, field);
               return (
-                <label key={field} className="grid gap-2 rounded-xl border border-black/10 px-4 py-3 text-sm font-bold">
-                  <div className="flex flex-wrap items-center justify-between gap-1.5">
-                    <span>{label}</span>
-                    {sizeHint && (
-                      <span className="inline-flex items-center gap-1 rounded-md bg-amber-50 px-2 py-0.5 text-[11px] font-semibold text-amber-900 border border-amber-200/70">
-                        📐 {sizeHint}
-                      </span>
-                    )}
-                  </div>
-                  <input type="file" onChange={(e) => handleFile(field, e.target.files?.[0])} />
-                  <input value={form[field] || ""} onChange={(e) => setForm({ ...form, [field]: e.target.value })} placeholder="URL" className="rounded-lg border border-black/10 px-3 py-2 text-sm font-normal" />
-                </label>
+                <FileField
+                  key={field}
+                  label={label}
+                  value={form[field]}
+                  folder={resource}
+                  accept={field.toLowerCase().includes("video") ? "video/*" : "image/*"}
+                  onChange={(url) => setForm({ ...form, [field]: url })}
+                />
               );
             }
             if (type === "textarea") return <textarea key={field} value={form[field] || ""} onChange={(e) => setForm({ ...form, [field]: e.target.value })} placeholder={label} rows="4" className="rounded-xl border border-black/10 px-4 py-3 md:col-span-2" />;

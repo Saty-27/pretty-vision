@@ -1,106 +1,92 @@
-# ISKCON Juhu Self-Excellence
+# PrettyVision — Luxury Optical & Eyewear E-Commerce Platform
 
-A full-stack platform for spiritual education, pilgrimage booking and community
-programmes — built as one site with a public website, a student learning area, a
-teacher panel and an admin panel.
+A modern full-stack web application and content management system for **PrettyVision**, a premier optical showroom and optometry clinic based in Kalina, Mumbai with 33+ years of trusted eye care.
 
-## What it does
+---
 
-**Learning management**
-Courses built from lessons, with video (YouTube or direct upload), PDFs and
-attachments. Sequential lesson unlocking, free preview lessons, and watch
-tracking that records which intervals of a video were actually seen, so skipping
-ahead does not count as completion. Students keep notes pinned to a video
-timestamp and ask questions through a doubt box.
+## 🌟 Key Highlights & Features
 
-**Assessment**
-Question banks, an exam paper builder, assignment to students, timed attempts
-with every response recorded, automatic scoring, and certificate requests
-approved by the office.
+### 🛍️ E-Commerce & Optical Product Catalog
+- **Multi-Category Browsing**: Optical Frames, Sunglasses, Blue-Light Glasses, Sports Eyewear, Kids Eyewear, and Contact Lenses.
+- **Dynamic Filtering**: Filter by Gender / Target Audience (Men, Women, Kids, Unisex), Brand, Category, Frame Shape, Material, and Price.
+- **Product Details**: High-resolution image galleries, prescription options, frame dimensions, bridge/temple specifications, and live inventory status.
 
-**Enrolment and payment**
-Courses can be free, require a document check, or be paid. Payment is verified
-manually: the student uploads proof, an administrator approves or rejects with a
-reason, and access is granted server-side on approval.
+### 👓 Dynamic Content Management System (CMS)
+- **Homepage Section Management**: Enable, disable, reorder, or edit all 11 homepage sections live from the admin panel (Hero Banner, Trust Badges, Category Grid, Brand Showcase, Store Locator, Customer Reviews, etc.).
+- **About Us Dynamic Sections**: Fully admin-controlled 11-section editorial layout (Our Story, Why Choose PrettyVision, Optical Offerings, The PrettyVision Experience, Store Architecture, Interactive FAQs, and Final CTA).
+- **Service Management**: Public services directory with computerized eye examinations, precision prescription eyewear, contact lens trial fittings, pediatric care, and lens consultation.
 
-**Pilgrimages**
-Trips with unlimited itinerary days, photo galleries, inclusions and exclusions,
-FAQs and a trip guide PDF that unlocks only once a booking is confirmed. Seat
-counts are derived from confirmed bookings. Taxes are configurable (percentage
-or fixed, per booking or per traveller). Travellers pay by UPI, QR or bank
-transfer and upload a receipt.
+### 🛡️ Strict Validation & Data Integrity Rules
+- **Taxonomy Validation**: Enforces uniqueness, slug formatting, character length limits, and case-insensitive uniqueness across Categories, Brands, Product Types, and Target Audiences.
+- **Safe Deletion Guards**: Prevents accidental deletion of categories or brands with assigned products.
+- **Atomic Product Reassignment**: In-modal workflow to migrate all linked products to an alternative category/brand before deletion.
+- **Price Integrity**: Automatic verification ensuring sale prices never exceed standard retail prices.
 
-**Sunday classes**
-Listing and detail pages with the running order, what to expect, a photo gallery
-and a downloadable handout. Registrations land in the admin panel.
+### 🗺️ Dynamic SEO & Sitemap Generation
+- **Automated XML Sitemap**: Dynamically rebuilds `sitemap.xml` whenever products, brands, categories, services, or pages are created, modified, or deleted.
+- **Search Engine Directives**: Real-time `robots.txt` generation and AI search-ready `llms.txt`.
+- **JSON-LD Structured Data**: Rich local business schema for optometry clinic, physical store coordinates, operating hours, and breadcrumbs.
 
-**Support desk**
-A chat on every page for signed-in users, with an automatic first reply and
-hand-off to a course teacher or the office. Real-time over socket.io, with file
-attachments.
+---
 
-**Staff roles and accountability**
-Five role levels from owner to read-only, with view/create/edit/delete
-permissions set separately across thirty admin sections. Every change is logged
-with the record before and after; deletions restore in one click. Login sessions
-record device, browser and IP.
+## 🏗️ Architecture & Tech Stack
 
-## Stack
+- **Frontend**:
+  - React 18 with Vite
+  - Tailwind CSS for responsive styling
+  - Lucide React for modern iconography
+  - Dynamic routing with React Router v6
+- **Backend**:
+  - Node.js & Express
+  - MongoDB with Mongoose ODM
+  - RESTful API with unified admin and public routes
+  - Static asset serving for high-resolution photography
+- **Asset Pipeline**:
+  - Curated and AI-generated editorial photography tailored for luxury optical showrooms.
 
-- **Frontend** — React 18, Vite 6, React Router 7, Tailwind CSS 3
-- **Backend** — Node.js, Express, Socket.IO
-- **Database** — MongoDB with Mongoose
-- **Auth** — JWT with bcrypt password hashing
+---
 
-## Running locally
+## 🚀 Getting Started
 
-Requires Node.js 18+ and a running MongoDB instance.
+### Prerequisites
+- [Node.js](https://nodejs.org/) (v18+)
+- [MongoDB](https://www.mongodb.com/) (running locally or a remote MongoDB Atlas URI)
 
-```bash
-# backend
-cd backend
-cp .env.example .env     # then fill in real values
-npm install
-npm run dev              # http://localhost:5055
+### Installation
 
-# frontend (in a second terminal)
-cd frontend
-npm install
-npm run dev              # http://localhost:5173
-```
+1. **Clone the repository**:
+   ```bash
+   git clone https://github.com/Saty-27/pretty-vision.git
+   cd pretty-vision
+   ```
 
-### Configuration
+2. **Backend Setup**:
+   ```bash
+   cd backend
+   npm install
+   # Configure environment variables if needed in .env
+   node src/server.js
+   ```
+   *The API will start listening on `http://localhost:5055`.*
 
-Backend settings live in `backend/.env` — see `backend/.env.example` for the
-shape. `JWT_SECRET` must be a long random string in production: anyone holding
-it can mint valid tokens.
+3. **Frontend Setup**:
+   ```bash
+   cd ../frontend
+   npm install
+   npm run dev
+   ```
+   *The client application will start on `http://localhost:5173`.*
 
-## Repository layout
+---
 
-```
-backend/
-  src/
-    server.js     Express app, routes, socket handlers
-    models.js     Mongoose schemas
-    seed.js       Sample data
-frontend/
-  src/
-    pages.jsx     Public pages, dashboards, admin screens
-    components.jsx  Navbar, footer, layouts, shared UI
-    trips.jsx / tripDetail.jsx / adminTrips.jsx
-    classes.jsx / adminClasses.jsx
-    adminAccess.jsx   Staff roles, activity trail, sessions
-```
+## 📍 Store Location
+**PrettyVision Kalina**  
+Shop No 11, Agarwal Building, Market, opposite Nilesh Dryfruits,  
+Kolivery Village, Vidya Nagari, Kalina, Santacruz East,  
+Mumbai, Maharashtra 400098  
+Phone: `095940 30310`
 
-## Not included in this repository
+---
 
-User uploads (`backend/uploads/`) are excluded. They contain devotee payment
-receipts, enrolment documents and chat attachments, which are private records
-and do not belong in source control. `.env` files are excluded for the same
-reason.
-
-## Notes
-
-Email delivery is not yet configured — OTP codes are generated but not sent, and
-notifications are in-app only. Connecting a mail service is the main outstanding
-piece before production use.
+## 📄 License
+ISC License. Built for PrettyVision.

@@ -526,7 +526,7 @@ const StaffTab = ({ meta, notify }) => {
                   value={createForm.email}
                   onChange={(e) => setCreateForm({ ...createForm, email: e.target.value })}
                   className={input}
-                  placeholder="e.g. radhika@iskconselfexcellence.online"
+                  placeholder="e.g. staff@prettyvision.in"
                 />
               </label>
 

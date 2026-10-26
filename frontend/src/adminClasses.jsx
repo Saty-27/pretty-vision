@@ -270,7 +270,7 @@ export const AdminClassesPage = () => {
         <Card title="Main image" subtitle="Used on the class card and detail hero.">
           <div className="mb-3">
             <span className="inline-flex items-center gap-1 rounded-md bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-900 border border-amber-200/70">
-              📐 Recommended: 1200 × 800 px (3:2 ratio) or 1920 × 1080 px (16:9 ratio)
+              🖥️ Desktop & 📱 Mobile Card: 1200 × 800 px (3:2 ratio) or 1920 × 1080 px (16:9 ratio)
             </span>
           </div>
           <div className="flex flex-wrap items-start gap-4">
@@ -317,7 +317,7 @@ export const AdminClassesPage = () => {
 
         <Card
           title="Gallery"
-          subtitle="Photographs from previous sessions. Recommended: 1200 × 900 px (4:3 ratio) or 1200 × 800 px (3:2 ratio)."
+          subtitle="Photographs from previous sessions. 🖥️ & 📱 Screen Gallery: 1200 × 900 px (4:3 ratio) or 1200 × 800 px (3:2 ratio)."
           actions={
             <>
               <input ref={galleryInput} type="file" multiple accept=".jpg,.jpeg,.png,.webp" onChange={(e) => addGallery(e.target.files)} className="hidden" />

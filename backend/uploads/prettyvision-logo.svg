@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 64" fill="none">
+  <!-- Monogram Crest -->
+  <rect x="2" y="2" width="60" height="60" rx="10" fill="#042041" stroke="#0B2A52" stroke-width="1.5"/>
+  <text x="32" y="44" font-family="'Cormorant Garamond', 'Playfair Display', Georgia, serif" font-size="34" font-weight="700" fill="#FFFFFF" text-anchor="middle" letter-spacing="-1">PV</text>
+  
+  <!-- Wordmark -->
+  <text x="74" y="36" font-family="'Cormorant Garamond', 'Playfair Display', Georgia, serif" font-size="28" font-weight="700" fill="#042041" letter-spacing="-0.5">
+    Pretty<tspan font-weight="400">Vision</tspan>
+  </text>
+  
+  <!-- Tagline -->
+  <text x="75" y="52" font-family="'Plus Jakarta Sans', system-ui, sans-serif" font-size="8.5" font-weight="600" fill="#64748B" letter-spacing="0.8">
+    • OPTOMETRIST • OPTICIANS • CONTACT LENS CLINIC
+  </text>
+</svg>

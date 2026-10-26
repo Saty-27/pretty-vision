@@ -37,11 +37,69 @@ import {
   Instagram,
   Youtube,
   Linkedin,
-  Globe
+  Globe,
+  AlertTriangle,
+  Layers,
+  Calendar,
+  Glasses,
+  Gem,
+  Sparkles
 } from "lucide-react";
 import { apiFetch, assetUrl, trackPage, uploadFile } from "./api";
 import { footer as fallbackFooter } from "./fallback";
 import { useAuth } from "./AuthContext";
+import { useHomepageSections } from "./useHomepageSections";
+
+export const PageUnavailable = ({ pageName = "Page", sectionKey }) => {
+  const { user } = useAuth();
+  const isStaffUser = ["main_admin", "admin", "manager", "editor"].includes(user?.role);
+
+  return (
+    <section className="grid min-h-[65vh] place-items-center bg-soft/40 px-4 py-16 text-center">
+      <div className="max-w-md rounded-3xl bg-white p-8 shadow-premium border border-black/5 animate-scale-up">
+        <div className="mx-auto mb-5 grid h-16 w-16 place-items-center rounded-2xl bg-amber-100 text-amber-600">
+          <AlertTriangle size={32} />
+        </div>
+        <p className="mb-2 text-xs font-black uppercase tracking-wider text-amber-600">
+          Notice: Page Unavailable
+        </p>
+        <h1 className="text-2xl font-black text-ink">
+          {pageName} is Currently Inactive
+        </h1>
+        <p className="mt-3 text-xs font-semibold leading-relaxed text-muted">
+          This section has been temporarily disabled by the website administrator. Please check back later or explore other sections of our website.
+        </p>
+
+        {isStaffUser && sectionKey && (
+          <div className="mt-5 rounded-2xl bg-amber-50 p-3.5 text-left border border-amber-200/80">
+            <div className="flex items-center gap-2 text-xs font-black text-amber-900">
+              <span className="inline-block h-2 w-2 rounded-full bg-amber-500 animate-ping" />
+              Staff Notice
+            </div>
+            <p className="mt-1 text-[11px] font-medium text-amber-800">
+              This page is disabled on the entire website via Homepage Sections (<code className="font-mono font-bold">{sectionKey}</code>).
+            </p>
+            <Link
+              to="/admin/home-sections"
+              className="mt-2.5 inline-flex items-center gap-1.5 text-xs font-black text-primary hover:underline"
+            >
+              Configure in Admin Panel &rarr;
+            </Link>
+          </div>
+        )}
+
+        <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+          <Link
+            to="/"
+            className="rounded-full bg-primary px-6 py-2.5 text-xs font-black text-white hover:bg-primary/90 transition shadow-sm"
+          >
+            Back to Website
+          </Link>
+        </div>
+      </div>
+    </section>
+  );
+};
 
 export const SEO = ({ title = "ISKCON Juhu Self-Excellence", description = "A premium spiritual LMS for students and seekers." }) => (
   <Helmet>
@@ -92,13 +150,13 @@ export const EmptyState = ({ title = "Nothing here yet", subtitle = "Content add
 );
 
 const navClass = ({ isActive }) =>
-  `relative font-ui text-[15px] tracking-[0.005em] transition-colors duration-300 ${
+  `relative font-sans text-[16px] xl:text-[17px] font-bold tracking-[0.01em] transition-colors duration-300 ${
     isActive
-      ? "font-semibold text-primary after:absolute after:-bottom-2 after:left-1/2 after:h-[2px] after:w-5 after:-translate-x-1/2 after:rounded-full after:bg-primary after:content-['']"
-      : "font-medium text-heading hover:text-primary"
+      ? "font-extrabold text-[#06264A] after:absolute after:-bottom-2 after:left-1/2 after:h-[2.5px] after:w-6 after:-translate-x-1/2 after:rounded-full after:bg-[#06264A] after:content-['']"
+      : "text-slate-800 hover:text-[#06264A]"
   }`;
 
-export const BrandLogo = ({ logo = "/logo-black-header.png", tone = "light", compact = false, bare = false, tagline = "Self-Excellence" }) => {
+export const BrandLogo = ({ logo = "/pv_logo.png", tone = "light", compact = false, bare = false, tagline = "Optometrist • Opticians" }) => {
   const dark = tone === "dark";
   return (
     <span className="inline-flex items-center gap-3">
@@ -107,11 +165,23 @@ export const BrandLogo = ({ logo = "/logo-black-header.png", tone = "light", com
           bare ? "" : "rounded-xl bg-white p-1 shadow-sm"
         }`}
       >
-        <img src={assetUrl(logo || "/logo-black-header.png")} alt="" className="h-full w-full object-contain" />
+        <img
+          src={assetUrl(logo || "/pv_logo.png")}
+          alt="PrettyVision"
+          className="h-full w-full object-contain"
+          onError={(e) => {
+            e.target.onerror = null;
+            e.target.src = "/pv_logo.png";
+          }}
+        />
       </span>
       <span className="leading-tight">
-        <span className={`block font-ui text-[15px] font-bold tracking-tight ${dark ? "text-white" : "text-inkDeep"}`}>ISKCON Juhu</span>
-        <span className="block font-ui text-[11px] font-bold uppercase leading-tight tracking-[0.14em] text-saffron sm:text-[12px]">{tagline}</span>
+        <span className={`block font-serif text-[17px] font-bold tracking-tight ${dark ? "text-white" : "text-[#042041]"}`}>
+          PrettyVision
+        </span>
+        <span className={`block font-ui text-[10px] font-semibold tracking-wider ${dark ? "text-blue-200" : "text-slate-500"}`}>
+          {tagline}
+        </span>
       </span>
     </span>
   );
@@ -304,12 +374,12 @@ const DesktopNavDropdown = ({ label, sublinks }) => {
       onMouseLeave={() => setIsOpen(false)}
     >
       <button
-        className={`flex cursor-pointer items-center gap-1 py-1.5 font-ui text-[15px] tracking-[0.005em] outline-none transition-colors duration-300 ${
-          isAnyActive ? "font-semibold text-primary" : "font-medium text-heading hover:text-primary"
+        className={`flex cursor-pointer items-center gap-1.5 py-1.5 font-sans text-[16px] xl:text-[17px] font-bold tracking-[0.01em] outline-none transition-colors duration-300 ${
+          isAnyActive ? "font-extrabold text-[#06264A]" : "text-slate-800 hover:text-[#06264A]"
         }`}
       >
-        {label}
-        <ChevronDown size={16} className={`transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`} />
+        <span>{label}</span>
+        <ChevronDown size={17} strokeWidth={2.3} className={`transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`} />
       </button>
       
       <div
@@ -379,6 +449,7 @@ const MobileNavDropdown = ({ label, sublinks, closeMenu }) => {
 
 export const Navbar = () => {
   const { user, logout } = useAuth();
+  const { isPageEnabled } = useHomepageSections();
   const [open, setOpen] = useState(false);
   const [settings, setSettings] = useState(null);
   const [scrolled, setScrolled] = useState(false);
@@ -463,30 +534,40 @@ export const Navbar = () => {
   );
 
   const processedLinks = useMemo(() => {
-    return links.map((link) => {
+    const enriched = links.map((link) => {
       const labelLower = link.label?.toLowerCase() || "";
       const urlLower = link.url?.toLowerCase() || "";
       if (labelLower === "blogs" || urlLower === "/blogs" || urlLower === "/video-blogs") {
+        const sub = [
+          { label: "Blog Articles", url: "/blogs" },
+          { label: "Video Blogs", url: "/video-blogs" }
+        ].filter((s) => isPageEnabled(s.url));
+
         return {
           ...link,
-          sublinks: [
-            { label: "Blog Articles", url: "/blogs" },
-            { label: "Video Blogs", url: "/video-blogs" }
-          ]
+          sublinks: sub.length > 0 ? sub : undefined
         };
       }
       if (labelLower === "media" || urlLower.startsWith("/gallery")) {
+        const sub = [
+          { label: "Image Gallery", url: "/gallery/images" },
+          { label: "Video Gallery", url: "/gallery/videos" }
+        ].filter((s) => isPageEnabled(s.url));
+
         return {
           ...link,
-          sublinks: [
-            { label: "Image Gallery", url: "/gallery/images" },
-            { label: "Video Gallery", url: "/gallery/videos" }
-          ]
+          sublinks: sub.length > 0 ? sub : undefined
         };
       }
       return link;
     });
-  }, [links]);
+
+    return enriched.filter((link) => {
+      if (link.sublinks && link.sublinks.length > 0) return true;
+      if (link.url === "/" || link.url === "") return true;
+      return isPageEnabled(link.url);
+    });
+  }, [links, isPageEnabled]);
 
   const submitSearch = (event) => {
     event.preventDefault();
@@ -1496,42 +1577,25 @@ export const dashboardLinks = {
   ],
   main_admin: [
     { label: "Dashboard", url: "/admin/dashboard", icon: LayoutDashboard },
-    { label: "Profile", url: "/admin/dashboard?profile=true", icon: User },
-    { label: "Teacher Panel", url: "/teacher/dashboard", icon: GraduationCap },
-    { label: "Preachers / Teachers", url: "/admin/teachers", icon: Shield },
+    { label: "Homepage Sections", url: "/admin/homepage", icon: Layers },
+    { label: "About Us Page", url: "/admin/about", icon: FileText },
+    { label: "Eye Test Appointments", url: "/admin/appointments", icon: Calendar },
+    { label: "Product Categories", url: "/admin/categories", icon: Layers },
+    { label: "Eyewear Brands", url: "/admin/brands", icon: Gem },
+    { label: "Products / Catalogue", url: "/admin/products", icon: Glasses },
+    { label: "Services", url: "/admin/services", icon: Sparkles },
+    { label: "Hero Banners", url: "/admin/banners", icon: Image },
+    { label: "Gallery", url: "/admin/gallery", icon: Image },
+    { label: "Testimonials", url: "/admin/testimonials", icon: MessageSquare },
+    { label: "Store & Location", url: "/admin/store", icon: Compass },
+    { label: "Website Settings", url: "/admin/site-settings", icon: Settings },
+    { label: "Blogs", url: "/admin/blogs", icon: FileText },
+    { label: "Pages", url: "/admin/pages", icon: FileText },
     { label: "Users", url: "/admin/users", icon: Users },
-    { label: "Password Requests", url: "/admin/password-reset-requests", icon: KeyRound },
     { label: "Staff & Roles", url: "/admin/roles", icon: Shield },
     { label: "Activity Trail", url: "/admin/activity-log", icon: Clock },
     { label: "Login Sessions", url: "/admin/sessions", icon: Shield },
-    { label: "Hero Banners", url: "/admin/banners", icon: Image },
-    { label: "Home Sections", url: "/admin/home-sections", icon: Home },
-    { label: "About Sections", url: "/admin/about-sections", icon: FileText },
-    { label: "Pages", url: "/admin/pages", icon: FileText },
-    { label: "Testimonials", url: "/admin/testimonials", icon: MessageSquare },
-    { label: "Courses", url: "/admin/courses", icon: BookOpen },
-    { label: "Question Paper Maker", url: "/admin/question-paper-maker", icon: BookOpen },
-    { label: "Enrollment Requests", url: "/admin/course-requests", icon: UserCheck },
-    { label: "Books", url: "/admin/books", icon: BookOpen },
-    { label: "Book Orders", url: "/admin/book-orders", icon: CheckCircle2 },
-    { label: "Book Payment Settings", url: "/admin/book-payment-settings", icon: Settings },
-    { label: "Upcoming Journeys", url: "/admin/journeys", icon: Compass },
-    { label: "Trips", url: "/admin/pilgrimages", icon: Image },
-    { label: "Pilgrimage Bookings", url: "/admin/pilgrimage-bookings", icon: UserCheck },
-    { label: "Booking Taxes", url: "/admin/booking-taxes", icon: FileText },
-    { label: "Upcoming Classes", url: "/admin/upcoming-classes", icon: FileText },
-    { label: "Visionaries Info", url: "/admin/visionaries", icon: Users },
-    { label: "Video Intro", url: "/admin/video-intro", icon: PlayCircle },
-    { label: "Blogs", url: "/admin/blogs", icon: MessageSquare },
-    { label: "Video Blogs", url: "/admin/video-blogs", icon: PlayCircle },
-    { label: "Image Gallery", url: "/admin/media/images", icon: Image },
-    { label: "Video Gallery", url: "/admin/media/videos", icon: PlayCircle },
-    { label: "Subscribers", url: "/admin/subscribers", icon: Users },
-    { label: "Contact & Messages", url: "/admin/contact", icon: MessageSquare },
-    { label: "Comments", url: "/admin/comments", icon: MessageSquare },
-    { label: "Chat Moderation", url: "/admin/chat", icon: MessageSquare },
-    { label: "Notifications", url: "/admin/notifications", icon: Bell },
-    { label: "Footer", url: "/admin/footer", icon: FileText },
+    { label: "Traffic", url: "/admin/traffic", icon: LayoutDashboard },
     { label: "Legal Pages", url: "/admin/legal-pages", icon: Shield },
     { label: "Site Settings", url: "/admin/site-settings", icon: Settings },
     { label: "Asset Manager", url: "/admin/assets", icon: FileText },
@@ -1559,6 +1623,7 @@ const sectionOf = (url = "") => {
     visionaries: "visionaries",
     "video-intro": "home-sections",
     "home-sections": "home-sections",
+    about: "about-sections",
     "about-sections": "about-sections",
     dashboard: "dashboard",
     roles: "roles",

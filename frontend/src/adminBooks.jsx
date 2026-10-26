@@ -442,7 +442,7 @@ export const AdminBooksPage = () => {
                     <div className="flex flex-wrap items-center justify-between gap-1">
                       <label className={labelClass}>Cover Image URL or File Upload</label>
                       <span className="inline-flex items-center gap-1 rounded-md bg-amber-50 px-2 py-0.5 text-[10px] font-semibold text-amber-900 border border-amber-200/70">
-                        📐 Recommended: 600 × 900 px (2:3 book portrait) or 800 × 1200 px
+                        🖥️ Desktop & 📱 Mobile Book Card: 600 × 900 px (2:3 portrait) or 800 × 1200 px
                       </span>
                     </div>
                     <input
@@ -1388,7 +1388,7 @@ export const AdminBookPaymentSettingsPage = () => {
                     <div className="flex flex-wrap items-center justify-between gap-1 mb-1">
                       <label className={labelClass}>Payment QR Code Image</label>
                       <span className="inline-flex items-center gap-1 rounded-md bg-amber-50 px-2 py-0.5 text-[10px] font-semibold text-amber-900 border border-amber-200/70">
-                        📐 Recommended: 500 × 500 px (1:1 square ratio) • High contrast JPG or PNG
+                        📱 Mobile & 🖥️ Screen QR: 500 × 500 px (1:1 square ratio) • High contrast JPG or PNG
                       </span>
                     </div>
                     <input

@@ -72,6 +72,18 @@ import {
   Book,
   BookOrder,
   BookPaymentSetting,
+  FeatureHighlight,
+  Collection,
+  Category,
+  Brand,
+  Product,
+  ProductType,
+  TargetAudience,
+  Service,
+  StoreLocation,
+  GalleryItem,
+  NavigationItem,
+  Appointment,
   modelRegistry
 } from "./models.js";
 import { booksRouter, attachProtectedBookRoutes, attachAdminBookRoutes } from "./booksRoutes.js";
@@ -344,6 +356,7 @@ const isFullAdmin = (user) => Boolean(user && (user.role === "main_admin" || use
 const ADMIN_SECTIONS = [
   "dashboard", "users", "roles", "activity-log", "sessions",
   "banners", "home-sections", "about-sections", "pages",
+  "categories", "brands", "products", "product-types", "target-audiences",
   "courses", "lessons", "course-requests", "exams",
   "journeys", "trips", "trip-bookings", "booking-taxes", "upcoming-classes",
   "visionaries", "teachers", "blogs", "video-blogs", "media",
@@ -355,6 +368,11 @@ const ADMIN_SECTIONS = [
 
 /* Canonical Section Aliases mapping API resources and routes to section keys */
 const SECTION_ALIASES = {
+  categories: "categories",
+  brands: "brands",
+  products: "products",
+  "product-types": "product-types",
+  "target-audiences": "target-audiences",
   journeys: "journeys",
   pilgrimages: "trips",
   trips: "trips",
@@ -691,6 +709,7 @@ const upload = multer({
   }
 });
 app.use("/uploads", express.static(uploadRoot));
+app.use(express.static(uploadRoot));
 
 app.use((req, res, next) => {
   if (req.method === "GET" && !req.originalUrl.startsWith("/api/admin") && !req.originalUrl.startsWith("/uploads")) {
@@ -1216,14 +1235,780 @@ app.get("/api/contact-settings", asyncHandler(async (req, res) => {
   }
   res.json({ success: true, settings });
 }));
+/* ============================================================
+   Homepage Section Visibility & CMS Registry
+   ------------------------------------------------------------
+   Allows admins to enable/disable homepage sections independently:
+   1. Enabled Everywhere (Visible on homepage & active on website)
+   2. Homepage Disabled (Hidden from homepage, active on website/navbar)
+   3. Completely Disabled (Hidden from homepage, navbar, and route shows 404)
+   ============================================================ */
+
+import { DEFAULT_HOMEPAGE_SECTIONS } from "./homepageSectionsConfig.js";
+import { DEFAULT_ABOUT_SECTIONS } from "./aboutSectionsConfig.js";
+export { DEFAULT_HOMEPAGE_SECTIONS, DEFAULT_ABOUT_SECTIONS };
+
+export const getMergedAboutSections = async () => {
+  const dbSections = await PageSection.find({ pageName: "about" }).lean();
+  const dbMap = new Map(dbSections.map((s) => [s.sectionKey, s]));
+
+  const merged = DEFAULT_ABOUT_SECTIONS.map((def) => {
+    const fromDb = dbMap.get(def.sectionKey);
+    if (!fromDb) {
+      return { ...def };
+    }
+    return {
+      ...def,
+      ...fromDb,
+      _id: fromDb._id,
+      sectionName: def.sectionName,
+      routePath: def.routePath,
+      navLabel: def.navLabel,
+      sortOrder: typeof fromDb.sortOrder === "number" ? fromDb.sortOrder : def.sortOrder,
+      status: fromDb.status || (fromDb.websiteEnabled !== false ? "active" : "inactive"),
+      websiteEnabled: typeof fromDb.websiteEnabled === "boolean" ? fromDb.websiteEnabled : (fromDb.status !== "inactive"),
+      sectionTitle: fromDb.sectionTitle !== undefined ? fromDb.sectionTitle : def.sectionTitle,
+      sectionSubtitle: fromDb.sectionSubtitle !== undefined ? fromDb.sectionSubtitle : def.sectionSubtitle,
+      description: fromDb.description !== undefined ? fromDb.description : def.description,
+      content: { ...(def.content || {}), ...(fromDb.content || {}) }
+    };
+  });
+
+  return merged.sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
+};
+
+export const getMergedHomepageSections = async () => {
+  const dbSections = await PageSection.find({ pageName: "home" }).lean();
+  const dbMap = new Map(dbSections.map((s) => [s.sectionKey, s]));
+
+  const merged = DEFAULT_HOMEPAGE_SECTIONS.map((def) => {
+    const fromDb = dbMap.get(def.sectionKey);
+    if (!fromDb) {
+      return { ...def };
+    }
+    return {
+      ...def,
+      ...fromDb,
+      _id: fromDb._id,
+      sectionName: def.sectionName,
+      routePath: def.routePath,
+      navLabel: def.navLabel,
+      sortOrder: typeof fromDb.sortOrder === "number" ? fromDb.sortOrder : def.sortOrder,
+      homepageVisible: typeof fromDb.homepageVisible === "boolean" ? fromDb.homepageVisible : (fromDb.status !== "inactive"),
+      websiteEnabled: typeof fromDb.websiteEnabled === "boolean" ? fromDb.websiteEnabled : true,
+      sectionTitle: fromDb.sectionTitle || def.sectionTitle,
+      sectionSubtitle: fromDb.sectionSubtitle || def.sectionSubtitle,
+      description: fromDb.description || def.description,
+      content: { ...(def.content || {}), ...(fromDb.content || {}) }
+    };
+  });
+
+  return merged.sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
+};
+
+// Public: Get all homepage sections with visibility status
+app.get("/api/homepage-sections", asyncHandler(async (req, res) => {
+  const items = await getMergedHomepageSections();
+  res.json({ success: true, items, sections: items });
+}));
+
+// Public aggregated homepage data endpoint
+app.get("/api/homepage", asyncHandler(async (req, res) => {
+  const [
+    allSections,
+    banners,
+    highlights,
+    collections,
+    categories,
+    brands,
+    services,
+    store,
+    gallery,
+    blogs,
+    testimonials,
+    siteSettings,
+    footerSettings,
+    navigationItems
+  ] = await Promise.all([
+    getMergedHomepageSections(),
+    HeroBanner.find({ isActive: true }).sort({ order: 1 }).lean(),
+    FeatureHighlight.find({ isActive: true }).sort({ order: 1 }).lean(),
+    Collection.find({ isActive: true }).sort({ order: 1 }).lean(),
+    Category.find({ isActive: true }).sort({ order: 1 }).lean(),
+    Brand.find({ isActive: true }).sort({ order: 1 }).lean(),
+    Service.find({ isActive: true }).sort({ order: 1 }).lean(),
+    StoreLocation.findOne({ isActive: true }).lean(),
+    GalleryItem.find({ isActive: true }).sort({ order: 1 }).lean(),
+    Blog.find({ status: { $in: ["published", "active"] } }).sort({ createdAt: -1 }).limit(4).lean(),
+    Testimonial.find({ status: { $in: ["approved", "active"] } }).sort({ sortOrder: 1, createdAt: -1 }).limit(10).lean(),
+    SiteSetting.findOne({ singletonKey: "site" }).lean(),
+    FooterSetting.findOne({ singletonKey: "footer" }).lean(),
+    NavigationItem.find({ isActive: true }).sort({ order: 1 }).lean()
+  ]);
+
+  const activeSections = allSections.filter((s) => s.homepageVisible !== false && s.websiteEnabled !== false);
+
+  res.json({
+    success: true,
+    sections: activeSections,
+    allSections,
+    banners,
+    highlights,
+    collections,
+    categories,
+    brands,
+    services,
+    store: store || {
+      name: "Pretty Vision Kalina",
+      address: "Shop No 11, Agarwal Building, Market, opposite Nilesh Dryfruits, Kolivery Village, Vidya Nagari, Kalina, Santacruz East, Mumbai, Maharashtra 400098",
+      phone: "095940 30310",
+      hours: "Mon – Sat: 10:00 AM – 9:30 PM | Sun: 11:00 AM – 8:00 PM",
+      mapEmbedUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3770.835948956972!2d72.8596646!3d19.0709405!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3be7c8e0a3f81e35%3A0xc3b09dc69fb4d23!2sPretty%20Vision!5e0!3m2!1sen!2sin!4v1700000000000!5m2!1sen!2sin"
+    },
+    gallery,
+    blogs,
+    testimonials,
+    siteSettings,
+    footerSettings,
+    navigation: navigationItems
+  });
+}));
+
+// Public Navigation endpoint
+app.get("/api/navigation", asyncHandler(async (req, res) => {
+  const items = await NavigationItem.find({ isActive: true }).sort({ order: 1 }).lean();
+  res.json({ success: true, items });
+}));
+
+// Public Site & Footer Settings endpoint
+app.get("/api/settings", asyncHandler(async (req, res) => {
+  const [site, footer] = await Promise.all([
+    SiteSetting.findOne({ singletonKey: "site" }).lean(),
+    FooterSetting.findOne({ singletonKey: "footer" }).lean()
+  ]);
+  res.json({ success: true, site, footer });
+}));
+
+// Public Appointment booking (Book Eye Test)
+app.post("/api/appointments", asyncHandler(async (req, res) => {
+  const { name, phone, email, preferredDate, preferredTime, serviceRequested, message } = req.body;
+  if (!name || !phone) {
+    return res.status(400).json({ success: false, message: "Name and Phone number are required." });
+  }
+
+  const appointment = await Appointment.create({
+    name: name.trim(),
+    phone: phone.trim(),
+    email: email ? email.trim() : "",
+    preferredDate: preferredDate || "",
+    preferredTime: preferredTime || "",
+    serviceRequested: serviceRequested || "Comprehensive Eye Examination",
+    message: message || ""
+  });
+
+  res.status(201).json({
+    success: true,
+    message: "Thank you! Your eye test appointment request has been received. Our team will contact you shortly to confirm.",
+    appointment
+  });
+}));
+
+// Admin appointment status update
+app.patch("/api/admin/appointments/:id/status", protect, requireSectionPermission("contact-messages", "edit"), asyncHandler(async (req, res) => {
+  const { status, adminNotes } = req.body;
+  const update = {};
+  if (status) update.status = status;
+  if (adminNotes !== undefined) update.adminNotes = adminNotes;
+
+  const item = await Appointment.findByIdAndUpdate(req.params.id, { $set: update }, { new: true });
+  if (!item) return res.status(404).json({ success: false, message: "Appointment not found" });
+  res.json({ success: true, item });
+}));
+
+// Admin: Reorder sections
+app.put("/api/admin/homepage-sections/reorder", protect, requireSectionPermission("home-sections", "edit"), asyncHandler(async (req, res) => {
+  const { orderedKeys } = req.body;
+  if (!Array.isArray(orderedKeys)) {
+    return res.status(400).json({ success: false, message: "orderedKeys array is required" });
+  }
+
+  for (let i = 0; i < orderedKeys.length; i++) {
+    const key = orderedKeys[i];
+    await PageSection.findOneAndUpdate(
+      { pageName: "home", sectionKey: key },
+      { $set: { sortOrder: i + 1 } },
+      { upsert: true, new: true, setDefaultsOnInsert: true }
+    );
+  }
+
+  const items = await getMergedHomepageSections();
+  res.json({ success: true, items, message: "Homepage sections reordered successfully." });
+}));
+
+// Admin: Update section content / text
+app.put("/api/admin/homepage-sections/:key", protect, requireSectionPermission("home-sections", "edit"), asyncHandler(async (req, res) => {
+  const { key } = req.params;
+  const def = DEFAULT_HOMEPAGE_SECTIONS.find((s) => s.sectionKey === key);
+  if (!def) {
+    return res.status(404).json({ success: false, message: `Unknown section key: ${key}` });
+  }
+
+  const { sectionTitle, sectionSubtitle, description, content, sortOrder, homepageVisible, websiteEnabled } = req.body;
+  const updateData = {};
+  if (sectionTitle !== undefined) updateData.sectionTitle = sectionTitle;
+  if (sectionSubtitle !== undefined) updateData.sectionSubtitle = sectionSubtitle;
+  if (description !== undefined) updateData.description = description;
+  if (content !== undefined) updateData.content = content;
+  if (sortOrder !== undefined) updateData.sortOrder = Number(sortOrder);
+  if (homepageVisible !== undefined) updateData.homepageVisible = Boolean(homepageVisible);
+  if (websiteEnabled !== undefined) updateData.websiteEnabled = Boolean(websiteEnabled);
+
+  const updated = await PageSection.findOneAndUpdate(
+    { pageName: "home", sectionKey: key },
+    { $set: updateData },
+    { upsert: true, new: true, setDefaultsOnInsert: true }
+  );
+
+  if (key === "store_visit" && content) {
+    await StoreLocation.findOneAndUpdate(
+      {},
+      {
+        $set: {
+          name: content.storeName || sectionTitle || "PRETTY VISION KALINA",
+          eyebrow: content.eyebrow || sectionSubtitle || "VISIT OUR STORE",
+          address: content.address || description,
+          phone: content.phone || "095940 30310",
+          hours: content.hours || "Monday – Saturday: 10:00 AM – 9:30 PM\nSunday: 11:00 AM – 8:00 PM",
+          interiorImage: content.interiorImage || "/store_interior_ref.png",
+          exteriorImage: content.exteriorImage || "/store_exterior_ref.png",
+          button1Text: content.button1Text || "Get Directions",
+          button1Url: content.button1Link || "https://maps.google.com/?q=Pretty+Vision+Kalina+Mumbai",
+          button2Text: content.button2Text || "095940 30310",
+          button2Url: content.button2Link || "tel:09594030310",
+          directionsUrl: content.button1Link || "https://maps.google.com/?q=Pretty+Vision+Kalina+Mumbai",
+          isActive: true,
+          status: "active"
+        }
+      },
+      { upsert: true }
+    );
+  }
+
+  const items = await getMergedHomepageSections();
+  res.json({ success: true, item: updated, items, message: `${def.sectionName} updated.` });
+}));
+
+// Public Products catalogue
+app.get("/api/products", asyncHandler(async (req, res) => {
+  const { category, brand, gender, targetAudience, productType, search, featured, sort } = req.query;
+  const filter = { isActive: true };
+
+  if (category && category !== "all") {
+    const catDoc = await Category.findOne({
+      $or: [
+        { slug: String(category).toLowerCase() },
+        { title: new RegExp(`^${category}$`, "i") },
+        { name: new RegExp(`^${category}$`, "i") }
+      ]
+    }).lean();
+
+    if (catDoc) {
+      const catTitle = catDoc.title || catDoc.name;
+      filter.$and = filter.$and || [];
+      filter.$and.push({
+        $or: [
+          { category: new RegExp(`^${catTitle}$`, "i") },
+          { category: new RegExp(`^${catDoc.slug}$`, "i") }
+        ]
+      });
+    } else {
+      filter.category = new RegExp(`^${category}$`, "i");
+    }
+  }
+
+  if (brand && brand !== "all") {
+    const brandDoc = await Brand.findOne({
+      $or: [
+        { slug: String(brand).toLowerCase() },
+        { name: new RegExp(`^${brand}$`, "i") }
+      ]
+    }).lean();
+
+    if (brandDoc) {
+      filter.brand = new RegExp(`^${brandDoc.name}$`, "i");
+    } else {
+      filter.brand = new RegExp(`^${brand}$`, "i");
+    }
+  }
+
+  const audienceFilter = targetAudience || gender;
+  if (audienceFilter && audienceFilter !== "all") {
+    filter.$and = filter.$and || [];
+    filter.$and.push({
+      $or: [
+        { targetAudience: new RegExp(`^${audienceFilter}$`, "i") },
+        { gender: new RegExp(`^${audienceFilter}$`, "i") }
+      ]
+    });
+  }
+
+  if (productType && productType !== "all") {
+    filter.productType = new RegExp(`^${productType}$`, "i");
+  }
+
+  if (featured === "true") {
+    filter.isFeatured = true;
+  }
+
+  if (search) {
+    const regex = new RegExp(search, "i");
+    const searchConditions = [
+      { name: regex },
+      { brand: regex },
+      { category: regex },
+      { shortDescription: regex },
+      { frameType: regex },
+      { lensType: regex }
+    ];
+    filter.$and = filter.$and || [];
+    filter.$and.push({ $or: searchConditions });
+  }
+
+  let query = Product.find(filter);
+  if (sort === "price-asc") query = query.sort({ price: 1 });
+  else if (sort === "price-desc") query = query.sort({ price: -1 });
+  else query = query.sort({ order: 1, createdAt: -1 });
+
+  const items = await query.lean();
+  res.json({ success: true, items, count: items.length });
+}));
+
+// Public Product by Slug
+app.get("/api/products/:slug", asyncHandler(async (req, res) => {
+  const product = await Product.findOne({ slug: req.params.slug, isActive: true }).lean();
+  if (!product) return res.status(404).json({ success: false, message: "Product not found" });
+
+  const related = await Product.find({
+    isActive: true,
+    _id: { $ne: product._id },
+    $or: [{ category: product.category }, { brand: product.brand }]
+  }).limit(4).lean();
+
+  res.json({ success: true, product, related });
+}));
+
+// Public Categories list
+app.get("/api/categories", asyncHandler(async (req, res) => {
+  const { type } = req.query;
+  const filter = { isActive: true };
+  if (type && type !== "all") filter.categoryType = new RegExp(`^${type}$`, "i");
+  const items = await Category.find(filter).sort({ order: 1, createdAt: 1 }).lean();
+  res.json({ success: true, items, count: items.length });
+}));
+
+// Public Category by Slug with available brands and audiences
+app.get("/api/categories/:slug", asyncHandler(async (req, res) => {
+  const category = await Category.findOne({ slug: req.params.slug, isActive: true }).lean();
+  if (!category) return res.status(404).json({ success: false, message: "Category not found" });
+
+  const catName = category.title || category.name;
+  const catRegex = new RegExp(`^(${catName}|${category.slug})$`, "i");
+
+  const products = await Product.find({ category: catRegex, isActive: true }).sort({ order: 1, createdAt: -1 }).lean();
+
+  const distinctBrandNames = [...new Set(products.map((p) => p.brand).filter(Boolean))];
+  const availableBrands = await Brand.find({
+    name: { $in: distinctBrandNames.map((n) => new RegExp(`^${n}$`, "i")) },
+    isActive: true
+  }).sort({ order: 1 }).lean();
+
+  const distinctAudiences = [...new Set(products.map((p) => p.targetAudience || p.gender).filter(Boolean))];
+
+  res.json({
+    success: true,
+    category,
+    products,
+    count: products.length,
+    availableBrands,
+    availableAudiences: distinctAudiences
+  });
+}));
+
+// Public Taxonomy (Categories, Brands, Types, Audiences) in one fast endpoint
+app.get("/api/taxonomy", asyncHandler(async (req, res) => {
+  const [categories, brands, productTypes, targetAudiences] = await Promise.all([
+    Category.find({ isActive: true }).sort({ order: 1 }).lean(),
+    Brand.find({ isActive: true }).sort({ order: 1 }).lean(),
+    ProductType.find({ isActive: true }).sort({ order: 1 }).lean(),
+    TargetAudience.find({ isActive: true }).sort({ order: 1 }).lean()
+  ]);
+
+  res.json({
+    success: true,
+    categories: categories.map((c) => ({
+      _id: c._id,
+      name: c.title || c.name,
+      title: c.title || c.name,
+      slug: c.slug,
+      categoryType: c.categoryType || "Eyewear",
+      targetAudiences: c.targetAudiences || [],
+      image: c.image,
+      subtitle: c.subtitle,
+      description: c.description,
+      order: c.order,
+      isFeatured: c.isFeatured
+    })),
+    brands: brands.map((b) => ({
+      _id: b._id,
+      name: b.name,
+      slug: b.slug,
+      logo: b.logo,
+      brandImage: b.brandImage || b.bannerImage,
+      description: b.description,
+      isFeatured: b.isFeatured,
+      order: b.order
+    })),
+    productTypes: productTypes.length > 0 ? productTypes : [
+      { name: "Eyewear", slug: "eyewear" },
+      { name: "Lenses", slug: "lenses" },
+      { name: "Accessories", slug: "accessories" },
+      { name: "Eye Care & Clinic", slug: "eye-care" }
+    ],
+    targetAudiences: targetAudiences.length > 0 ? targetAudiences : [
+      { name: "Men", slug: "men" },
+      { name: "Women", slug: "women" },
+      { name: "Unisex", slug: "unisex" },
+      { name: "Kids", slug: "kids" },
+      { name: "Boys", slug: "boys" },
+      { name: "Girls", slug: "girls" },
+      { name: "Seniors", slug: "seniors" },
+      { name: "Teenagers", slug: "teenagers" }
+    ]
+  });
+}));
+
+// Public Product Types
+app.get("/api/product-types", asyncHandler(async (req, res) => {
+  const items = await ProductType.find({ isActive: true }).sort({ order: 1 }).lean();
+  res.json({ success: true, items });
+}));
+
+// Public Target Audiences
+app.get("/api/target-audiences", asyncHandler(async (req, res) => {
+  const items = await TargetAudience.find({ isActive: true }).sort({ order: 1 }).lean();
+  res.json({ success: true, items });
+}));
+
+// Public Brands list
+app.get("/api/brands", asyncHandler(async (req, res) => {
+  const items = await Brand.find({ isActive: true }).sort({ order: 1 }).lean();
+  res.json({ success: true, items });
+}));
+
+// Public Brand by Slug
+app.get("/api/brands/:slug", asyncHandler(async (req, res) => {
+  const brand = await Brand.findOne({ slug: req.params.slug, isActive: true }).lean();
+  if (!brand) return res.status(404).json({ success: false, message: "Brand not found" });
+
+  const products = await Product.find({ brand: new RegExp(`^${brand.name}$`, "i"), isActive: true }).lean();
+  res.json({ success: true, brand, products });
+}));
+
+// Public Services list
+app.get("/api/services", asyncHandler(async (req, res) => {
+  const items = await Service.find({ isActive: true }).sort({ order: 1 }).lean();
+  res.json({ success: true, items });
+}));
+
+// Public Service by Slug
+app.get("/api/services/:slug", asyncHandler(async (req, res) => {
+  const service = await Service.findOne({ slug: req.params.slug, isActive: true }).lean();
+  if (!service) return res.status(404).json({ success: false, message: "Service not found" });
+  res.json({ success: true, service });
+}));
+
+// Public Collections list
+app.get("/api/collections", asyncHandler(async (req, res) => {
+  const items = await Collection.find({ isActive: true }).sort({ order: 1 }).lean();
+  res.json({ success: true, items });
+}));
+
+// Admin: Reorder Categories
+app.put("/api/admin/categories/reorder", protect, requireSectionPermission("categories", "edit"), asyncHandler(async (req, res) => {
+  const { orderedIds } = req.body;
+  if (!Array.isArray(orderedIds)) {
+    return res.status(400).json({ success: false, message: "orderedIds array required." });
+  }
+  for (let i = 0; i < orderedIds.length; i++) {
+    await Category.findByIdAndUpdate(orderedIds[i], { order: i + 1 });
+  }
+  const items = await Category.find().sort({ order: 1 }).lean();
+  res.json({ success: true, items, message: "Categories reordered successfully." });
+}));
+
+// Admin: Reorder Brands
+app.put("/api/admin/brands/reorder", protect, requireSectionPermission("brands", "edit"), asyncHandler(async (req, res) => {
+  const { orderedIds } = req.body;
+  if (!Array.isArray(orderedIds)) {
+    return res.status(400).json({ success: false, message: "orderedIds array required." });
+  }
+  for (let i = 0; i < orderedIds.length; i++) {
+    await Brand.findByIdAndUpdate(orderedIds[i], { order: i + 1 });
+  }
+  const items = await Brand.find().sort({ order: 1 }).lean();
+  res.json({ success: true, items, message: "Brands reordered successfully." });
+}));
+
+// Admin: Toggle homepage section visibility (Option 1: Homepage Only vs Option 2: Entire Website)
+app.put("/api/admin/homepage-sections/:key/visibility", protect, requireSectionPermission("home-sections", "edit"), asyncHandler(async (req, res) => {
+  const { key } = req.params;
+  const def = DEFAULT_HOMEPAGE_SECTIONS.find((s) => s.sectionKey === key);
+  if (!def) {
+    return res.status(404).json({ success: false, message: `Unknown section key: ${key}` });
+  }
+
+  const { homepageVisible, websiteEnabled } = req.body;
+  if (typeof homepageVisible !== "boolean" || typeof websiteEnabled !== "boolean") {
+    return res.status(400).json({ success: false, message: "homepageVisible and websiteEnabled boolean values are required." });
+  }
+
+  const updated = await PageSection.findOneAndUpdate(
+    { pageName: "home", sectionKey: key },
+    {
+      $set: {
+        pageName: "home",
+        sectionKey: key,
+        sectionName: def.sectionName,
+        routePath: def.routePath,
+        navLabel: def.navLabel,
+        homepageVisible,
+        websiteEnabled,
+        status: websiteEnabled ? "active" : "inactive"
+      },
+      $setOnInsert: {
+        sectionTitle: def.sectionTitle,
+        sectionSubtitle: def.sectionSubtitle,
+        sortOrder: def.sortOrder
+      }
+    },
+    { upsert: true, new: true, setDefaultsOnInsert: true }
+  );
+
+  let stateLabel = "Enabled Everywhere";
+  if (!websiteEnabled) stateLabel = "Completely Disabled from Website";
+  else if (!homepageVisible) stateLabel = "Disabled from Homepage Only";
+
+  await recordActivity(req, {
+    action: "update",
+    section: "home-sections",
+    resource: "home-sections",
+    resourceId: String(updated._id),
+    label: `${def.sectionName} visibility -> ${stateLabel}`,
+    after: updated.toObject ? updated.toObject() : updated
+  });
+
+  res.json({
+    success: true,
+    item: {
+      ...def,
+      ...updated.toObject(),
+      homepageVisible,
+      websiteEnabled
+    },
+    message: `${def.sectionName} is now ${stateLabel}.`
+  });
+}));
+
+// Admin: Batch update visibility
+app.put("/api/admin/homepage-sections/batch-visibility", protect, requireSectionPermission("home-sections", "edit"), asyncHandler(async (req, res) => {
+  const { sections } = req.body;
+  if (!Array.isArray(sections)) {
+    return res.status(400).json({ success: false, message: "sections array is required." });
+  }
+
+  for (const s of sections) {
+    if (!s.sectionKey) continue;
+    const def = DEFAULT_HOMEPAGE_SECTIONS.find((d) => d.sectionKey === s.sectionKey);
+    if (!def) continue;
+
+    await PageSection.findOneAndUpdate(
+      { pageName: "home", sectionKey: s.sectionKey },
+      {
+        $set: {
+          pageName: "home",
+          sectionKey: s.sectionKey,
+          sectionName: def.sectionName,
+          routePath: def.routePath,
+          navLabel: def.navLabel,
+          homepageVisible: Boolean(s.homepageVisible),
+          websiteEnabled: Boolean(s.websiteEnabled),
+          status: Boolean(s.websiteEnabled) ? "active" : "inactive"
+        },
+        $setOnInsert: {
+          sectionTitle: def.sectionTitle,
+          sectionSubtitle: def.sectionSubtitle,
+          sortOrder: def.sortOrder
+        }
+      },
+      { upsert: true, new: true, setDefaultsOnInsert: true }
+    );
+  }
+
+  const items = await getMergedHomepageSections();
+  res.json({ success: true, items, message: "Homepage section visibility settings updated." });
+}));
+
+// Admin: Reset all homepage sections to enabled
+app.post("/api/admin/homepage-sections/reset", protect, requireSectionPermission("home-sections", "edit"), asyncHandler(async (req, res) => {
+  await PageSection.updateMany(
+    { pageName: "home" },
+    { $set: { homepageVisible: true, websiteEnabled: true, status: "active" } }
+  );
+  const items = await getMergedHomepageSections();
+  res.json({ success: true, items, message: "All homepage sections enabled everywhere." });
+}));
+
 app.get(
   "/api/page-sections/:pageName",
   asyncHandler(async (req, res) => {
-    const sections = await PageSection.find({ pageName: req.params.pageName.toLowerCase(), status: "active" }).sort({ sortOrder: 1 }).lean();
+    const pageName = req.params.pageName.toLowerCase();
+    if (pageName === "home") {
+      const items = await getMergedHomepageSections();
+      return res.json({ success: true, sections: items, items });
+    }
+    if (pageName === "about") {
+      const items = await getMergedAboutSections();
+      return res.json({ success: true, sections: items, items });
+    }
+    const sections = await PageSection.find({ pageName, status: "active" }).sort({ sortOrder: 1 }).lean();
     res.json({ success: true, sections });
   })
 );
-app.get("/api/about-sections", asyncHandler((req, res) => list(req, res, AboutPageSection, { status: "active" })));
+
+// Public: Get all About Us sections
+app.get("/api/about-sections", asyncHandler(async (req, res) => {
+  const items = await getMergedAboutSections();
+  res.json({ success: true, items, sections: items });
+}));
+
+// Public: Aggregated About Page Data
+app.get("/api/about-page", asyncHandler(async (req, res) => {
+  const [
+    allSections,
+    services,
+    testimonials,
+    store,
+    siteSettings
+  ] = await Promise.all([
+    getMergedAboutSections(),
+    Service.find({ isActive: true }).sort({ order: 1 }).lean(),
+    Testimonial.find({ status: { $in: ["approved", "active"] } }).sort({ sortOrder: 1, createdAt: -1 }).limit(10).lean(),
+    StoreLocation.findOne({ isActive: true }).lean(),
+    SiteSetting.findOne({ singletonKey: "site" }).lean()
+  ]);
+
+  const activeSections = allSections.filter((s) => s.websiteEnabled !== false && s.status !== "inactive");
+
+  res.json({
+    success: true,
+    sections: activeSections,
+    allSections,
+    services,
+    testimonials,
+    store,
+    siteSettings
+  });
+}));
+
+// Admin: Reorder About Us sections
+app.put("/api/admin/about-sections/reorder", protect, requireSectionPermission("home-sections", "edit"), asyncHandler(async (req, res) => {
+  const { orderedKeys } = req.body;
+  if (!Array.isArray(orderedKeys)) {
+    return res.status(400).json({ success: false, message: "orderedKeys array is required." });
+  }
+
+  for (let i = 0; i < orderedKeys.length; i++) {
+    const key = orderedKeys[i];
+    await PageSection.findOneAndUpdate(
+      { pageName: "about", sectionKey: key },
+      { $set: { sortOrder: i + 1 } },
+      { upsert: true, new: true, setDefaultsOnInsert: true }
+    );
+  }
+
+  const items = await getMergedAboutSections();
+  res.json({ success: true, items, message: "About Us sections reordered successfully." });
+}));
+
+// Admin: Update About Us section content
+app.put("/api/admin/about-sections/:key", protect, requireSectionPermission("home-sections", "edit"), asyncHandler(async (req, res) => {
+  const { key } = req.params;
+  const def = DEFAULT_ABOUT_SECTIONS.find((s) => s.sectionKey === key);
+  if (!def) {
+    return res.status(404).json({ success: false, message: `Unknown about section key: ${key}` });
+  }
+
+  const { sectionTitle, sectionSubtitle, description, content, sortOrder, status, websiteEnabled } = req.body;
+  const updateData = { pageName: "about", sectionKey: key };
+  if (sectionTitle !== undefined) updateData.sectionTitle = sectionTitle;
+  if (sectionSubtitle !== undefined) updateData.sectionSubtitle = sectionSubtitle;
+  if (description !== undefined) updateData.description = description;
+  if (content !== undefined) updateData.content = content;
+  if (sortOrder !== undefined) updateData.sortOrder = Number(sortOrder);
+  if (status !== undefined) updateData.status = status;
+  if (websiteEnabled !== undefined) {
+    updateData.websiteEnabled = Boolean(websiteEnabled);
+    updateData.status = websiteEnabled ? "active" : "inactive";
+  }
+
+  const updated = await PageSection.findOneAndUpdate(
+    { pageName: "about", sectionKey: key },
+    { $set: updateData },
+    { upsert: true, new: true, setDefaultsOnInsert: true }
+  );
+
+  const items = await getMergedAboutSections();
+  res.json({ success: true, item: updated, items, message: `${def.sectionName} updated successfully.` });
+}));
+
+// Admin: Toggle About Us section visibility
+app.put("/api/admin/about-sections/:key/visibility", protect, requireSectionPermission("home-sections", "edit"), asyncHandler(async (req, res) => {
+  const { key } = req.params;
+  const def = DEFAULT_ABOUT_SECTIONS.find((s) => s.sectionKey === key);
+  if (!def) {
+    return res.status(404).json({ success: false, message: `Unknown about section key: ${key}` });
+  }
+
+  const { websiteEnabled } = req.body;
+  const isEnabled = typeof websiteEnabled === "boolean" ? websiteEnabled : true;
+
+  const updated = await PageSection.findOneAndUpdate(
+    { pageName: "about", sectionKey: key },
+    {
+      $set: {
+        pageName: "about",
+        sectionKey: key,
+        sectionName: def.sectionName,
+        websiteEnabled: isEnabled,
+        status: isEnabled ? "active" : "inactive"
+      }
+    },
+    { upsert: true, new: true, setDefaultsOnInsert: true }
+  );
+
+  const items = await getMergedAboutSections();
+  res.json({ success: true, item: updated, items, message: `${def.sectionName} is now ${isEnabled ? "Active" : "Inactive"}.` });
+}));
+
+// Admin: Reset all About Us sections to active
+app.post("/api/admin/about-sections/reset", protect, requireSectionPermission("home-sections", "edit"), asyncHandler(async (req, res) => {
+  await PageSection.updateMany(
+    { pageName: "about" },
+    { $set: { websiteEnabled: true, status: "active" } }
+  );
+  const items = await getMergedAboutSections();
+  res.json({ success: true, items, message: "All About Us sections enabled successfully." });
+}));
 app.get("/api/upcoming-classes", asyncHandler((req, res) => {
   const filter = { status: "active" };
   if (req.query.homepage === "true") filter.showOnHomepage = true;
@@ -1590,7 +2375,9 @@ const handleSitemapXml = asyncHandler(async (req, res) => {
   const { xml } = await generateSitemapXml({ baseUrl });
   res.set("Content-Type", "application/xml; charset=utf-8");
   res.set("X-Robots-Tag", "noindex");
-  res.set("Cache-Control", "public, max-age=1800, s-maxage=1800, stale-while-revalidate=86400");
+  res.set("Cache-Control", "no-cache, no-store, must-revalidate, max-age=0");
+  res.set("Pragma", "no-cache");
+  res.set("Expires", "0");
   res.send(xml);
 });
 
@@ -4015,7 +4802,19 @@ const fields = {
   pilgrimages: ["title", "route", "shortDescription"],
   journeys: ["title", "slug", "routeText", "destination", "startingLocation", "shortDescription"],
   "booking-taxes": ["label", "note"],
-  "pilgrimage-bookings": ["bookingRef", "fullName", "email", "phone"]
+  "pilgrimage-bookings": ["bookingRef", "fullName", "email", "phone"],
+  products: ["name", "slug", "brand", "category", "sku", "shortDescription", "productType", "targetAudience"],
+  brands: ["name", "slug", "description"],
+  services: ["title", "slug", "shortDescription"],
+  collections: ["title", "subtitle"],
+  categories: ["title", "name", "subtitle", "slug", "description", "categoryType"],
+  "product-types": ["name", "slug", "description"],
+  "target-audiences": ["name", "slug", "description"],
+  "store-locations": ["name", "address", "phone"],
+  "feature-highlights": ["title", "subtitle"],
+  "gallery-items": ["title", "caption"],
+  "navigation-items": ["label", "path"],
+  appointments: ["name", "phone", "email", "serviceRequested"]
 };
 const adminResource = (resource) => {
   const name = aliases[resource] || resource;
@@ -4038,11 +4837,17 @@ const adminFilter = (req, name, resource) => {
   return filter;
 };
 const prepareAdminBody = (name, body, userId) => {
-  if (name === "banners") return prepareBannerBody(body);
+  if (name === "banners" || name === "hero-banners") return prepareBannerBody(body);
   if (name === "courses") return prepareCourseBody(body, userId, !body._id);
   if (name === "lessons") return prepareLessonBody(body, null, userId, !body._id);
   const data = { ...body };
-  if (["courses", "blogs", "video-blogs", "upcoming-classes", "pages", "legal-pages", "pilgrimages", "journeys"].includes(name) && !data.slug) data.slug = slugify(data.title);
+  if (["courses", "blogs", "video-blogs", "upcoming-classes", "pages", "legal-pages", "pilgrimages", "journeys", "products", "brands", "services", "categories", "product-types", "target-audiences"].includes(name) && !data.slug) {
+    data.slug = slugify(data.title || data.name || "");
+  }
+  if (name === "categories") {
+    if (!data.title && data.name) data.title = data.name;
+    if (!data.name && data.title) data.name = data.title;
+  }
   if (name === "preachers" && !data.slug) data.slug = slugify(data.name);
   if (name === "lessons" && !data.slug) data.slug = slugify(data.title);
   if (name === "home-sections") data.pageName = data.pageName || "home";
@@ -6837,6 +7642,434 @@ app.delete("/api/admin/assets", protect, requireSectionPermission("assets", "can
   res.json({ success: true, message: `Deleted ${deleted} files` });
 }));
 
+const SITEMAP_TRIGGER_RESOURCES = new Set([
+  "products", "brands", "services", "categories", "collections",
+  "blogs", "pages", "legal-pages", "site-settings"
+]);
+
+const maybeSyncSitemap = (resourceName) => {
+  if (SITEMAP_TRIGGER_RESOURCES.has(resourceName)) {
+    writeSitemapToDisk().catch(() => {});
+  }
+};
+
+function escapeRegex(string = "") {
+  return String(string).replace(/[/\-\\^$*+?.()|[\]{}]/g, "\\$&");
+}
+
+async function validateTaxonomyAndProduct(name, data, editId = null) {
+  // 1. CATEGORY VALIDATION
+  if (name === "categories") {
+    const rawName = (data.name || data.title || "").trim();
+    if (!rawName) {
+      return { valid: false, field: "name", message: "Category name is required." };
+    }
+    if (rawName.length < 2) {
+      return { valid: false, field: "name", message: "Category name must be at least 2 characters." };
+    }
+    if (rawName.length > 100) {
+      return { valid: false, field: "name", message: "Category name cannot exceed 100 characters." };
+    }
+
+    // Case-insensitive uniqueness
+    const dupNameQuery = {
+      $or: [
+        { name: new RegExp(`^${escapeRegex(rawName)}$`, "i") },
+        { title: new RegExp(`^${escapeRegex(rawName)}$`, "i") }
+      ]
+    };
+    if (editId) dupNameQuery._id = { $ne: editId };
+    const dupName = await Category.findOne(dupNameQuery);
+    if (dupName) {
+      return { valid: false, field: "name", message: `Category "${rawName}" already exists. Category names must be unique.` };
+    }
+
+    // Slug validation
+    const rawSlug = (data.slug || slugify(rawName)).trim().toLowerCase();
+    if (!rawSlug) {
+      return { valid: false, field: "slug", message: "Category slug is required." };
+    }
+    if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(rawSlug)) {
+      return { valid: false, field: "slug", message: "Slug must contain only lowercase letters, numbers, and hyphens." };
+    }
+
+    const dupSlugQuery = { slug: rawSlug };
+    if (editId) dupSlugQuery._id = { $ne: editId };
+    const dupSlug = await Category.findOne(dupSlugQuery);
+    if (dupSlug) {
+      return { valid: false, field: "slug", message: "This slug is already in use. Please choose another slug." };
+    }
+  }
+
+  // 2. BRAND VALIDATION
+  if (name === "brands") {
+    const rawName = (data.name || "").trim();
+    if (!rawName) {
+      return { valid: false, field: "name", message: "Brand name is required." };
+    }
+    if (rawName.length < 2) {
+      return { valid: false, field: "name", message: "Brand name must be at least 2 characters." };
+    }
+    if (rawName.length > 100) {
+      return { valid: false, field: "name", message: "Brand name cannot exceed 100 characters." };
+    }
+
+    // Case-insensitive uniqueness
+    const dupNameQuery = {
+      name: new RegExp(`^${escapeRegex(rawName)}$`, "i")
+    };
+    if (editId) dupNameQuery._id = { $ne: editId };
+    const dupName = await Brand.findOne(dupNameQuery);
+    if (dupName) {
+      return { valid: false, field: "name", message: `Brand "${rawName}" already exists. Brand names must be unique.` };
+    }
+
+    // Slug validation
+    const rawSlug = (data.slug || slugify(rawName)).trim().toLowerCase();
+    if (!rawSlug) {
+      return { valid: false, field: "slug", message: "Brand slug is required." };
+    }
+    if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(rawSlug)) {
+      return { valid: false, field: "slug", message: "Slug must contain only lowercase letters, numbers, and hyphens." };
+    }
+
+    const dupSlugQuery = { slug: rawSlug };
+    if (editId) dupSlugQuery._id = { $ne: editId };
+    const dupSlug = await Brand.findOne(dupSlugQuery);
+    if (dupSlug) {
+      return { valid: false, field: "slug", message: "This slug is already in use. Please choose another slug." };
+    }
+  }
+
+  // 3. PRODUCT TYPE VALIDATION
+  if (name === "product-types") {
+    const rawName = (data.name || "").trim();
+    if (!rawName) {
+      return { valid: false, field: "name", message: "Product type name is required." };
+    }
+    if (rawName.length < 2 || rawName.length > 100) {
+      return { valid: false, field: "name", message: "Product type name must be between 2 and 100 characters." };
+    }
+    const dupQuery = { name: new RegExp(`^${escapeRegex(rawName)}$`, "i") };
+    if (editId) dupQuery._id = { $ne: editId };
+    const dupName = await ProductType.findOne(dupQuery);
+    if (dupName) {
+      return { valid: false, field: "name", message: `Product type "${rawName}" already exists.` };
+    }
+  }
+
+  // 4. TARGET AUDIENCE VALIDATION
+  if (name === "target-audiences") {
+    const rawName = (data.name || "").trim();
+    if (!rawName) {
+      return { valid: false, field: "name", message: "Target audience name is required." };
+    }
+    if (rawName.length < 2 || rawName.length > 100) {
+      return { valid: false, field: "name", message: "Target audience name must be between 2 and 100 characters." };
+    }
+    const dupQuery = { name: new RegExp(`^${escapeRegex(rawName)}$`, "i") };
+    if (editId) dupQuery._id = { $ne: editId };
+    const dupName = await TargetAudience.findOne(dupQuery);
+    if (dupName) {
+      return { valid: false, field: "name", message: `Target audience "${rawName}" already exists.` };
+    }
+  }
+
+  // 5. PRODUCT VALIDATION
+  if (name === "products") {
+    const rawName = (data.name || "").trim();
+    if (!rawName) {
+      return { valid: false, field: "name", message: "Product name is required." };
+    }
+    if (rawName.length < 2) {
+      return { valid: false, field: "name", message: "Product name must be at least 2 characters." };
+    }
+    if (rawName.length > 200) {
+      return { valid: false, field: "name", message: "Product name cannot exceed 200 characters." };
+    }
+
+    // SKU Validation (if provided)
+    if (data.sku && data.sku.trim()) {
+      const rawSku = data.sku.trim();
+      const dupSkuQuery = {
+        sku: new RegExp(`^${escapeRegex(rawSku)}$`, "i")
+      };
+      if (editId) dupSkuQuery._id = { $ne: editId };
+      const dupSku = await Product.findOne(dupSkuQuery);
+      if (dupSku) {
+        return { valid: false, field: "sku", message: `SKU "${rawSku}" is already assigned to another product. SKU must be unique.` };
+      }
+    }
+
+    // Relationship Validation: Category
+    const catName = (data.category || "").trim();
+    if (!catName) {
+      return { valid: false, field: "category", message: "Category is required." };
+    }
+    const catRecord = await Category.findOne({
+      $or: [
+        { name: new RegExp(`^${escapeRegex(catName)}$`, "i") },
+        { title: new RegExp(`^${escapeRegex(catName)}$`, "i") },
+        { slug: catName.toLowerCase() }
+      ]
+    });
+    if (!catRecord) {
+      return { valid: false, field: "category", message: `Selected category "${catName}" does not exist.` };
+    }
+    if (catRecord.isActive === false || catRecord.status === "archived") {
+      return { valid: false, field: "category", message: `Selected category "${catRecord.name}" is inactive. You cannot assign an inactive category.` };
+    }
+
+    // Relationship Validation: Brand
+    const brandName = (data.brand || "").trim();
+    if (!brandName) {
+      return { valid: false, field: "brand", message: "Brand is required." };
+    }
+    if (brandName !== "Other / Independent") {
+      const brandRecord = await Brand.findOne({
+        $or: [
+          { name: new RegExp(`^${escapeRegex(brandName)}$`, "i") },
+          { slug: brandName.toLowerCase() }
+        ]
+      });
+      if (!brandRecord) {
+        return { valid: false, field: "brand", message: `Selected brand "${brandName}" does not exist.` };
+      }
+      if (brandRecord.isActive === false || brandRecord.status === "archived") {
+        return { valid: false, field: "brand", message: `Selected brand "${brandRecord.name}" is inactive. You cannot assign an inactive brand.` };
+      }
+    }
+
+    // Relationship Validation: Target Audience
+    const audName = (data.targetAudience || data.gender || "").trim();
+    if (!audName) {
+      return { valid: false, field: "targetAudience", message: "Target audience is required." };
+    }
+
+    // Pricing validation
+    if (data.price !== undefined && data.price !== "" && data.price !== null) {
+      const p = Number(data.price);
+      if (isNaN(p) || p < 0) {
+        return { valid: false, field: "price", message: "Price must be a valid positive number." };
+      }
+    }
+
+    if (data.salePrice !== undefined && data.salePrice !== "" && data.salePrice !== null) {
+      const sp = Number(data.salePrice);
+      if (isNaN(sp) || sp < 0) {
+        return { valid: false, field: "salePrice", message: "Sale price must be a valid positive number." };
+      }
+      if (data.price !== undefined && data.price !== "" && data.price !== null) {
+        const p = Number(data.price);
+        if (sp > p) {
+          return { valid: false, field: "salePrice", message: `Sale price (₹${sp}) cannot be higher than regular price (₹${p}).` };
+        }
+      }
+    }
+  }
+
+  return { valid: true };
+}
+
+async function checkTaxonomyDeletionSafety(name, before) {
+  // 1. Category Deletion Safety
+  if (name === "categories") {
+    const query = {
+      $or: [
+        { category: before.name },
+        { category: before.title },
+        { category: new RegExp(`^${escapeRegex(before.name)}$`, "i") },
+        { category: new RegExp(`^${escapeRegex(before.title || "")}$`, "i") }
+      ]
+    };
+    const productCount = await Product.countDocuments(query);
+    if (productCount > 0) {
+      const affectedProducts = await Product.find(query)
+        .select("name sku brand price mainImage")
+        .limit(20)
+        .lean();
+      return {
+        allowed: false,
+        code: "CATEGORY_IN_USE",
+        message: `This category is currently used by ${productCount} product${productCount > 1 ? "s" : ""}. You cannot delete it until those products are reassigned or removed.`,
+        productCount,
+        products: affectedProducts
+      };
+    }
+  }
+
+  // 2. Brand Deletion Safety
+  if (name === "brands") {
+    const query = {
+      $or: [
+        { brand: before.name },
+        { brand: new RegExp(`^${escapeRegex(before.name)}$`, "i") }
+      ]
+    };
+    const productCount = await Product.countDocuments(query);
+    if (productCount > 0) {
+      const affectedProducts = await Product.find(query)
+        .select("name sku category price mainImage")
+        .limit(20)
+        .lean();
+      return {
+        allowed: false,
+        code: "BRAND_IN_USE",
+        message: `This brand is currently used by ${productCount} product${productCount > 1 ? "s" : ""}. You cannot delete it until those products are reassigned or removed.`,
+        productCount,
+        products: affectedProducts
+      };
+    }
+  }
+
+  // 3. Product Type Deletion Safety
+  if (name === "product-types") {
+    const [catCount, prodCount] = await Promise.all([
+      Category.countDocuments({ categoryType: new RegExp(`^${escapeRegex(before.name)}$`, "i") }),
+      Product.countDocuments({ productType: new RegExp(`^${escapeRegex(before.name)}$`, "i") })
+    ]);
+    const totalCount = catCount + prodCount;
+    if (totalCount > 0) {
+      return {
+        allowed: false,
+        code: "PRODUCT_TYPE_IN_USE",
+        message: `This product type is currently used by ${catCount} categories and ${prodCount} products. You cannot delete it until those items are reassigned.`,
+        usageCount: totalCount
+      };
+    }
+  }
+
+  // 4. Target Audience Deletion Safety
+  if (name === "target-audiences") {
+    const [catCount, prodCount] = await Promise.all([
+      Category.countDocuments({ targetAudiences: before.name }),
+      Product.countDocuments({
+        $or: [
+          { targetAudience: new RegExp(`^${escapeRegex(before.name)}$`, "i") },
+          { gender: new RegExp(`^${escapeRegex(before.name)}$`, "i") }
+        ]
+      })
+    ]);
+    const totalCount = catCount + prodCount;
+    if (totalCount > 0) {
+      return {
+        allowed: false,
+        code: "AUDIENCE_IN_USE",
+        message: `This target audience is currently used by ${catCount} categories and ${prodCount} products. You cannot delete it until those items are reassigned.`,
+        usageCount: totalCount
+      };
+    }
+  }
+
+  return { allowed: true };
+}
+
+
+
+// Safe Deletion & Reassign APIs for Categories & Brands
+app.get("/api/admin/categories/:id/usage", ...adminOnly, asyncHandler(async (req, res) => {
+  const cat = await Category.findById(req.params.id).lean();
+  if (!cat) return res.status(404).json({ success: false, message: "Category not found" });
+  const query = {
+    $or: [
+      { category: cat.name },
+      { category: cat.title },
+      { category: new RegExp('^' + escapeRegex(cat.name) + '$', 'i') },
+      { category: new RegExp('^' + escapeRegex(cat.title || '') + '$', 'i') }
+    ]
+  };
+  const count = await Product.countDocuments(query);
+  const products = count > 0 ? await Product.find(query).select("name sku brand price mainImage").limit(20).lean() : [];
+  res.json({ success: true, count, products, inUse: count > 0 });
+}));
+
+app.post("/api/admin/categories/reassign-and-delete", ...adminOnly, asyncHandler(async (req, res) => {
+  const { sourceId, targetCategoryName } = req.body;
+  if (!sourceId || !targetCategoryName) {
+    return res.status(400).json({ success: false, message: "sourceId and targetCategoryName are required." });
+  }
+  const source = await Category.findById(sourceId);
+  if (!source) return res.status(404).json({ success: false, message: "Source category not found." });
+
+  const target = await Category.findOne({
+    $or: [
+      { name: new RegExp('^' + escapeRegex(targetCategoryName.trim()) + '$', 'i') },
+      { slug: targetCategoryName.toLowerCase().trim() }
+    ],
+    isActive: { $ne: false }
+  });
+  if (!target) return res.status(400).json({ success: false, message: 'Target category "' + targetCategoryName + '" not found or inactive.' });
+
+  const filter = {
+    $or: [
+      { category: source.name },
+      { category: source.title },
+      { category: new RegExp('^' + escapeRegex(source.name) + '$', 'i') },
+      { category: new RegExp('^' + escapeRegex(source.title || '') + '$', 'i') }
+    ]
+  };
+  const updateRes = await Product.updateMany(filter, { category: target.name });
+  await Category.findByIdAndDelete(sourceId);
+  maybeSyncSitemap("categories");
+
+  res.json({
+    success: true,
+    message: 'Successfully reassigned ' + updateRes.modifiedCount + ' products to "' + target.name + '" and deleted "' + source.name + '".',
+    reassignedCount: updateRes.modifiedCount
+  });
+}));
+
+app.get("/api/admin/brands/:id/usage", ...adminOnly, asyncHandler(async (req, res) => {
+  const brand = await Brand.findById(req.params.id).lean();
+  if (!brand) return res.status(404).json({ success: false, message: "Brand not found" });
+  const query = {
+    $or: [
+      { brand: brand.name },
+      { brand: new RegExp('^' + escapeRegex(brand.name) + '$', 'i') }
+    ]
+  };
+  const count = await Product.countDocuments(query);
+  const products = count > 0 ? await Product.find(query).select("name sku category price mainImage").limit(20).lean() : [];
+  res.json({ success: true, count, products, inUse: count > 0 });
+}));
+
+app.post("/api/admin/brands/reassign-and-delete", ...adminOnly, asyncHandler(async (req, res) => {
+  const { sourceId, targetBrandName } = req.body;
+  if (!sourceId || !targetBrandName) {
+    return res.status(400).json({ success: false, message: "sourceId and targetBrandName are required." });
+  }
+  const source = await Brand.findById(sourceId);
+  if (!source) return res.status(404).json({ success: false, message: "Source brand not found." });
+
+  const target = await Brand.findOne({
+    $or: [
+      { name: new RegExp('^' + escapeRegex(targetBrandName.trim()) + '$', 'i') },
+      { slug: targetBrandName.toLowerCase().trim() }
+    ],
+    isActive: { $ne: false }
+  });
+  if (!target && targetBrandName !== "Other / Independent") {
+    return res.status(400).json({ success: false, message: 'Target brand "' + targetBrandName + '" not found or inactive.' });
+  }
+
+  const filter = {
+    $or: [
+      { brand: source.name },
+      { brand: new RegExp('^' + escapeRegex(source.name) + '$', 'i') }
+    ]
+  };
+  const updateRes = await Product.updateMany(filter, { brand: target ? target.name : "Other / Independent" });
+  await Brand.findByIdAndDelete(sourceId);
+  maybeSyncSitemap("brands");
+
+  res.json({
+    success: true,
+    message: 'Successfully reassigned ' + updateRes.modifiedCount + ' products to "' + (target ? target.name : 'Other / Independent') + '" and deleted "' + source.name + '".',
+    reassignedCount: updateRes.modifiedCount
+  });
+}));
+
+
 app.get("/api/admin/:resource(*)", ...adminOnly, asyncHandler(async (req, res, next) => {
   if (req.params.resource.includes("/") && !aliases[req.params.resource]) return next();
   const { name, Model } = adminResource(req.params.resource);
@@ -6844,7 +8077,12 @@ app.get("/api/admin/:resource(*)", ...adminOnly, asyncHandler(async (req, res, n
 }));
 app.post("/api/admin/:resource(*)", ...adminOnly, asyncHandler(async (req, res) => {
   const { name, Model } = adminResource(req.params.resource);
-  const item = await Model.create(prepareAdminBody(name, req.body, req.user._id));
+  const body = prepareAdminBody(name, req.body, req.user._id);
+  const validation = await validateTaxonomyAndProduct(name, body, null);
+  if (!validation.valid) {
+    return res.status(400).json({ success: false, field: validation.field, message: validation.message });
+  }
+  const item = await Model.create(body);
   await recordActivity(req, {
     action: "create",
     section: sectionFor(req.params.resource),
@@ -6853,6 +8091,7 @@ app.post("/api/admin/:resource(*)", ...adminOnly, asyncHandler(async (req, res) 
     label: labelFor(item.toObject ? item.toObject() : item),
     after: item.toObject ? item.toObject() : item
   });
+  maybeSyncSitemap(name);
   res.status(201).json({ success: true, item });
 }));
 app.get("/api/admin/:resource/:id", ...adminOnly, asyncHandler(async (req, res) => {
@@ -6865,6 +8104,12 @@ app.put("/api/admin/:resource/:id", ...adminOnly, asyncHandler(async (req, res) 
   const { name, Model } = adminResource(req.params.resource);
   const data = prepareAdminBody(name, req.body, req.user._id);
   const before = await Model.findById(req.params.id).lean();
+  if (!before) return res.status(404).json({ success: false, message: "Item not found" });
+
+  const validation = await validateTaxonomyAndProduct(name, data, req.params.id);
+  if (!validation.valid) {
+    return res.status(400).json({ success: false, field: validation.field, message: validation.message });
+  }
 
   const logUpdate = async (after) => {
     const changed = Object.keys(data).filter(
@@ -6902,6 +8147,7 @@ app.put("/api/admin/:resource/:id", ...adminOnly, asyncHandler(async (req, res) 
 
   const after = await Model.findByIdAndUpdate(req.params.id, data, { new: true, runValidators: true });
   await logUpdate(after?.toObject ? after.toObject() : after);
+  maybeSyncSitemap(name);
   res.json({ success: true, item: after });
 }));
 app.delete("/api/admin/:resource/:id", ...adminOnly, asyncHandler(async (req, res) => {
@@ -6916,6 +8162,18 @@ app.delete("/api/admin/:resource/:id", ...adminOnly, asyncHandler(async (req, re
     return res.status(403).json({ success: false, message: "You cannot delete an account at or above your own role." });
   }
 
+  const deletionCheck = await checkTaxonomyDeletionSafety(name, before);
+  if (!deletionCheck.allowed) {
+    return res.status(400).json({
+      success: false,
+      code: deletionCheck.code,
+      message: deletionCheck.message,
+      productCount: deletionCheck.productCount,
+      products: deletionCheck.products,
+      usageCount: deletionCheck.usageCount
+    });
+  }
+
   await Model.findByIdAndDelete(req.params.id);
   /* `before` holds the whole document, which is what restore reads. */
   await recordActivity(req, {
@@ -6926,6 +8184,7 @@ app.delete("/api/admin/:resource/:id", ...adminOnly, asyncHandler(async (req, re
     label: labelFor(before),
     before
   });
+  maybeSyncSitemap(name);
   res.json({ success: true, message: "Deleted successfully" });
 }));
 
@@ -7685,6 +8944,47 @@ const runMigration = async () => {
       }).catch(() => null);
     }
 
+    // Seed initial Product Types if none exist
+    const typeCount = await ProductType.countDocuments();
+    if (typeCount === 0) {
+      await ProductType.insertMany([
+        { name: "Eyewear", slug: "eyewear", description: "Spectacle frames, sunglasses, and protective glasses", order: 1, isActive: true },
+        { name: "Lenses", slug: "lenses", description: "Prescription lenses, contact lenses, and specialty coatings", order: 2, isActive: true },
+        { name: "Accessories", slug: "accessories", description: "Cases, cleaning solutions, chains, and cords", order: 3, isActive: true },
+        { name: "Eye Care & Clinic", slug: "eye-care", description: "Clinical exams, testing, and eye drops", order: 4, isActive: true }
+      ]).catch(() => null);
+    }
+
+    // Seed initial Target Audiences if none exist
+    const audienceCount = await TargetAudience.countDocuments();
+    if (audienceCount === 0) {
+      await TargetAudience.insertMany([
+        { name: "Men", slug: "men", description: "Frames and eyewear designed for men", order: 1, isActive: true },
+        { name: "Women", slug: "women", description: "Frames and eyewear designed for women", order: 2, isActive: true },
+        { name: "Unisex", slug: "unisex", description: "Versatile styles suitable for everyone", order: 3, isActive: true },
+        { name: "Kids", slug: "kids", description: "Flexible, safe frames for children", order: 4, isActive: true },
+        { name: "Boys", slug: "boys", description: "Eyewear styles for boys", order: 5, isActive: true },
+        { name: "Girls", slug: "girls", description: "Eyewear styles for girls", order: 6, isActive: true },
+        { name: "Seniors", slug: "seniors", description: "Comfort-fit and reading frames for seniors", order: 7, isActive: true },
+        { name: "Teenagers", slug: "teenagers", description: "Trendy frames for teens", order: 8, isActive: true }
+      ]).catch(() => null);
+    }
+
+    // Ensure existing categories have title, name, categoryType, and targetAudiences populated
+    const existingCats = await Category.find().lean();
+    for (const cat of existingCats) {
+      const updates = {};
+      if (!cat.name && cat.title) updates.name = cat.title;
+      if (!cat.title && cat.name) updates.title = cat.name;
+      if (!cat.categoryType) updates.categoryType = cat.slug === "contact-lenses" ? "Lenses" : "Eyewear";
+      if (!cat.targetAudiences || cat.targetAudiences.length === 0) {
+        updates.targetAudiences = cat.slug === "kids-eyewear" ? ["Kids", "Boys", "Girls"] : ["Men", "Women", "Unisex"];
+      }
+      if (Object.keys(updates).length > 0) {
+        await Category.findByIdAndUpdate(cat._id, updates);
+      }
+    }
+
     console.log("Migration check passed");
   } catch (err) {
     console.error("Migration failed", err);
@@ -7711,3 +9011,6 @@ mongoose
     console.error("MongoDB connection failed", error.message);
     process.exit(1);
   });
+
+export { app, server };
+export default app;
