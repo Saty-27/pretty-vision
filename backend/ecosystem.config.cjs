@@ -1,9 +1,11 @@
+const path = require("path");
+
 module.exports = {
   apps: [
     {
-      name: "self-excellence",
+      name: "pretty-vision",
       script: "./src/server.js",
-      cwd: "/var/www/self-excellence/backend",
+      cwd: __dirname,
       instances: 1,
       exec_mode: "fork",
       node_args: "--max-old-space-size=256",
@@ -11,7 +13,7 @@ module.exports = {
       env: {
         NODE_ENV: "production",
         PORT: 5055,
-        MONGO_URI: "mongodb://127.0.0.1:27017/self-excellence"
+        MONGO_URI: process.env.MONGO_URI || "mongodb://127.0.0.1:27017/self-excellence"
       },
       error_file: "./logs/pm2-err.log",
       out_file: "./logs/pm2-out.log",
