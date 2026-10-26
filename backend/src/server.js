@@ -108,7 +108,7 @@ const app = express();
    blindly would let anyone spoof their own address. */
 app.set("trust proxy", 1);
 
-const port = process.env.PORT || 5070;
+const port = process.env.PORT || 5057;
 
 const server = http.createServer(app);
 const io = new SocketServer(server, {
