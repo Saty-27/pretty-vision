@@ -8992,7 +8992,7 @@ const runMigration = async () => {
 };
 
 mongoose
-  .connect(process.env.MONGO_URI || "mongodb://127.0.0.1:27017/self-excellence", {
+  .connect(process.env.MONGO_URI || "mongodb://127.0.0.1:27017/prettyvision", {
     serverSelectionTimeoutMS: 5000,
     maxPoolSize: 10,
     minPoolSize: 2,

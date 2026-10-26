@@ -19,10 +19,11 @@ import {
   Blog
 } from "./models.js";
 import { DEFAULT_HOMEPAGE_SECTIONS } from "./homepageSectionsConfig.js";
+import { DEFAULT_ABOUT_SECTIONS } from "./aboutSectionsConfig.js";
 
 dotenv.config();
 
-const MONGO_URI = process.env.MONGO_URI || "mongodb://127.0.0.1:27017/self-excellence";
+const MONGO_URI = process.env.MONGO_URI || "mongodb://127.0.0.1:27017/prettyvision";
 
 async function seedPrettyVision() {
   console.log("Connecting to MongoDB at:", MONGO_URI);
@@ -202,6 +203,31 @@ async function seedPrettyVision() {
   }
   console.log("Seeded Homepage Sections.");
 
+  // 5b. About Page Sections
+  for (const def of DEFAULT_ABOUT_SECTIONS) {
+    await PageSection.findOneAndUpdate(
+      { pageName: "about", sectionKey: def.sectionKey },
+      {
+        $set: {
+          pageName: "about",
+          sectionKey: def.sectionKey,
+          sectionName: def.sectionName,
+          sectionTitle: def.sectionTitle,
+          sectionSubtitle: def.sectionSubtitle,
+          description: def.description,
+          routePath: def.routePath,
+          navLabel: def.navLabel,
+          sortOrder: def.sortOrder,
+          websiteEnabled: true,
+          status: "active",
+          content: def.content || {}
+        }
+      },
+      { upsert: true, new: true, setDefaultsOnInsert: true }
+    );
+  }
+  console.log("Seeded About Page Sections.");
+
   // 6. Hero Banners
   await HeroBanner.deleteMany({});
   await HeroBanner.create({
@@ -328,50 +354,55 @@ async function seedPrettyVision() {
   await Category.deleteMany({});
   const categories = [
     {
+      name: "Optical Frames",
       title: "Optical Frames",
       subtitle: "Classic. Modern. Timeless.",
       slug: "optical-frames",
-      image: "",
+      image: "/cat_optical_frames.jpg",
       icon: "Glasses",
       destinationUrl: "/eyewear?category=Optical+Frames",
       order: 1,
       isActive: true
     },
     {
+      name: "Sunglasses",
       title: "Sunglasses",
       subtitle: "Everyday to Iconic Styles.",
       slug: "sunglasses",
-      image: "",
+      image: "/cat_sunglasses.jpg",
       icon: "Sun",
       destinationUrl: "/eyewear?category=Sunglasses",
       order: 2,
       isActive: true
     },
     {
+      name: "Blue-Light Glasses",
       title: "Blue-Light Glasses",
       subtitle: "Work. Study. Digital Comfort.",
       slug: "blue-light-glasses",
-      image: "",
+      image: "/cat_bluelight.jpg",
       icon: "Monitor",
       destinationUrl: "/eyewear?category=Blue-Light+Glasses",
       order: 3,
       isActive: true
     },
     {
+      name: "Sports Eyewear",
       title: "Sports Eyewear",
       subtitle: "Active. Durable. Performance.",
       slug: "sports-eyewear",
-      image: "",
+      image: "/cat_sports.jpg",
       icon: "Activity",
       destinationUrl: "/eyewear?category=Sports+Eyewear",
       order: 4,
       isActive: true
     },
     {
+      name: "Contact Lenses",
       title: "Contact Lenses",
       subtitle: "Daily. Monthly. Specialized.",
       slug: "contact-lenses",
-      image: "",
+      image: "/cat_contacts.jpg",
       icon: "Disc",
       destinationUrl: "/eyewear?category=Contact+Lenses",
       order: 5,
@@ -529,10 +560,23 @@ async function seedPrettyVision() {
       isFeatured: true,
       order: 5,
       isActive: true
+    },
+    {
+      title: "Frame Styling & Personal Consultation",
+      slug: "frame-styling-consultation",
+      icon: "Smile",
+      image: "/service_styling.jpg",
+      shortDescription: "1-on-1 frame curation tailored to your face shape, prescription, and wardrobe.",
+      fullDescription: "Our optical stylists work directly with you in our Kalina showroom to analyze bridge proportions, temple fit, and lens thickness, guaranteeing eyewear that looks striking and feels effortless.",
+      ctaText: "Book Consultation",
+      ctaUrl: "/contact",
+      isFeatured: true,
+      order: 6,
+      isActive: true
     }
   ];
   await Service.insertMany(services);
-  console.log("Seeded 5 Services with high-res clinical imagery.");
+  console.log("Seeded 6 Services with high-res clinical imagery.");
 
   // 12. Store Location
   await StoreLocation.deleteMany({});
