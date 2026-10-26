@@ -31,8 +31,10 @@ export const booksRouter = express.Router();
 
 /* Feature flag check middleware for all books routes */
 const checkBooksEnabled = (req, res, next) => {
-  if (!isBooksEnabled()) {
-    return res.status(404).json({ success: false, message: "Books feature is currently unavailable" });
+  if (req.path.startsWith("/books") || req.originalUrl.includes("/books")) {
+    if (!isBooksEnabled()) {
+      return res.status(404).json({ success: false, message: "Books feature is currently unavailable" });
+    }
   }
   next();
 };

@@ -1583,24 +1583,21 @@ export const dashboardLinks = {
     { label: "Product Categories", url: "/admin/categories", icon: Layers },
     { label: "Eyewear Brands", url: "/admin/brands", icon: Gem },
     { label: "Products / Catalogue", url: "/admin/products", icon: Glasses },
-    { label: "Services", url: "/admin/services", icon: Sparkles },
+    { label: "Optical Services", url: "/admin/services", icon: Sparkles },
     { label: "Hero Banners", url: "/admin/banners", icon: Image },
-    { label: "Gallery", url: "/admin/gallery", icon: Image },
+    { label: "Showroom Gallery", url: "/admin/gallery", icon: Image },
     { label: "Testimonials", url: "/admin/testimonials", icon: MessageSquare },
     { label: "Store & Location", url: "/admin/store", icon: Compass },
     { label: "Website Settings", url: "/admin/site-settings", icon: Settings },
-    { label: "Blogs", url: "/admin/blogs", icon: FileText },
-    { label: "Pages", url: "/admin/pages", icon: FileText },
+    { label: "Blog Articles", url: "/admin/blogs", icon: FileText },
+    { label: "Custom Pages", url: "/admin/pages", icon: FileText },
+    { label: "Legal Pages", url: "/admin/legal-pages", icon: Shield },
     { label: "Users", url: "/admin/users", icon: Users },
     { label: "Staff & Roles", url: "/admin/roles", icon: Shield },
     { label: "Activity Trail", url: "/admin/activity-log", icon: Clock },
     { label: "Login Sessions", url: "/admin/sessions", icon: Shield },
-    { label: "Traffic", url: "/admin/traffic", icon: LayoutDashboard },
-    { label: "Legal Pages", url: "/admin/legal-pages", icon: Shield },
-    { label: "Site Settings", url: "/admin/site-settings", icon: Settings },
-    { label: "Asset Manager", url: "/admin/assets", icon: FileText },
-    { label: "Traffic", url: "/admin/traffic", icon: BarChart3 },
-    { label: "Student Progress", url: "/admin/reports", icon: Users }
+    { label: "Traffic Analytics", url: "/admin/traffic", icon: BarChart3 },
+    { label: "Asset Manager", url: "/admin/assets", icon: FileText }
   ]
 };
 
