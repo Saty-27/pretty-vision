@@ -1684,7 +1684,14 @@ const AdminSectionGuard = ({ user, children }) => {
 export const DashboardLayout = ({ role }) => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const allLinks = dashboardLinks[role] || [];
+
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [location.pathname]);
 
   /* A staff member only sees the sections granted to them. main_admin
      and full admins (role === "admin") are never filtered. This is presentation only — the server checks
@@ -1702,12 +1709,21 @@ export const DashboardLayout = ({ role }) => {
           return user.sectionAccess.some((g) => g.section === section && g.view !== false);
         })
       : allLinks;
+
+  const filteredLinks = useMemo(() => {
+    if (!searchQuery.trim()) return links;
+    const q = searchQuery.toLowerCase();
+    return links.filter((l) => l.label.toLowerCase().includes(q) || l.url.toLowerCase().includes(q));
+  }, [links, searchQuery]);
+
   const handleLogout = () => {
     logout();
     navigate("/");
   };
+
   return (
-    <div className="min-h-screen bg-soft w-full">
+    <div className="min-h-screen bg-soft w-full overflow-x-hidden">
+      {/* Desktop Sidebar */}
       <aside className="fixed inset-y-0 left-0 z-40 hidden w-72 border-r border-black/5 bg-white lg:block">
         <Link to="/" className="flex h-20 items-center border-b border-black/5 px-6" aria-label="PrettyVision Eyewear & Clinic"><BrandLogo compact /></Link>
         <nav className="h-[calc(100vh-9rem)] overflow-y-auto custom-scrollbar px-4 py-5">
@@ -1718,32 +1734,194 @@ export const DashboardLayout = ({ role }) => {
         </nav>
         <button onClick={handleLogout} className="mx-4 flex w-[calc(100%-2rem)] items-center justify-center gap-2 rounded-xl bg-ink px-4 py-3 text-sm font-bold text-white"><LogOut size={18} />Logout</button>
       </aside>
-      <main className="lg:pl-72">
-        <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-black/5 bg-white px-4 lg:px-8">
-          <Link to="/" className="min-w-0 flex-1 mr-2 block hover:opacity-85 transition cursor-pointer" title="Go to homepage">
-            <p className="text-[10px] sm:text-xs font-bold uppercase text-primary">{(user?.role || role).replace("_", " ")}</p>
-            <h1 className="text-sm sm:text-lg font-black text-ink truncate max-w-[160px] sm:max-w-xs md:max-w-none">
-              Welcome, {user?.name}
-            </h1>
+
+      {/* Mobile Sidebar Drawer Backdrop */}
+      {mobileOpen && (
+        <div
+          className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs lg:hidden transition-opacity"
+          onClick={() => setMobileOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+
+      {/* Mobile Sidebar Drawer */}
+      <div
+        className={`fixed inset-y-0 left-0 z-50 w-[84vw] max-w-xs bg-white shadow-2xl flex flex-col transition-transform duration-300 ease-in-out lg:hidden ${
+          mobileOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
+        {/* Drawer Header */}
+        <div className="flex h-16 items-center justify-between border-b border-black/5 px-4 bg-slate-50/50">
+          <Link to="/" onClick={() => setMobileOpen(false)} className="flex items-center">
+            <BrandLogo compact />
           </Link>
+          <button
+            onClick={() => setMobileOpen(false)}
+            className="p-2 rounded-xl text-slate-400 hover:text-slate-800 hover:bg-slate-100 transition"
+            aria-label="Close menu"
+          >
+            <X size={20} />
+          </button>
+        </div>
+
+        {/* Admin Profile Strip */}
+        <div className="p-3.5 border-b border-black/5 bg-[#06264A]/5 flex items-center justify-between">
+          <div className="min-w-0 pr-2">
+            <p className="text-[10px] font-bold uppercase tracking-wider text-primary">Admin Control Center</p>
+            <p className="text-xs font-bold text-slate-900 truncate">{user?.name || "Administrator"}</p>
+            <p className="text-[10px] text-slate-500 truncate">{user?.email}</p>
+          </div>
+          <span className="text-[9px] font-black uppercase px-2 py-0.5 rounded-full bg-[#06264A] text-white shrink-0">
+            {(user?.role || role).replace("_", " ")}
+          </span>
+        </div>
+
+        {/* Quick Filter */}
+        <div className="p-3 border-b border-black/5 bg-white">
+          <div className="relative">
+            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search admin sections..."
+              className="w-full pl-8 pr-3 py-1.5 text-xs rounded-xl bg-slate-100 border border-slate-200 focus:outline-none focus:bg-white focus:border-primary"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery("")}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+              >
+                <X size={12} />
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Drawer Navigation Links */}
+        <nav className="flex-1 overflow-y-auto custom-scrollbar px-3 py-3 space-y-1">
+          {filteredLinks.length === 0 ? (
+            <p className="text-xs text-slate-400 text-center py-6">No matching sections found.</p>
+          ) : (
+            filteredLinks.map((item) => {
+              const Icon = item.icon;
+              return (
+                <NavLink
+                  key={item.url}
+                  to={item.url}
+                  onClick={() => setMobileOpen(false)}
+                  className={({ isActive }) =>
+                    `flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-xs font-bold transition ${
+                      isActive
+                        ? "bg-[#06264A] text-white shadow-md shadow-[#06264A]/20"
+                        : "text-slate-700 hover:bg-slate-100 active:bg-slate-200"
+                    }`
+                  }
+                >
+                  <Icon size={16} className="shrink-0" />
+                  <span className="truncate">{item.label}</span>
+                </NavLink>
+              );
+            })
+          )}
+        </nav>
+
+        {/* Drawer Footer */}
+        <div className="p-3 border-t border-black/5 bg-slate-50 flex items-center justify-between gap-2">
+          <button
+            onClick={handleLogout}
+            className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-slate-900 hover:bg-black px-4 py-2.5 text-xs font-bold text-white transition active:scale-98"
+          >
+            <LogOut size={14} />
+            <span>Logout</span>
+          </button>
+          <a
+            href="/"
+            target="_blank"
+            rel="noreferrer"
+            className="p-2.5 rounded-xl border border-slate-200 bg-white text-slate-700 hover:bg-slate-100 text-xs font-bold transition"
+            title="Open public website in new tab"
+          >
+            <Compass size={14} />
+          </a>
+        </div>
+      </div>
+
+      {/* Main Content Area */}
+      <main className="lg:pl-72 w-full max-w-full overflow-x-hidden min-h-screen flex flex-col">
+        <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-black/5 bg-white px-3 sm:px-4 lg:px-8">
+          <div className="flex items-center gap-2 min-w-0 flex-1 mr-2">
+            <button
+              type="button"
+              onClick={() => setMobileOpen(true)}
+              className="lg:hidden p-2 -ml-1 rounded-xl text-slate-700 hover:text-black hover:bg-slate-100 border border-slate-200/80 active:scale-95 transition flex items-center gap-1.5 shrink-0"
+              aria-label="Open Admin Menu"
+            >
+              <Menu size={20} className="text-[#06264A]" />
+              <span className="text-xs font-bold text-[#06264A] hidden xs:inline">Menu</span>
+            </button>
+            <Link to="/" className="min-w-0 flex-1 block hover:opacity-85 transition cursor-pointer" title="Go to homepage">
+              <p className="text-[10px] sm:text-xs font-bold uppercase text-primary">{(user?.role || role).replace("_", " ")}</p>
+              <h1 className="text-xs sm:text-lg font-black text-ink truncate">
+                Welcome, {user?.name}
+              </h1>
+            </Link>
+          </div>
           <div className="flex items-center gap-2 sm:gap-3 shrink-0">
             <NotificationBell />
-            <button onClick={handleLogout} className="rounded-full border border-black/10 px-4 py-2 text-sm font-bold lg:hidden">Logout</button>
+            <button onClick={handleLogout} className="rounded-full border border-black/10 px-3 py-1.5 text-xs sm:text-sm font-bold lg:hidden">Logout</button>
           </div>
         </header>
-        <nav className="sticky top-16 z-20 flex gap-2 overflow-x-auto border-b border-black/5 bg-white px-4 py-3 lg:hidden">
+
+        {/* Mobile Horizontal Quick Navigation Strip */}
+        <nav className="sticky top-16 z-20 flex items-center gap-1.5 overflow-x-auto border-b border-black/5 bg-white px-3 py-2.5 lg:hidden no-scrollbar">
+          <button
+            type="button"
+            onClick={() => setMobileOpen(true)}
+            className="flex shrink-0 items-center gap-1.5 rounded-full bg-[#06264A] text-white px-3 py-1.5 text-xs font-bold shadow-xs active:scale-95 transition"
+          >
+            <Menu size={13} />
+            <span>All Sections</span>
+          </button>
           {links.map((item) => {
             const Icon = item.icon;
-            return <NavLink key={item.url} to={item.url} className={({ isActive }) => `flex shrink-0 items-center gap-2 rounded-full px-4 py-2 text-xs font-black ${isActive ? "bg-primary text-white" : "bg-soft text-ink"}`}><Icon size={14} />{item.label}</NavLink>;
+            return (
+              <NavLink
+                key={item.url}
+                to={item.url}
+                className={({ isActive }) =>
+                  `flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold transition ${
+                    isActive ? "bg-primary text-white shadow-xs" : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                  }`
+                }
+              >
+                <Icon size={13} />
+                <span>{item.label}</span>
+              </NavLink>
+            );
           })}
         </nav>
-        <div className="px-4 py-6 lg:px-8">
+
+        {/* Main Routed Page Content */}
+        <div className="px-3 sm:px-6 py-4 sm:py-6 lg:px-8 max-w-full overflow-x-hidden w-full flex-1 pb-24 lg:pb-8">
           {role === "main_admin" ? (
             <AdminSectionGuard user={user}><Outlet /></AdminSectionGuard>
           ) : (
             <Outlet />
           )}
         </div>
+
+        {/* Floating Mobile Admin Menu Launcher */}
+        <button
+          type="button"
+          onClick={() => setMobileOpen(true)}
+          className="lg:hidden fixed bottom-5 left-4 z-40 flex items-center gap-2 rounded-full bg-[#06264A] text-white px-4 py-2.5 shadow-xl shadow-[#06264A]/30 text-xs font-bold border border-white/20 active:scale-95 transition hover:bg-[#0A3360]"
+          aria-label="Open Admin Menu"
+        >
+          <Menu size={16} />
+          <span>Admin Menu</span>
+        </button>
+
         {role === "student" && <StudentSupportChat />}
       </main>
     </div>

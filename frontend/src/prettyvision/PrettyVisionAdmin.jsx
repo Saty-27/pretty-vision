@@ -131,20 +131,22 @@ export const MediaUploaderWithScreenSize = ({
       {helperText && <p className="text-[11px] text-slate-500 leading-normal">{helperText}</p>}
 
       {/* Input Row with Thumbnail & Upload Button */}
-      <div className="flex items-center gap-2.5 pt-1">
-        {value && (
-          <div className="h-10 w-14 shrink-0 rounded-lg overflow-hidden bg-slate-100 border border-slate-200 relative group">
-            <img src={assetUrl(value)} alt="" className="w-full h-full object-cover" />
-          </div>
-        )}
-        <input
-          type="text"
-          value={value || ""}
-          onChange={(e) => onChange(e.target.value)}
-          placeholder={placeholder}
-          className="flex-1 px-3 py-2 rounded-xl border border-slate-300 bg-white text-xs text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#042041]"
-        />
-        <label className="cursor-pointer px-3.5 py-2 rounded-xl bg-[#042041] hover:bg-[#0B2A52] text-white font-bold text-xs flex items-center gap-1.5 shrink-0 transition-colors shadow-2xs">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-2.5 pt-1">
+        <div className="flex items-center gap-2 min-w-0 flex-1">
+          {value && (
+            <div className="h-10 w-12 sm:w-14 shrink-0 rounded-lg overflow-hidden bg-slate-100 border border-slate-200 relative group">
+              <img src={assetUrl(value)} alt="" className="w-full h-full object-cover" />
+            </div>
+          )}
+          <input
+            type="text"
+            value={value || ""}
+            onChange={(e) => onChange(e.target.value)}
+            placeholder={placeholder}
+            className="w-full min-w-0 flex-1 px-3 py-2 rounded-xl border border-slate-300 bg-white text-base sm:text-xs text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#042041]"
+          />
+        </div>
+        <label className="cursor-pointer px-3.5 py-2 rounded-xl bg-[#042041] hover:bg-[#0B2A52] text-white font-bold text-xs flex items-center justify-center gap-1.5 shrink-0 transition-colors shadow-2xs">
           <Upload className="h-3.5 w-3.5" />
           <span>{uploading ? "Uploading..." : "Upload"}</span>
           <input type="file" accept={accept} className="hidden" onChange={handleFileChange} />
@@ -555,7 +557,7 @@ export const AdminHomepageSections = () => {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2 self-end sm:self-center">
+                <div className="flex flex-wrap items-center gap-2 self-start sm:self-center mt-2 sm:mt-0">
                   <button
                     onClick={() => toggleVisibility(sec)}
                     className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all ${
@@ -565,13 +567,13 @@ export const AdminHomepageSections = () => {
                     }`}
                   >
                     {isVisible ? <Eye className="h-3.5 w-3.5" /> : <EyeOff className="h-3.5 w-3.5" />}
-                    <span>{isVisible ? "Active / Visible" : "Hidden"}</span>
+                    <span>{isVisible ? "Active" : "Hidden"}</span>
                   </button>
 
                   {sec.sectionKey === "collections" && (
                     <a
                       href="/admin/collections"
-                      className="hidden sm:inline-flex items-center gap-1 px-2.5 py-1.5 rounded-full border border-slate-300 text-slate-700 hover:border-[#06264A] text-[11px] font-bold"
+                      className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-full border border-slate-300 text-slate-700 hover:border-[#06264A] text-[11px] font-bold"
                     >
                       <span>Manage Cards</span>
                       <ExternalLink className="h-3 w-3" />
@@ -580,7 +582,7 @@ export const AdminHomepageSections = () => {
                   {sec.sectionKey === "categories" && (
                     <a
                       href="/admin/shop-by-type"
-                      className="hidden sm:inline-flex items-center gap-1 px-2.5 py-1.5 rounded-full border border-slate-300 text-slate-700 hover:border-[#06264A] text-[11px] font-bold"
+                      className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-full border border-slate-300 text-slate-700 hover:border-[#06264A] text-[11px] font-bold"
                     >
                       <span>Manage Cards</span>
                       <ExternalLink className="h-3 w-3" />
@@ -589,7 +591,7 @@ export const AdminHomepageSections = () => {
                   {sec.sectionKey === "brand_showcase" && (
                     <a
                       href="/admin/brand-banner"
-                      className="hidden sm:inline-flex items-center gap-1 px-2.5 py-1.5 rounded-full border border-slate-300 text-slate-700 hover:border-[#06264A] text-[11px] font-bold"
+                      className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-full border border-slate-300 text-slate-700 hover:border-[#06264A] text-[11px] font-bold"
                     >
                       <span>Banner Studio</span>
                       <ExternalLink className="h-3 w-3" />
@@ -598,7 +600,7 @@ export const AdminHomepageSections = () => {
                   {sec.sectionKey === "store_visit" && (
                     <a
                       href="/admin/store"
-                      className="hidden sm:inline-flex items-center gap-1 px-2.5 py-1.5 rounded-full border border-slate-300 text-slate-700 hover:border-[#06264A] text-[11px] font-bold"
+                      className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-full border border-slate-300 text-slate-700 hover:border-[#06264A] text-[11px] font-bold"
                     >
                       <span>Store & Hours</span>
                       <ExternalLink className="h-3 w-3" />
@@ -607,9 +609,18 @@ export const AdminHomepageSections = () => {
                   {sec.sectionKey === "gallery" && (
                     <a
                       href="/admin/instagram"
-                      className="hidden sm:inline-flex items-center gap-1 px-2.5 py-1.5 rounded-full border border-slate-300 text-slate-700 hover:border-[#06264A] text-[11px] font-bold"
+                      className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-full border border-slate-300 text-slate-700 hover:border-[#06264A] text-[11px] font-bold"
                     >
                       <span>Instagram Feed</span>
+                      <ExternalLink className="h-3 w-3" />
+                    </a>
+                  )}
+                  {sec.sectionKey === "final_cta" && (
+                    <a
+                      href="/admin/expert-eye-care"
+                      className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-full border border-slate-300 text-slate-700 hover:border-[#06264A] text-[11px] font-bold"
+                    >
+                      <span>CTA Studio</span>
                       <ExternalLink className="h-3 w-3" />
                     </a>
                   )}
@@ -630,9 +641,9 @@ export const AdminHomepageSections = () => {
 
       {/* Edit Section Modal */}
       {editingSection && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/50 backdrop-blur-xs">
           <div
-            className={`bg-white rounded-3xl w-full p-6 shadow-2xl border border-slate-100 space-y-4 max-h-[90vh] overflow-y-auto ${
+            className={`bg-white rounded-2xl sm:rounded-3xl w-full p-4 sm:p-6 shadow-2xl border border-slate-100 space-y-4 max-h-[88vh] overflow-y-auto ${
               editingSection.sectionKey === "store_visit" ||
               editingSection.sectionKey === "brand_showcase" ||
               editingSection.sectionKey === "categories"
@@ -1552,8 +1563,8 @@ export const AdminAboutSections = () => {
 
       {/* Edit About Section Modal */}
       {editingSection && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-          <div className="bg-white rounded-3xl w-full max-w-3xl p-6 shadow-2xl border border-slate-100 space-y-5 max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-xs">
+          <div className="bg-white rounded-2xl sm:rounded-3xl w-full max-w-full sm:max-w-3xl p-4 sm:p-6 shadow-2xl border border-slate-100 space-y-4 sm:space-y-5 max-h-[88vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b pb-3">
               <div>
                 <h3 className="font-serif text-lg font-bold text-slate-900">
@@ -3475,8 +3486,8 @@ export const AdminCategories = () => {
 
       {/* CREATE / EDIT MODAL */}
       {modalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-          <div className="bg-white rounded-3xl max-w-3xl w-full p-6 shadow-2xl border border-slate-100 space-y-5 max-h-[92vh] overflow-y-auto">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-xs">
+          <div className="bg-white rounded-2xl sm:rounded-3xl max-w-full sm:max-w-3xl w-full p-4 sm:p-6 shadow-2xl border border-slate-100 space-y-4 sm:space-y-5 max-h-[88vh] overflow-y-auto">
             {/* Modal Header */}
             <div className="flex items-center justify-between border-b border-slate-100 pb-4">
               <div>
@@ -3496,7 +3507,7 @@ export const AdminCategories = () => {
             </div>
 
             {/* Modal Tabs */}
-            <div className="flex items-center gap-2 border-b border-slate-200 pb-2 text-xs font-bold">
+            <div className="flex items-center gap-2 border-b border-slate-200 pb-2 text-xs font-bold overflow-x-auto no-scrollbar custom-scrollbar whitespace-nowrap">
               <button
                 type="button"
                 onClick={() => setActiveTab("general")}
@@ -3852,8 +3863,8 @@ export const AdminCategories = () => {
 
       {/* SAFE DELETION GUARD MODAL */}
       {deleteModalOpen && catToDelete && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-          <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-100 space-y-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-xs">
+          <div className="bg-white rounded-2xl sm:rounded-3xl max-w-full sm:max-w-lg w-full p-4 sm:p-6 shadow-2xl border border-slate-100 space-y-4 max-h-[88vh] overflow-y-auto">
             {usageLoading ? (
               <div className="py-12 text-center space-y-3">
                 <div className="h-8 w-8 border-2 border-[#06264A] border-t-transparent rounded-full animate-spin mx-auto" />
@@ -4343,15 +4354,15 @@ export const AdminBrands = () => {
       </div>
 
       {/* Filter and Search Bar */}
-      <div className="flex items-center justify-between bg-white p-3 rounded-2xl border border-slate-200">
-        <div className="relative flex-1 max-w-md">
+      <div className="flex flex-col sm:flex-row gap-2.5 items-stretch sm:items-center justify-between bg-white p-3 rounded-2xl border border-slate-200">
+        <div className="relative flex-1 max-w-full sm:max-w-md">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
           <input
             type="text"
             placeholder="Search brands by name, slug..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:border-[#06264A] bg-slate-50/50"
+            className="w-full pl-10 pr-4 py-2 text-base sm:text-xs rounded-xl border border-slate-200 focus:outline-none focus:border-[#06264A] bg-slate-50/50"
           />
         </div>
         <div className="text-xs text-slate-500 font-bold pr-2">
@@ -4361,7 +4372,7 @@ export const AdminBrands = () => {
 
       {/* Brands Table */}
       <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto custom-scrollbar">
           <table className="w-full text-left text-xs">
             <thead className="bg-slate-50 border-b border-slate-200 text-slate-600 font-bold uppercase tracking-wider text-[11px]">
               <tr>
@@ -4530,8 +4541,8 @@ export const AdminBrands = () => {
 
       {/* CREATE / EDIT MODAL */}
       {modalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-          <div className="bg-white rounded-3xl max-w-2xl w-full p-6 shadow-2xl border border-slate-100 space-y-5 max-h-[92vh] overflow-y-auto">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-xs">
+          <div className="bg-white rounded-2xl sm:rounded-3xl max-w-full sm:max-w-2xl w-full p-4 sm:p-6 shadow-2xl border border-slate-100 space-y-4 sm:space-y-5 max-h-[88vh] overflow-y-auto">
             {/* Header */}
             <div className="flex items-center justify-between border-b border-slate-100 pb-4">
               <div>
@@ -4716,8 +4727,8 @@ export const AdminBrands = () => {
 
       {/* SAFE DELETION GUARD MODAL */}
       {deleteModalOpen && brandToDelete && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-          <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-100 space-y-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-xs">
+          <div className="bg-white rounded-2xl sm:rounded-3xl max-w-full sm:max-w-lg w-full p-4 sm:p-6 shadow-2xl border border-slate-100 space-y-4 max-h-[88vh] overflow-y-auto">
             {usageLoading ? (
               <div className="py-12 text-center space-y-3">
                 <div className="h-8 w-8 border-2 border-[#06264A] border-t-transparent rounded-full animate-spin mx-auto" />
@@ -5412,8 +5423,8 @@ export const AdminProducts = () => {
 
       {/* CREATE / EDIT MODAL */}
       {modalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-          <div className="bg-white rounded-3xl max-w-3xl w-full p-6 shadow-2xl border border-slate-100 space-y-5 max-h-[92vh] overflow-y-auto">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-xs">
+          <div className="bg-white rounded-2xl sm:rounded-3xl max-w-full sm:max-w-3xl w-full p-4 sm:p-6 shadow-2xl border border-slate-100 space-y-4 sm:space-y-5 max-h-[88vh] overflow-y-auto">
             {/* Header */}
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <div>
@@ -6014,8 +6025,8 @@ export const AdminProducts = () => {
 
       {/* PRODUCT DELETE CONFIRMATION MODAL */}
       {deleteModalOpen && prodToDelete && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-          <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-100 space-y-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-xs">
+          <div className="bg-white rounded-2xl sm:rounded-3xl max-w-full sm:max-w-md w-full p-4 sm:p-6 shadow-2xl border border-slate-100 space-y-4 max-h-[88vh] overflow-y-auto">
             <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-rose-50 border border-rose-200 text-rose-700 text-xs font-bold w-fit">
               <Trash2 className="h-3.5 w-3.5" />
               <span>DELETE PRODUCT CONFIRMATION</span>
@@ -6439,8 +6450,8 @@ export const AdminHeroBanners = () => {
 
       {/* Editor Modal with Screen Size Responsive Live Preview */}
       {modalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-          <div className="bg-white rounded-3xl max-w-4xl w-full p-6 sm:p-8 shadow-2xl border space-y-6 max-h-[92vh] overflow-y-auto">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-xs">
+          <div className="bg-white rounded-2xl sm:rounded-3xl max-w-full sm:max-w-4xl w-full p-4 sm:p-8 shadow-2xl border space-y-4 sm:space-y-6 max-h-[88vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b pb-4">
               <div>
                 <h3 className="font-serif text-xl font-bold text-slate-900">

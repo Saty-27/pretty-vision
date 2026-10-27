@@ -477,8 +477,8 @@ export const AdminCollections = () => {
 
       {/* EDIT / CREATE MODAL */}
       {editingItem && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4">
+          <div className="bg-white rounded-2xl sm:rounded-3xl max-w-full sm:max-w-lg w-full p-4 sm:p-6 shadow-2xl max-h-[88vh] overflow-y-auto">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100">
               <h3 className="font-serif text-lg font-bold text-slate-900">
                 {editingItem === "new" ? "Add New Frame Collection" : `Edit: ${editingItem.title}`}
@@ -631,8 +631,8 @@ export const AdminCollections = () => {
 
       {/* DELETE CONFIRMATION MODAL */}
       {deleteModal && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl text-center space-y-4">
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4">
+          <div className="bg-white rounded-2xl sm:rounded-3xl max-w-full sm:max-w-sm w-full p-4 sm:p-6 shadow-2xl text-center space-y-4 max-h-[88vh] overflow-y-auto">
             <div className="w-12 h-12 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center mx-auto">
               <Trash2 className="w-6 h-6" />
             </div>
@@ -1331,8 +1331,8 @@ export const AdminInstagramFeed = () => {
 
       {/* EDIT MODAL */}
       {editingItem && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4">
+          <div className="bg-white rounded-2xl sm:rounded-3xl max-w-full sm:max-w-md w-full p-4 sm:p-6 shadow-2xl max-h-[88vh] overflow-y-auto">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100">
               <h3 className="font-serif text-lg font-bold text-slate-900">
                 {editingItem === "new" ? "Add Instagram Post Tile" : "Edit Instagram Tile"}
@@ -1426,8 +1426,8 @@ export const AdminInstagramFeed = () => {
 
       {/* DELETE CONFIRM MODAL */}
       {deleteModal && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl text-center space-y-4">
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4">
+          <div className="bg-white rounded-2xl sm:rounded-3xl max-w-full sm:max-w-sm w-full p-4 sm:p-6 shadow-2xl text-center space-y-4 max-h-[88vh] overflow-y-auto">
             <div className="w-12 h-12 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center mx-auto">
               <Trash2 className="w-6 h-6" />
             </div>
@@ -2182,12 +2182,12 @@ export const AdminFloatingContact = () => {
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
           <button
             type="button"
             onClick={handleReset}
             disabled={resetting || saving}
-            className="inline-flex items-center gap-1.5 rounded-xl border border-slate-300 bg-white px-4 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 transition"
+            className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 rounded-xl border border-slate-300 bg-white px-4 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 transition"
             title="Reset to default number and labels"
           >
             <RotateCcw className={`w-3.5 h-3.5 ${resetting ? "animate-spin" : ""}`} />
@@ -2197,7 +2197,7 @@ export const AdminFloatingContact = () => {
             type="button"
             onClick={handleSave}
             disabled={saving || resetting}
-            className="inline-flex items-center gap-2 rounded-xl bg-[#06264A] text-white px-5 py-2 text-xs font-bold uppercase tracking-wider shadow hover:bg-[#0A3360] transition"
+            className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 rounded-xl bg-[#06264A] text-white px-5 py-2 text-xs font-bold uppercase tracking-wider shadow hover:bg-[#0A3360] transition"
           >
             <Save className="w-4 h-4" />
             <span>{saving ? "Saving..." : "Save Changes"}</span>
@@ -2556,7 +2556,7 @@ export const AdminFloatingContact = () => {
             {/* Mock website screen container */}
             <div
               className={`relative mx-auto rounded-2xl border border-slate-300 bg-slate-950 overflow-hidden shadow-inner transition-all duration-300 ${
-                previewDevice === "mobile" ? "w-[260px] h-[400px]" : "w-full h-[360px]"
+                previewDevice === "mobile" ? "w-full max-w-[260px] h-[400px]" : "w-full h-[360px]"
               }`}
             >
               {/* Mock website header */}
@@ -2981,7 +2981,7 @@ export const AdminExpertEyeCare = () => {
       )}
 
       {/* TABS NAVIGATION */}
-      <div className="flex items-center gap-2 border-b border-slate-200 overflow-x-auto pb-1">
+      <div className="flex items-center gap-2 border-b border-slate-200 overflow-x-auto pb-2 -mx-3 px-3 sm:mx-0 sm:px-0 no-scrollbar custom-scrollbar">
         {[
           { key: "content", label: "Copy & Headings", icon: Edit2 },
           { key: "features", label: `Benefit Features (${content.features?.length || 0})`, icon: Sparkles },
@@ -3177,7 +3177,7 @@ export const AdminExpertEyeCare = () => {
                   content.features.map((feat, idx) => (
                     <div
                       key={feat.id || idx}
-                      className={`flex items-center justify-between p-3.5 rounded-xl border transition ${
+                      className={`flex flex-col sm:flex-row sm:items-center justify-between p-3.5 rounded-xl border transition gap-3 ${
                         feat.enabled !== false
                           ? "bg-slate-50/80 border-slate-200"
                           : "bg-slate-100/50 border-slate-200 opacity-60"
@@ -3221,7 +3221,7 @@ export const AdminExpertEyeCare = () => {
                       </div>
 
                       {/* Actions */}
-                      <div className="flex items-center gap-2 shrink-0">
+                      <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
                         <button
                           type="button"
                           onClick={() => handleToggleFeature(feat.id)}
@@ -3631,11 +3631,11 @@ export const AdminExpertEyeCare = () => {
 
             {/* Live component preview frame */}
             <div
-              className={`relative mx-auto rounded-2xl border border-slate-300 bg-slate-100 overflow-y-auto max-h-[580px] shadow-inner transition-all duration-300 ${
-                previewDevice === "mobile" ? "w-[340px]" : "w-full"
+              className={`relative mx-auto rounded-2xl border border-slate-300 bg-slate-100 overflow-x-hidden overflow-y-auto max-h-[580px] shadow-inner transition-all duration-300 ${
+                previewDevice === "mobile" ? "w-full max-w-[320px]" : "w-full"
               }`}
             >
-              <div className="scale-[0.82] origin-top sm:scale-[0.88] lg:scale-[0.82]">
+              <div className="scale-[0.72] xs:scale-[0.80] sm:scale-[0.88] origin-top">
                 <FinalCTA sectionData={section} onBookClick={() => alert("Appointment modal triggered in live view")} />
               </div>
             </div>
@@ -3667,8 +3667,8 @@ export const AdminExpertEyeCare = () => {
 
       {/* FEATURE ADD / EDIT MODAL */}
       {editingFeature && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
-          <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl border border-slate-200 overflow-hidden">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
+          <div className="bg-white rounded-2xl sm:rounded-3xl max-w-full sm:max-w-md w-full shadow-2xl border border-slate-200 overflow-hidden max-h-[88vh] overflow-y-auto">
             <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50">
               <h3 className="text-sm font-bold text-slate-900">
                 {editingFeature === "new" ? "Add Benefit Feature" : "Edit Benefit Feature"}
