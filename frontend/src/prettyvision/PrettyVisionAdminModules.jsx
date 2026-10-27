@@ -21,6 +21,11 @@ import {
   Image as ImageIcon,
   Clock,
   Phone,
+  PhoneCall,
+  MessageCircle,
+  Smartphone,
+  Monitor,
+  RotateCcw,
   Mail,
   Compass,
   ArrowRight,
@@ -29,6 +34,12 @@ import {
 } from "lucide-react";
 import { apiFetch, assetUrl } from "../api";
 import { MediaUploaderWithScreenSize } from "./PrettyVisionAdmin";
+import {
+  WhatsAppIcon,
+  buildCallUrl,
+  buildWhatsAppUrl,
+  normalizePhoneNumber
+} from "./FloatingContactButtons";
 
 const notifySections = () => {
   if (typeof window !== "undefined") {
@@ -2035,6 +2046,627 @@ export const AdminShopByType = () => {
             <span>Open Advanced Editor</span>
             <ExternalLink className="w-3.5 h-3.5" />
           </Link>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+/* ============================================================
+   6. FLOATING CONTACT BUTTONS (CALL NOW + WHATSAPP NOW)
+   Route: /admin/floating-contact
+   ============================================================ */
+export const AdminFloatingContact = () => {
+  const [config, setConfig] = useState({
+    callEnabled: true,
+    callNumber: "9594030310",
+    callLabel: "Call Now",
+    whatsappEnabled: true,
+    whatsappNumber: "9594030310",
+    whatsappLabel: "WhatsApp Now",
+    whatsappMessage: "Hello PrettyVision, I would like to know more about your eyewear and services.",
+    position: "bottom-right",
+    desktopEnabled: true,
+    mobileEnabled: true,
+    bottomOffsetDesktop: 24,
+    bottomOffsetMobile: 80,
+    buttonStyle: "pill",
+    order: "whatsapp-call"
+  });
+
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [resetting, setResetting] = useState(false);
+  const [savedMessage, setSavedMessage] = useState("");
+  const [previewDevice, setPreviewDevice] = useState("desktop"); // 'desktop' | 'mobile'
+
+  const loadData = async () => {
+    try {
+      setLoading(true);
+      const res = await apiFetch("/admin/floating-contact");
+      if (res && res.floatingContact) {
+        setConfig((prev) => ({ ...prev, ...res.floatingContact }));
+      }
+    } catch (err) {
+      console.error("Failed to load floating contact settings:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const handleSave = async (e) => {
+    if (e) e.preventDefault();
+    try {
+      setSaving(true);
+      setSavedMessage("");
+      const res = await apiFetch("/admin/floating-contact", {
+        method: "PUT",
+        body: config
+      });
+      if (res.floatingContact) {
+        setConfig((prev) => ({ ...prev, ...res.floatingContact }));
+      }
+      setSavedMessage("Floating contact settings saved successfully!");
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new Event("floating-contact-updated"));
+      }
+      setTimeout(() => setSavedMessage(""), 4000);
+    } catch (err) {
+      alert("Failed to save settings: " + (err.message || "Unknown error"));
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleReset = async () => {
+    if (!window.confirm("Reset Call & WhatsApp buttons back to default configuration (9594030310)?")) {
+      return;
+    }
+    try {
+      setResetting(true);
+      setSavedMessage("");
+      const res = await apiFetch("/admin/floating-contact/reset", {
+        method: "POST"
+      });
+      if (res.floatingContact) {
+        setConfig(res.floatingContact);
+      }
+      setSavedMessage("Reset to defaults successfully!");
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new Event("floating-contact-updated"));
+      }
+      setTimeout(() => setSavedMessage(""), 4000);
+    } catch (err) {
+      alert("Failed to reset: " + (err.message || "Unknown error"));
+    } finally {
+      setResetting(false);
+    }
+  };
+
+  const callHref = buildCallUrl(config.callNumber);
+  const whatsappHref = buildWhatsAppUrl(config.whatsappNumber, config.whatsappMessage);
+  const callNorm = normalizePhoneNumber(config.callNumber);
+  const whatsappNorm = normalizePhoneNumber(config.whatsappNumber);
+
+  if (loading) {
+    return (
+      <div className="p-8 text-center text-xs text-slate-500 flex items-center justify-center gap-2">
+        <RefreshCw className="w-4 h-4 animate-spin text-[#06264A]" />
+        <span>Loading Floating Contact Settings...</span>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6 max-w-6xl">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-200 pb-5">
+        <div>
+          <div className="flex items-center gap-2">
+            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-100 text-emerald-800">
+              Live Floating CTAs
+            </span>
+            <span className="text-xs text-slate-400">•</span>
+            <span className="text-xs font-semibold text-slate-500">Website Quick Actions</span>
+          </div>
+          <h1 className="font-serif text-2xl sm:text-3xl font-bold text-slate-900 mt-1">
+            Call Now & WhatsApp Now Floating Buttons
+          </h1>
+          <p className="text-xs text-slate-500 mt-1">
+            Dynamic floating buttons across the public website. Default number is <strong className="text-slate-700">9594030310</strong>.
+          </p>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={handleReset}
+            disabled={resetting || saving}
+            className="inline-flex items-center gap-1.5 rounded-xl border border-slate-300 bg-white px-4 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 transition"
+            title="Reset to default number and labels"
+          >
+            <RotateCcw className={`w-3.5 h-3.5 ${resetting ? "animate-spin" : ""}`} />
+            <span>{resetting ? "Resetting..." : "Reset Defaults"}</span>
+          </button>
+          <button
+            type="button"
+            onClick={handleSave}
+            disabled={saving || resetting}
+            className="inline-flex items-center gap-2 rounded-xl bg-[#06264A] text-white px-5 py-2 text-xs font-bold uppercase tracking-wider shadow hover:bg-[#0A3360] transition"
+          >
+            <Save className="w-4 h-4" />
+            <span>{saving ? "Saving..." : "Save Changes"}</span>
+          </button>
+        </div>
+      </div>
+
+      {savedMessage && (
+        <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold flex items-center justify-between shadow-sm animate-in fade-in">
+          <div className="flex items-center gap-2">
+            <Check className="w-4 h-4 text-emerald-600" />
+            <span>{savedMessage}</span>
+          </div>
+          <button
+            onClick={() => setSavedMessage("")}
+            className="text-emerald-700 hover:text-emerald-900"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
+
+      {/* Main Grid: Left Controls, Right Preview */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        {/* Left Form: 7 cols */}
+        <form onSubmit={handleSave} className="lg:col-span-7 space-y-6">
+          {/* 1. CALL NOW CARD */}
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-[#06264A] text-white flex items-center justify-center shadow-sm">
+                  <Phone className="w-4.5 h-4.5 text-amber-300" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-slate-900">Call Now Button</h3>
+                  <p className="text-[11px] text-slate-500">One-tap telephone dialer</p>
+                </div>
+              </div>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={Boolean(config.callEnabled)}
+                  onChange={(e) => setConfig({ ...config, callEnabled: e.target.checked })}
+                  className="sr-only peer"
+                />
+                <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#06264A]"></div>
+                <span className="ml-2 text-xs font-bold text-slate-700">
+                  {config.callEnabled ? "Enabled" : "Disabled"}
+                </span>
+              </label>
+            </div>
+
+            <div className="space-y-4 pt-1">
+              <div>
+                <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1">
+                  Call Phone Number
+                </label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={config.callNumber || ""}
+                    onChange={(e) => setConfig({ ...config, callNumber: e.target.value })}
+                    placeholder="9594030310"
+                    className="w-full px-3.5 py-2.5 text-xs font-semibold rounded-xl border border-slate-300 focus:outline-none focus:border-[#06264A] focus:ring-1 focus:ring-[#06264A]"
+                  />
+                  <span className="absolute right-3 top-2.5 text-[10px] font-bold text-slate-400">
+                    Default: 9594030310
+                  </span>
+                </div>
+                <p className="text-[10px] text-slate-500 mt-1">
+                  Supports Indian 10-digit, 0-prefixed, or international formats.
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1">
+                  Call Button Label
+                </label>
+                <input
+                  type="text"
+                  value={config.callLabel || ""}
+                  onChange={(e) => setConfig({ ...config, callLabel: e.target.value })}
+                  placeholder="Call Now"
+                  className="w-full px-3.5 py-2.5 text-xs font-semibold rounded-xl border border-slate-300 focus:outline-none focus:border-[#06264A] focus:ring-1 focus:ring-[#06264A]"
+                />
+                <p className="text-[10px] text-slate-500 mt-1">
+                  Examples: "Call Now", "Contact Us", "Call Our Store", "Speak to Optometrist".
+                </p>
+              </div>
+
+              {/* Live Link Info */}
+              <div className="bg-slate-50 rounded-xl p-3 border border-slate-200 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <div className="min-w-0">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
+                    Generated Dialer Link
+                  </span>
+                  <code className="text-[11px] text-[#06264A] font-mono font-bold truncate block">
+                    {callHref || "None"}
+                  </code>
+                </div>
+                {callHref && (
+                  <a
+                    href={callHref}
+                    className="inline-flex items-center gap-1 text-[11px] font-bold text-sky-700 hover:text-sky-900 shrink-0"
+                  >
+                    <span>Test Link</span>
+                    <ExternalLink className="w-3 h-3" />
+                  </a>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* 2. WHATSAPP NOW CARD */}
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-emerald-500 text-white flex items-center justify-center shadow-sm">
+                  <WhatsAppIcon size={20} />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-slate-900">WhatsApp Now Button</h3>
+                  <p className="text-[11px] text-slate-500">Direct WhatsApp chat link</p>
+                </div>
+              </div>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={Boolean(config.whatsappEnabled)}
+                  onChange={(e) => setConfig({ ...config, whatsappEnabled: e.target.checked })}
+                  className="sr-only peer"
+                />
+                <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
+                <span className="ml-2 text-xs font-bold text-slate-700">
+                  {config.whatsappEnabled ? "Enabled" : "Disabled"}
+                </span>
+              </label>
+            </div>
+
+            <div className="space-y-4 pt-1">
+              <div>
+                <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1">
+                  WhatsApp Number
+                </label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={config.whatsappNumber || ""}
+                    onChange={(e) => setConfig({ ...config, whatsappNumber: e.target.value })}
+                    placeholder="9594030310"
+                    className="w-full px-3.5 py-2.5 text-xs font-semibold rounded-xl border border-slate-300 focus:outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600"
+                  />
+                  <span className="absolute right-3 top-2.5 text-[10px] font-bold text-slate-400">
+                    Default: 9594030310
+                  </span>
+                </div>
+                <p className="text-[10px] text-slate-500 mt-1">
+                  Do not type the full wa.me link; just input the phone number.
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1">
+                  WhatsApp Button Label
+                </label>
+                <input
+                  type="text"
+                  value={config.whatsappLabel || ""}
+                  onChange={(e) => setConfig({ ...config, whatsappLabel: e.target.value })}
+                  placeholder="WhatsApp Now"
+                  className="w-full px-3.5 py-2.5 text-xs font-semibold rounded-xl border border-slate-300 focus:outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600"
+                />
+                <p className="text-[10px] text-slate-500 mt-1">
+                  Examples: "WhatsApp Now", "Chat on WhatsApp", "WhatsApp Us".
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1">
+                  WhatsApp Default Pre-filled Message
+                </label>
+                <textarea
+                  rows={2}
+                  value={config.whatsappMessage || ""}
+                  onChange={(e) => setConfig({ ...config, whatsappMessage: e.target.value })}
+                  placeholder="Hello PrettyVision, I would like to know more about your eyewear and services."
+                  className="w-full px-3.5 py-2.5 text-xs font-medium rounded-xl border border-slate-300 focus:outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600"
+                />
+                <p className="text-[10px] text-slate-500 mt-0.5">
+                  Pre-fills customer WhatsApp composer. URL-encoded automatically.
+                </p>
+              </div>
+
+              {/* Live Link Info */}
+              <div className="bg-emerald-50/60 rounded-xl p-3 border border-emerald-200/60 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <div className="min-w-0">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-800/70 block">
+                    Generated WhatsApp Link
+                  </span>
+                  <code className="text-[11px] text-emerald-900 font-mono font-bold truncate block">
+                    {whatsappHref || "None"}
+                  </code>
+                </div>
+                {whatsappHref && (
+                  <a
+                    href={whatsappHref}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 hover:text-emerald-900 shrink-0"
+                  >
+                    <span>Test WhatsApp</span>
+                    <ExternalLink className="w-3 h-3" />
+                  </a>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* 3. DISPLAY & POSITION SETTINGS */}
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-5">
+            <h3 className="text-sm font-bold text-slate-900 pb-2 border-b border-slate-100">
+              Position & Device Visibility
+            </h3>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1.5">
+                  Screen Position
+                </label>
+                <select
+                  value={config.position || "bottom-right"}
+                  onChange={(e) => setConfig({ ...config, position: e.target.value })}
+                  className="w-full px-3.5 py-2.5 text-xs font-bold rounded-xl border border-slate-300 bg-white focus:outline-none focus:border-[#06264A]"
+                >
+                  <option value="bottom-right">Bottom Right (Recommended)</option>
+                  <option value="bottom-left">Bottom Left</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1.5">
+                  Stack Order
+                </label>
+                <select
+                  value={config.order || "whatsapp-call"}
+                  onChange={(e) => setConfig({ ...config, order: e.target.value })}
+                  className="w-full px-3.5 py-2.5 text-xs font-bold rounded-xl border border-slate-300 bg-white focus:outline-none focus:border-[#06264A]"
+                >
+                  <option value="whatsapp-call">WhatsApp on Top, Call Below</option>
+                  <option value="call-whatsapp">Call on Top, WhatsApp Below</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-slate-100">
+              <label className="flex items-center gap-2.5 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={Boolean(config.desktopEnabled)}
+                  onChange={(e) => setConfig({ ...config, desktopEnabled: e.target.checked })}
+                  className="rounded border-slate-300 text-[#06264A] focus:ring-[#06264A]"
+                />
+                <span className="text-xs font-bold text-slate-700">Show on Desktop Screens</span>
+              </label>
+
+              <label className="flex items-center gap-2.5 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={Boolean(config.mobileEnabled)}
+                  onChange={(e) => setConfig({ ...config, mobileEnabled: e.target.checked })}
+                  className="rounded border-slate-300 text-[#06264A] focus:ring-[#06264A]"
+                />
+                <span className="text-xs font-bold text-slate-700">Show on Mobile Screens</span>
+              </label>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-slate-100">
+              <div>
+                <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1">
+                  Desktop Bottom Offset (px)
+                </label>
+                <input
+                  type="number"
+                  min={8}
+                  max={200}
+                  value={config.bottomOffsetDesktop ?? 24}
+                  onChange={(e) => setConfig({ ...config, bottomOffsetDesktop: Number(e.target.value) })}
+                  className="w-full px-3.5 py-2 text-xs font-semibold rounded-xl border border-slate-300 focus:outline-none focus:border-[#06264A]"
+                />
+                <p className="text-[10px] text-slate-400 mt-1">Default: 24px</p>
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1">
+                  Mobile Bottom Offset (px)
+                </label>
+                <input
+                  type="number"
+                  min={10}
+                  max={200}
+                  value={config.bottomOffsetMobile ?? 80}
+                  onChange={(e) => setConfig({ ...config, bottomOffsetMobile: Number(e.target.value) })}
+                  className="w-full px-3.5 py-2 text-xs font-semibold rounded-xl border border-slate-300 focus:outline-none focus:border-[#06264A]"
+                />
+                <p className="text-[10px] text-slate-400 mt-1">Default: 80px (clears mobile nav)</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex justify-end pt-2">
+            <button
+              type="submit"
+              disabled={saving}
+              className="inline-flex items-center gap-2 rounded-xl bg-[#06264A] text-white px-8 py-3 text-xs font-bold uppercase tracking-wider shadow-md hover:bg-[#0A3360] transition"
+            >
+              <Save className="w-4 h-4" />
+              <span>{saving ? "Saving Changes..." : "Save Floating Contact Settings"}</span>
+            </button>
+          </div>
+        </form>
+
+        {/* Right Sticky Column: Live Simulation & Preview */}
+        <div className="lg:col-span-5 sticky top-24 space-y-4">
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <div>
+                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-700">
+                  Interactive Live Preview
+                </h3>
+                <p className="text-[11px] text-slate-500">Real-time simulation of user experience</p>
+              </div>
+              <div className="flex items-center bg-slate-100 p-0.5 rounded-lg">
+                <button
+                  type="button"
+                  onClick={() => setPreviewDevice("desktop")}
+                  className={`px-2 py-1 rounded text-[10px] font-bold flex items-center gap-1 transition ${
+                    previewDevice === "desktop" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500"
+                  }`}
+                >
+                  <Monitor className="w-3 h-3" />
+                  <span>Desktop</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPreviewDevice("mobile")}
+                  className={`px-2 py-1 rounded text-[10px] font-bold flex items-center gap-1 transition ${
+                    previewDevice === "mobile" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500"
+                  }`}
+                >
+                  <Smartphone className="w-3 h-3" />
+                  <span>Mobile</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Mock website screen container */}
+            <div
+              className={`relative mx-auto rounded-2xl border border-slate-300 bg-slate-950 overflow-hidden shadow-inner transition-all duration-300 ${
+                previewDevice === "mobile" ? "w-[260px] h-[400px]" : "w-full h-[360px]"
+              }`}
+            >
+              {/* Mock website header */}
+              <div className="h-9 bg-slate-900/90 border-b border-slate-800 px-3 flex items-center justify-between">
+                <div className="flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-red-500/80"></span>
+                  <span className="w-2 h-2 rounded-full bg-amber-500/80"></span>
+                  <span className="w-2 h-2 rounded-full bg-emerald-500/80"></span>
+                </div>
+                <span className="text-[10px] font-mono font-bold text-slate-400">prettyvision.in</span>
+                <span className="w-4"></span>
+              </div>
+
+              {/* Mock website page content */}
+              <div className="p-4 space-y-3 opacity-30 select-none">
+                <div className="h-4 w-3/4 bg-slate-700 rounded"></div>
+                <div className="h-2 w-1/2 bg-slate-800 rounded"></div>
+                <div className="grid grid-cols-2 gap-2 pt-2">
+                  <div className="h-16 bg-slate-800 rounded-lg"></div>
+                  <div className="h-16 bg-slate-800 rounded-lg"></div>
+                </div>
+                <div className="h-3 w-5/6 bg-slate-800 rounded"></div>
+                <div className="h-3 w-4/6 bg-slate-800 rounded"></div>
+              </div>
+
+              {/* FLOATING ACTION BUTTONS SIMULATION */}
+              {(!config.callEnabled && !config.whatsappEnabled) ? (
+                <div className="absolute inset-x-0 bottom-6 text-center text-[11px] text-slate-500">
+                  (Both buttons disabled)
+                </div>
+              ) : (
+                <div
+                  className={`absolute z-10 flex flex-col gap-2 pointer-events-none ${
+                    config.position === "bottom-left" ? "left-4 items-start" : "right-4 items-end"
+                  } ${
+                    previewDevice === "mobile" ? "bottom-6" : "bottom-5"
+                  }`}
+                >
+                  {(config.order === "call-whatsapp" ? [
+                    config.callEnabled && (
+                      <div
+                        key="call-sim"
+                        className="flex items-center gap-2 rounded-full bg-gradient-to-r from-[#06264A] to-[#0B192C] text-white px-3 py-2 shadow-lg border border-white/20 scale-90 sm:scale-95"
+                      >
+                        <Phone className="w-3.5 h-3.5 text-amber-300" />
+                        <span className="text-[11px] font-bold whitespace-nowrap">
+                          {config.callLabel || "Call Now"}
+                        </span>
+                      </div>
+                    ),
+                    config.whatsappEnabled && (
+                      <div
+                        key="wa-sim"
+                        className="flex items-center gap-2 rounded-full bg-gradient-to-r from-[#25D366] to-[#128C7E] text-white px-3 py-2 shadow-lg border border-white/25 scale-90 sm:scale-95 animate-pulse"
+                      >
+                        <WhatsAppIcon size={16} />
+                        <span className="text-[11px] font-bold whitespace-nowrap">
+                          {config.whatsappLabel || "WhatsApp Now"}
+                        </span>
+                      </div>
+                    )
+                  ] : [
+                    config.whatsappEnabled && (
+                      <div
+                        key="wa-sim"
+                        className="flex items-center gap-2 rounded-full bg-gradient-to-r from-[#25D366] to-[#128C7E] text-white px-3 py-2 shadow-lg border border-white/25 scale-90 sm:scale-95 animate-pulse"
+                      >
+                        <WhatsAppIcon size={16} />
+                        <span className="text-[11px] font-bold whitespace-nowrap">
+                          {config.whatsappLabel || "WhatsApp Now"}
+                        </span>
+                      </div>
+                    ),
+                    config.callEnabled && (
+                      <div
+                        key="call-sim"
+                        className="flex items-center gap-2 rounded-full bg-gradient-to-r from-[#06264A] to-[#0B192C] text-white px-3 py-2 shadow-lg border border-white/20 scale-90 sm:scale-95"
+                      >
+                        <Phone className="w-3.5 h-3.5 text-amber-300" />
+                        <span className="text-[11px] font-bold whitespace-nowrap">
+                          {config.callLabel || "Call Now"}
+                        </span>
+                      </div>
+                    )
+                  ])}
+                </div>
+              )}
+            </div>
+
+            {/* Quick summary notes */}
+            <div className="space-y-2 text-[11px] text-slate-500 pt-2 border-t border-slate-100">
+              <div className="flex items-center justify-between">
+                <span>Call Status:</span>
+                <span className={`font-bold ${config.callEnabled ? "text-emerald-600" : "text-rose-500"}`}>
+                  {config.callEnabled ? "Active (" + (callNorm.display || config.callNumber) + ")" : "Disabled"}
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span>WhatsApp Status:</span>
+                <span className={`font-bold ${config.whatsappEnabled ? "text-emerald-600" : "text-rose-500"}`}>
+                  {config.whatsappEnabled ? "Active (" + (whatsappNorm.display || config.whatsappNumber) + ")" : "Disabled"}
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span>Position:</span>
+                <span className="font-semibold text-slate-700 capitalize">
+                  {config.position ? config.position.replace("-", " ") : "Bottom Right"}
+                </span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

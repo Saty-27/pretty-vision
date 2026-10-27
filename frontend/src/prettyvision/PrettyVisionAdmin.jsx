@@ -6951,6 +6951,25 @@ export const AdminWebsiteSettings = () => {
         </p>
       </div>
 
+      <div className="bg-gradient-to-r from-[#06264A]/5 to-[#25D366]/10 border border-slate-200 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-xl bg-[#06264A] text-white flex items-center justify-center text-xs font-bold shrink-0">
+            📞
+          </div>
+          <div>
+            <p className="text-xs font-bold text-slate-800">Floating Contact Buttons (Call & WhatsApp)</p>
+            <p className="text-[11px] text-slate-500">Manage floating action buttons, phone numbers, WhatsApp message, and positions.</p>
+          </div>
+        </div>
+        <Link
+          to="/admin/floating-contact"
+          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#06264A] text-white text-xs font-bold hover:bg-[#0A3360] transition shrink-0"
+        >
+          <span>Open Floating Contact Settings</span>
+          <ArrowRight className="w-3.5 h-3.5" />
+        </Link>
+      </div>
+
       {saved && (
         <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold flex items-center gap-2">
           <Check className="h-4 w-4" />
@@ -7113,5 +7132,6 @@ export {
   AdminStoreLocation,
   AdminInstagramFeed,
   AdminBrandBanner,
-  AdminShopByType
+  AdminShopByType,
+  AdminFloatingContact
 } from "./PrettyVisionAdminModules";

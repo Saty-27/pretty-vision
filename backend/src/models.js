@@ -754,6 +754,25 @@ const siteSettingSchema = new Schema(
     topBarPhone: { type: String, default: "095940 30310" },
     topBarCtaText: { type: String, default: "Visit Store" },
     topBarCtaUrl: { type: String, default: "/contact" },
+    floatingContact: {
+      callEnabled: { type: Boolean, default: true },
+      callNumber: { type: String, default: "9594030310" },
+      callLabel: { type: String, default: "Call Now" },
+      whatsappEnabled: { type: Boolean, default: true },
+      whatsappNumber: { type: String, default: "9594030310" },
+      whatsappLabel: { type: String, default: "WhatsApp Now" },
+      whatsappMessage: {
+        type: String,
+        default: "Hello PrettyVision, I would like to know more about your eyewear and services."
+      },
+      position: { type: String, default: "bottom-right" },
+      desktopEnabled: { type: Boolean, default: true },
+      mobileEnabled: { type: Boolean, default: true },
+      bottomOffsetDesktop: { type: Number, default: 24 },
+      bottomOffsetMobile: { type: Number, default: 80 },
+      buttonStyle: { type: String, default: "pill" },
+      order: { type: String, default: "whatsapp-call" }
+    },
     aboutStats: {
       courses: { type: String, default: "6+" },
       teachers: { type: String, default: "6+" },

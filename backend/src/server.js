@@ -441,7 +441,9 @@ const SECTION_ALIASES = {
   "gallery-items": "gallery-items",
   gallery: "gallery-items",
   instagram: "gallery-items",
-  homepage: "home-sections"
+  homepage: "home-sections",
+  "floating-contact": "site-settings",
+  "floating-contacts": "site-settings"
 };
 
 const sectionFor = (resource = "") => {
@@ -1234,6 +1236,32 @@ app.post(
     res.status(201).json({ success: true, file });
   })
 );
+
+const DEFAULT_FLOATING_CONTACT = {
+  callEnabled: true,
+  callNumber: "9594030310",
+  callLabel: "Call Now",
+  whatsappEnabled: true,
+  whatsappNumber: "9594030310",
+  whatsappLabel: "WhatsApp Now",
+  whatsappMessage: "Hello PrettyVision, I would like to know more about your eyewear and services.",
+  position: "bottom-right",
+  desktopEnabled: true,
+  mobileEnabled: true,
+  bottomOffsetDesktop: 24,
+  bottomOffsetMobile: 80,
+  buttonStyle: "pill",
+  order: "whatsapp-call"
+};
+
+app.get("/api/floating-contact", asyncHandler(async (req, res) => {
+  const site = await SiteSetting.findOne({ singletonKey: "site" }).lean();
+  const floatingContact = {
+    ...DEFAULT_FLOATING_CONTACT,
+    ...(site?.floatingContact || {})
+  };
+  res.json({ success: true, floatingContact });
+}));
 
 app.get("/api/site-settings", asyncHandler(async (req, res) => res.json({ success: true, settings: await SiteSetting.findOne({ singletonKey: "site" }).lean() })));
 app.get("/api/footer", asyncHandler(async (req, res) => res.json({ success: true, footer: await FooterSetting.findOne({ singletonKey: "footer" }).lean() })));
@@ -4878,6 +4906,41 @@ app.get("/api/admin/footer", ...adminOnly, asyncHandler(async (req, res) => res.
 app.put("/api/admin/footer", ...adminOnly, asyncHandler(async (req, res) => res.json({ success: true, footer: await FooterSetting.findOneAndUpdate({ singletonKey: "footer" }, { ...req.body, singletonKey: "footer" }, { new: true, upsert: true }) })));
 app.get("/api/admin/site-settings", ...adminOnly, asyncHandler(async (req, res) => res.json({ success: true, settings: await SiteSetting.findOne({ singletonKey: "site" }).lean() })));
 app.put("/api/admin/site-settings", ...adminOnly, asyncHandler(async (req, res) => res.json({ success: true, settings: await SiteSetting.findOneAndUpdate({ singletonKey: "site" }, { ...req.body, singletonKey: "site" }, { new: true, upsert: true }) })));
+
+app.get("/api/admin/floating-contact", ...adminOnly, asyncHandler(async (req, res) => {
+  const site = await SiteSetting.findOne({ singletonKey: "site" }).lean();
+  const floatingContact = {
+    ...DEFAULT_FLOATING_CONTACT,
+    ...(site?.floatingContact || {})
+  };
+  res.json({ success: true, floatingContact });
+}));
+
+app.put("/api/admin/floating-contact", ...adminOnly, asyncHandler(async (req, res) => {
+  const payload = req.body || {};
+  const currentSite = await SiteSetting.findOne({ singletonKey: "site" });
+  const merged = {
+    ...DEFAULT_FLOATING_CONTACT,
+    ...(currentSite?.floatingContact?.toObject?.() || currentSite?.floatingContact || {}),
+    ...payload
+  };
+
+  const updated = await SiteSetting.findOneAndUpdate(
+    { singletonKey: "site" },
+    { $set: { floatingContact: merged } },
+    { new: true, upsert: true }
+  );
+  res.json({ success: true, floatingContact: updated.floatingContact });
+}));
+
+app.post("/api/admin/floating-contact/reset", ...adminOnly, asyncHandler(async (req, res) => {
+  const updated = await SiteSetting.findOneAndUpdate(
+    { singletonKey: "site" },
+    { $set: { floatingContact: DEFAULT_FLOATING_CONTACT } },
+    { new: true, upsert: true }
+  );
+  res.json({ success: true, floatingContact: updated.floatingContact, message: "Floating contact settings reset to default" });
+}));
 
 app.get("/api/admin/store-location", ...adminOnly, asyncHandler(async (req, res) => {
   let store = await StoreLocation.findOne().lean();

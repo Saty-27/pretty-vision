@@ -43,7 +43,8 @@ import {
   Calendar,
   Glasses,
   Gem,
-  Sparkles
+  Sparkles,
+  PhoneCall
 } from "lucide-react";
 import { apiFetch, assetUrl, trackPage, uploadFile } from "./api";
 import { footer as fallbackFooter } from "./fallback";
@@ -1595,6 +1596,7 @@ export const dashboardLinks = {
     { label: "Lifestyle Gallery", url: "/admin/gallery", icon: Image },
     { label: "Client Testimonials", url: "/admin/testimonials", icon: MessageSquare },
     { label: "Optical Articles & Blogs", url: "/admin/blogs", icon: FileText },
+    { label: "Floating Call & WhatsApp", url: "/admin/floating-contact", icon: PhoneCall },
     { label: "Website Settings", url: "/admin/site-settings", icon: Settings },
     { label: "About Page Content", url: "/admin/about", icon: FileText },
     { label: "Staff & Roles", url: "/admin/roles", icon: Shield },
@@ -1638,6 +1640,7 @@ const sectionOf = (url = "") => {
     users: "users",
     footer: "footer",
     "site-settings": "site-settings",
+    "floating-contact": "site-settings",
     traffic: "traffic",
     reports: "reports",
     blogs: "blogs",

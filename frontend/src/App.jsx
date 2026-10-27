@@ -107,8 +107,10 @@ import {
   AdminStoreLocation,
   AdminInstagramFeed,
   AdminBrandBanner,
-  AdminShopByType
+  AdminShopByType,
+  AdminFloatingContact
 } from "./prettyvision/PrettyVisionAdmin";
+import { FloatingContactButtons } from "./prettyvision/FloatingContactButtons";
 
 const PageDisabledGuard = ({ sectionKey, pageName, children }) => {
   const { isPageEnabled } = useHomepageSections();
@@ -231,6 +233,7 @@ const App = () => {
   return (
     <>
       <ScrollToTop />
+      <FloatingContactButtons />
       <Routes>
         {/* PrettyVision Public Routes */}
         <Route path="/" element={<PrettyVisionHomePage />} />
@@ -332,6 +335,7 @@ const App = () => {
         <Route path="products" element={<AdminProducts />} />
         <Route path="appointments" element={<AdminAppointments />} />
         <Route path="banners" element={<AdminHeroBanners />} />
+        <Route path="floating-contact" element={<AdminFloatingContact />} />
         <Route path="site-settings" element={<AdminWebsiteSettings />} />
         <Route path="testimonials" element={<AdminTestimonialsPage />} />
         <Route path="contact" element={<AdminContactPage />} />
