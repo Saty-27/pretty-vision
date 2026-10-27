@@ -34,6 +34,7 @@ import {
   Youtube,
   Linkedin,
   Globe,
+  Shield,
   X
 } from "lucide-react";
 import { apiFetch, assetUrl } from "../api";

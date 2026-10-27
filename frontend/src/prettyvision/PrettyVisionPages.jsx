@@ -39,7 +39,8 @@ import {
   HelpCircle,
   Compass,
   Layers,
-  Quote
+  Quote,
+  Globe
 } from "lucide-react";
 
 export const PublicLayoutWrapper = ({ children }) => {
