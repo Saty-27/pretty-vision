@@ -620,8 +620,15 @@ export const FeatureHighlights = ({ items = [], sectionData = {} }) => {
    5. COLLECTIONS SECTION ("FRAMES FOR EVERY STYLE") - SQUARE CARDS
    ============================================================ */
 export const CollectionsSection = ({ collections = [], sectionData = {} }) => {
+  if (sectionData.homepageVisible === false || sectionData.status === "inactive") {
+    return null;
+  }
+
+  const carouselRef = useRef(null);
   const title = sectionData.sectionTitle || "FRAMES FOR EVERY STYLE";
   const subtitle = sectionData.sectionSubtitle || "EXPLORE OUR COLLECTIONS";
+  const viewAllText = sectionData.content?.viewAllText || "View All Collections";
+  const viewAllLink = sectionData.content?.viewAllLink || "/eyewear";
 
   const defaultList = [
     {
@@ -676,7 +683,16 @@ export const CollectionsSection = ({ collections = [], sectionData = {} }) => {
     }
   ];
 
-  const list = collections.length > 0 ? collections : defaultList;
+  const rawList = collections.length > 0 ? collections : defaultList;
+  const list = rawList.filter((col) => col.isActive !== false);
+
+  if (list.length === 0) return null;
+
+  const scroll = (direction) => {
+    if (!carouselRef.current) return;
+    const amount = direction === "left" ? -340 : 340;
+    carouselRef.current.scrollBy({ left: amount, behavior: "smooth" });
+  };
 
   return (
     <section className="w-full bg-white py-16 lg:py-24 xl:py-28 border-b border-slate-100">
@@ -693,24 +709,26 @@ export const CollectionsSection = ({ collections = [], sectionData = {} }) => {
           </div>
           <div className="flex items-center gap-4">
             <Link
-              to="/eyewear"
+              to={viewAllLink}
               className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-bold text-[#08264A] hover:text-[#0D315A] group"
             >
-              <span>View All Collections</span>
+              <span>{viewAllText}</span>
               <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
             </Link>
             <div className="hidden md:flex items-center gap-2">
               <button
                 type="button"
+                onClick={() => scroll("left")}
                 aria-label="Previous collections"
-                className="w-10 h-10 rounded-full border border-slate-300 flex items-center justify-center text-slate-700 hover:border-[#08264A] hover:bg-[#08264A] hover:text-white transition"
+                className="w-10 h-10 rounded-full border border-slate-300 flex items-center justify-center text-slate-700 hover:border-[#08264A] hover:bg-[#08264A] hover:text-white transition cursor-pointer"
               >
                 <ArrowLeft className="h-4 w-4" />
               </button>
               <button
                 type="button"
+                onClick={() => scroll("right")}
                 aria-label="Next collections"
-                className="w-10 h-10 rounded-full border border-slate-300 flex items-center justify-center text-slate-700 hover:border-[#08264A] hover:bg-[#08264A] hover:text-white transition"
+                className="w-10 h-10 rounded-full border border-slate-300 flex items-center justify-center text-slate-700 hover:border-[#08264A] hover:bg-[#08264A] hover:text-white transition cursor-pointer"
               >
                 <ArrowRight className="h-4 w-4" />
               </button>
@@ -718,8 +736,11 @@ export const CollectionsSection = ({ collections = [], sectionData = {} }) => {
           </div>
         </div>
 
-        {/* 5-Column SQUARE Card Grid (Exact 1:1 Aspect Ratio matching Reference) */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 lg:gap-5 xl:gap-6">
+        {/* Dynamic Carousel / Grid */}
+        <div
+          ref={carouselRef}
+          className="flex overflow-x-auto scrollbar-none snap-x snap-mandatory gap-4 lg:gap-5 xl:gap-6 pb-2"
+        >
           {list.map((col, idx) => {
             const isDark = idx === 0 || col.theme === "dark" || col.title?.toLowerCase().includes("men");
             const hasPosterText = Boolean(
@@ -729,68 +750,72 @@ export const CollectionsSection = ({ collections = [], sectionData = {} }) => {
             const imgSrc = assetUrl(col.image || defaultList[idx]?.image);
 
             return (
-              <Link
+              <div
                 key={col._id || col.title || idx}
-                to={col.destinationUrl || "/eyewear"}
-                title={`${col.title} — ${col.subtitle || ""}`}
-                className="group relative rounded-[20px] sm:rounded-[24px] overflow-hidden aspect-square w-full bg-slate-100 border border-slate-200/90 shadow-xs hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 flex flex-col justify-end p-5 sm:p-6 block"
+                className="snap-start shrink-0 w-[280px] sm:w-[300px] md:w-[320px] lg:w-[calc((100%-4*1.25rem)/5)] min-w-[260px]"
               >
-                <img
-                  src={imgSrc}
-                  alt={col.title}
-                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-104"
-                  onError={(e) => {
-                    e.target.onerror = null;
-                    e.target.src = defaultList[idx]?.fallback || `/square_card_${idx + 1}.png`;
-                  }}
-                />
+                <Link
+                  to={col.destinationUrl || "/eyewear"}
+                  title={`${col.title} — ${col.subtitle || ""}`}
+                  className="group relative rounded-[20px] sm:rounded-[24px] overflow-hidden aspect-square w-full bg-slate-100 border border-slate-200/90 shadow-xs hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 flex flex-col justify-end p-5 sm:p-6 block"
+                >
+                  <img
+                    src={imgSrc}
+                    alt={col.title}
+                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-104"
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = defaultList[idx]?.fallback || `/square_card_${idx + 1}.png`;
+                    }}
+                  />
 
-                {hasPosterText ? (
-                  <>
-                    <span className="sr-only">
-                      {col.title} — {col.subtitle}. {col.buttonText || "Explore"} collection at PrettyVision Kalina Mumbai.
-                    </span>
-                    {/* Subtle interactive hover sheen */}
-                    <div className="absolute inset-0 bg-[#08264A]/0 group-hover:bg-[#08264A]/10 transition-colors duration-300 pointer-events-none" />
-                  </>
-                ) : (
-                  <>
-                    <div
-                      className={`absolute inset-0 pointer-events-none transition-opacity group-hover:opacity-95 ${
-                        isDark
-                          ? "bg-gradient-to-t from-black/90 via-black/40 to-transparent"
-                          : "bg-gradient-to-tr from-white/95 via-white/60 to-transparent"
-                      }`}
-                    />
-                    <div className="relative z-10 space-y-1">
-                      <h3
-                        className={`font-serif text-xl sm:text-2xl font-bold leading-tight ${
-                          isDark ? "text-white" : "text-[#08264A]"
+                  {hasPosterText ? (
+                    <>
+                      <span className="sr-only">
+                        {col.title} — {col.subtitle}. {col.buttonText || "Explore"} collection at PrettyVision Kalina Mumbai.
+                      </span>
+                      {/* Subtle interactive hover sheen */}
+                      <div className="absolute inset-0 bg-[#08264A]/0 group-hover:bg-[#08264A]/10 transition-colors duration-300 pointer-events-none" />
+                    </>
+                  ) : (
+                    <>
+                      <div
+                        className={`absolute inset-0 pointer-events-none transition-opacity group-hover:opacity-95 ${
+                          isDark
+                            ? "bg-gradient-to-t from-black/90 via-black/40 to-transparent"
+                            : "bg-gradient-to-tr from-white/95 via-white/60 to-transparent"
                         }`}
-                      >
-                        {col.title}
-                      </h3>
-                      {col.subtitle && (
-                        <p
-                          className={`text-xs sm:text-[13px] leading-snug line-clamp-2 ${
-                            isDark ? "text-slate-200" : "text-[#08264A]/80 font-medium"
+                      />
+                      <div className="relative z-10 space-y-1">
+                        <h3
+                          className={`font-serif text-xl sm:text-2xl font-bold leading-tight ${
+                            isDark ? "text-white" : "text-[#08264A]"
                           }`}
                         >
-                          {col.subtitle}
-                        </p>
-                      )}
-                      <div
-                        className={`pt-2 flex items-center gap-1.5 text-xs sm:text-[13px] font-bold ${
-                          isDark ? "text-white" : "text-[#08264A]"
-                        }`}
-                      >
-                        <span>{col.buttonText || "Explore"}</span>
-                        <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
+                          {col.title}
+                        </h3>
+                        {col.subtitle && (
+                          <p
+                            className={`text-xs sm:text-[13px] leading-snug line-clamp-2 ${
+                              isDark ? "text-slate-200" : "text-[#08264A]/80 font-medium"
+                            }`}
+                          >
+                            {col.subtitle}
+                          </p>
+                        )}
+                        <div
+                          className={`pt-2 flex items-center gap-1.5 text-xs sm:text-[13px] font-bold ${
+                            isDark ? "text-white" : "text-[#08264A]"
+                          }`}
+                        >
+                          <span>{col.buttonText || "Explore"}</span>
+                          <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
+                        </div>
                       </div>
-                    </div>
-                  </>
-                )}
-              </Link>
+                    </>
+                  )}
+                </Link>
+              </div>
             );
           })}
         </div>
@@ -804,9 +829,15 @@ export const CollectionsSection = ({ collections = [], sectionData = {} }) => {
    Editorial luxury full-width 5-card layout matching reference
    ============================================================ */
 export const CategorySection = ({ categories = [], sectionData = {} }) => {
+  if (sectionData.homepageVisible === false || sectionData.status === "inactive") {
+    return null;
+  }
+
   const carouselRef = useRef(null);
   const title = sectionData.sectionTitle || "FIND WHAT SUITS YOU";
   const subtitle = sectionData.sectionSubtitle || "SHOP BY TYPE";
+  const viewAllText = sectionData.content?.viewAllText || "View All Categories";
+  const viewAllLink = sectionData.content?.viewAllLink || "/eyewear";
 
   const defaultList = [
     {
@@ -886,10 +917,10 @@ export const CategorySection = ({ categories = [], sectionData = {} }) => {
 
           <div className="flex items-center justify-between md:justify-end gap-6 sm:gap-8">
             <Link
-              to="/eyewear"
+              to={viewAllLink}
               className="inline-flex items-center gap-2 text-sm sm:text-base font-bold text-[#08294C] hover:text-[#0D315A] transition-colors group shrink-0"
             >
-              <span>View All Categories</span>
+              <span>{viewAllText}</span>
               <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
             </Link>
 
@@ -997,6 +1028,10 @@ export const CategorySection = ({ categories = [], sectionData = {} }) => {
    - No separate bordered cards or giant empty areas
    ============================================================ */
 export const BrandShowcase = ({ sectionData = {}, brands = [] }) => {
+  if (sectionData.homepageVisible === false || sectionData.status === "inactive") {
+    return null;
+  }
+
   const content = sectionData.content || {};
 
   // General texts
@@ -1310,6 +1345,10 @@ export const ServicesSection = ({ services = [], sectionData = {}, onBookClick }
    - Refined rectangular buttons with subtle rounded-[5px]
    ============================================================ */
 export const StoreSection = ({ store = {}, sectionData = {}, settings = {}, onBookClick }) => {
+  if (sectionData.homepageVisible === false || sectionData.status === "inactive") {
+    return null;
+  }
+
   const content = sectionData.content || {};
   const storeData = store || {};
 
@@ -1504,10 +1543,17 @@ export const StoreSection = ({ store = {}, sectionData = {}, settings = {}, onBo
    11. INSTAGRAM GALLERY ("FOLLOW PRETTYVISION @prettyvision_kalina")
    ============================================================ */
 export const GallerySection = ({ gallery = [], sectionData = {} }) => {
+  if (sectionData.homepageVisible === false || sectionData.status === "inactive") {
+    return null;
+  }
+
+  const galleryRef = useRef(null);
   const title = sectionData.sectionTitle || "FOLLOW PRETTYVISION";
   const subtitle = sectionData.sectionSubtitle || "@prettyvision_kalina";
   const content = sectionData.content || {};
   const instagramUrl = content.instagramUrl || "https://instagram.com/prettyvision_kalina";
+  const viewAllText = content.viewAllText || "View on Instagram";
+  const viewAllLink = content.viewAllLink || instagramUrl;
 
   const defaultImages = [
     { image: "/gallery_1.jpg", fallback: "/gallery_1.jpg", title: "Classic Elegance" },
@@ -1520,7 +1566,16 @@ export const GallerySection = ({ gallery = [], sectionData = {} }) => {
     { image: "/gallery_8.jpg", fallback: "/gallery_8.jpg", title: "Contact Lens Comfort" }
   ];
 
-  const list = gallery.length > 0 ? gallery : defaultImages;
+  const rawList = gallery.length > 0 ? gallery : defaultImages;
+  const list = rawList.filter((item) => item.isActive !== false);
+
+  if (list.length === 0) return null;
+
+  const scroll = (direction) => {
+    if (!galleryRef.current) return;
+    const amount = direction === "left" ? -300 : 300;
+    galleryRef.current.scrollBy({ left: amount, behavior: "smooth" });
+  };
 
   return (
     <section className="w-full bg-white py-20 lg:py-26 border-b border-slate-200">
@@ -1544,48 +1599,65 @@ export const GallerySection = ({ gallery = [], sectionData = {} }) => {
           </div>
           <div className="flex items-center gap-4">
             <a
-              href={instagramUrl}
+              href={viewAllLink}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-bold text-[#08264A] hover:text-[#0D315A] group"
             >
-              <span>View on Instagram</span>
+              <span>{viewAllText}</span>
               <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
             </a>
             <div className="hidden md:flex items-center gap-2">
-              <button className="w-10 h-10 rounded-full border border-slate-300 flex items-center justify-center text-slate-700 hover:border-[#08264A] hover:bg-[#08264A] hover:text-white transition">
+              <button
+                type="button"
+                onClick={() => scroll("left")}
+                aria-label="Previous gallery images"
+                className="w-10 h-10 rounded-full border border-slate-300 flex items-center justify-center text-slate-700 hover:border-[#08264A] hover:bg-[#08264A] hover:text-white transition cursor-pointer"
+              >
                 <ArrowLeft className="h-4 w-4" />
               </button>
-              <button className="w-10 h-10 rounded-full border border-slate-300 flex items-center justify-center text-slate-700 hover:border-[#08264A] hover:bg-[#08264A] hover:text-white transition">
+              <button
+                type="button"
+                onClick={() => scroll("right")}
+                aria-label="Next gallery images"
+                className="w-10 h-10 rounded-full border border-slate-300 flex items-center justify-center text-slate-700 hover:border-[#08264A] hover:bg-[#08264A] hover:text-white transition cursor-pointer"
+              >
                 <ArrowRight className="h-4 w-4" />
               </button>
             </div>
           </div>
         </div>
 
-        {/* 8 Continuous Square Tiles Across Desktop */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3.5 sm:gap-4">
+        {/* Continuous Square Tiles Across Desktop (Scrollable on overflow) */}
+        <div
+          ref={galleryRef}
+          className="flex overflow-x-auto scrollbar-none snap-x snap-mandatory gap-3.5 sm:gap-4 pb-2"
+        >
           {list.map((item, idx) => (
-            <a
+            <div
               key={item._id || idx}
-              href={item.instagramUrl || instagramUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="group relative rounded-2xl overflow-hidden aspect-square bg-slate-100 shadow-2xs hover:shadow-xl transition-all duration-300 block"
+              className="snap-start shrink-0 w-[140px] sm:w-[170px] md:w-[185px] lg:w-[calc((100%-7*1rem)/8)] min-w-[130px]"
             >
-              <img
-                src={assetUrl(item.image || defaultImages[idx]?.image)}
-                alt={item.title || "PrettyVision Gallery"}
-                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                onError={(e) => {
-                  e.target.onerror = null;
-                  e.target.src = defaultImages[idx]?.fallback || "/uploads/gallery_1.jpg";
-                }}
-              />
-              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white">
-                <Instagram className="h-7 w-7 drop-shadow-md" />
-              </div>
-            </a>
+              <a
+                href={item.instagramUrl || instagramUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group relative rounded-2xl overflow-hidden aspect-square bg-slate-100 shadow-2xs hover:shadow-xl transition-all duration-300 block"
+              >
+                <img
+                  src={assetUrl(item.image || defaultImages[idx]?.image)}
+                  alt={item.title || "PrettyVision Gallery"}
+                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                  onError={(e) => {
+                    e.target.onerror = null;
+                    e.target.src = defaultImages[idx]?.fallback || "/uploads/gallery_1.jpg";
+                  }}
+                />
+                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white">
+                  <Instagram className="h-7 w-7 drop-shadow-md" />
+                </div>
+              </a>
+            </div>
           ))}
         </div>
       </div>

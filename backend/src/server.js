@@ -422,7 +422,25 @@ const SECTION_ALIASES = {
   "exam-assignments": "exams",
   "exam-papers": "exams",
   "exam-questions": "exams",
-  "exam-question-banks": "exams"
+  "exam-question-banks": "exams",
+  collections: "collections",
+  "frame-collections": "collections",
+  categories: "categories",
+  "shop-by-type": "categories",
+  brands: "brands",
+  "brand-banner": "home-sections",
+  products: "products",
+  appointments: "appointments",
+  orders: "appointments",
+  services: "services",
+  "store-locations": "store-locations",
+  store: "store-locations",
+  "store-settings": "store-locations",
+  "store-location": "store-locations",
+  "gallery-items": "gallery-items",
+  gallery: "gallery-items",
+  instagram: "gallery-items",
+  homepage: "home-sections"
 };
 
 const sectionFor = (resource = "") => {
@@ -4534,17 +4552,135 @@ app.post("/api/admin/upload", ...adminOnly, uploadLimiter, upload.single("file")
 app.get("/api/admin/dashboard/stats", ...adminOnly, asyncHandler(async (req, res) => {
   const today = new Date(); today.setHours(0, 0, 0, 0);
   const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
-  const [totalUsers, totalStudents, totalTeachers, activeUsers, blockedUsers, pendingUsers, totalCourses, totalLessons, totalBlogs, totalVideoBlogs, totalSubscribers, totalContactMessages, totalVisits, todayVisits, monthlyVisits, totalNotes, totalComments, totalChatMessages, pendingResetRequests, completedLessons, totalHomeSections, userGrowth, enrollmentGrowth, trafficByDay, popularPages, popularCourses, recentUsers, recentContacts] = await Promise.all([
-    User.countDocuments(), User.countDocuments({ role: { $in: learnerRoles } }), User.countDocuments({ role: "teacher" }), User.countDocuments({ status: "active" }), User.countDocuments({ status: "blocked" }), User.countDocuments({ status: "pending" }), Course.countDocuments(), Lesson.countDocuments(), Blog.countDocuments(), VideoBlog.countDocuments(), Subscriber.countDocuments(), ContactMessage.countDocuments(), TrafficLog.countDocuments(), TrafficLog.countDocuments({ createdAt: { $gte: today } }), TrafficLog.countDocuments({ createdAt: { $gte: monthStart } }), Note.countDocuments(), Comment.countDocuments(), ChatMessage.countDocuments(), PasswordResetRequest.countDocuments({ status: "pending" }), Progress.countDocuments({ isCompleted: true }), PageSection.countDocuments(),
-    User.aggregate([{ $group: { _id: { $dateToString: { date: "$createdAt", format: "%Y-%m-%d" } }, users: { $sum: 1 } } }, { $sort: { _id: 1 } }, { $limit: 30 }]),
-    Enrollment.aggregate([{ $group: { _id: { $dateToString: { date: "$createdAt", format: "%Y-%m-%d" } }, enrollments: { $sum: 1 } } }, { $sort: { _id: 1 } }, { $limit: 30 }]),
-    TrafficLog.aggregate([{ $group: { _id: { $dateToString: { date: "$createdAt", format: "%Y-%m-%d" } }, visits: { $sum: 1 } } }, { $sort: { _id: 1 } }, { $limit: 30 }]),
-    TrafficLog.aggregate([{ $group: { _id: "$pageUrl", visits: { $sum: 1 } } }, { $sort: { visits: -1 } }, { $limit: 8 }]),
-    Enrollment.aggregate([{ $group: { _id: "$course", enrollments: { $sum: 1 } } }, { $lookup: { from: "courses", localField: "_id", foreignField: "_id", as: "course" } }, { $unwind: "$course" }, { $project: { title: "$course.title", enrollments: 1 } }, { $limit: 6 }]),
-    User.find().sort({ createdAt: -1 }).limit(5).select("name email role createdAt").lean(),
-    ContactMessage.find().sort({ createdAt: -1 }).limit(5).lean()
+
+  const [
+    totalProducts,
+    activeProducts,
+    outOfStockProducts,
+    draftProducts,
+    totalCategories,
+    activeCategories,
+    totalBrands,
+    activeBrands,
+    totalCollections,
+    activeCollections,
+    totalServices,
+    activeServices,
+    totalInstagramPosts,
+    activeInstagramPosts,
+    totalBanners,
+    activeBanners,
+    totalHomeSections,
+    activeHomeSections,
+    disabledHomeSections,
+    totalAppointments,
+    pendingAppointments,
+    confirmedAppointments,
+    completedAppointments,
+    cancelledAppointments,
+    totalCustomers,
+    activeCustomers,
+    blockedCustomers,
+    totalVisits,
+    todayVisits,
+    monthlyVisits,
+    recentAppointments,
+    recentCustomers,
+    recentProducts,
+    trafficByDay
+  ] = await Promise.all([
+    Product.countDocuments(),
+    Product.countDocuments({ status: "active", isActive: { $ne: false } }),
+    Product.countDocuments({ status: "out_of_stock" }),
+    Product.countDocuments({ status: "draft" }),
+    Category.countDocuments(),
+    Category.countDocuments({ isActive: { $ne: false } }),
+    Brand.countDocuments(),
+    Brand.countDocuments({ isActive: { $ne: false } }),
+    Collection.countDocuments(),
+    Collection.countDocuments({ isActive: { $ne: false } }),
+    Service.countDocuments(),
+    Service.countDocuments({ isActive: { $ne: false } }),
+    GalleryItem.countDocuments(),
+    GalleryItem.countDocuments({ isActive: { $ne: false } }),
+    HeroBanner.countDocuments(),
+    HeroBanner.countDocuments({ isActive: { $ne: false } }),
+    PageSection.countDocuments({ pageName: "home" }),
+    PageSection.countDocuments({ pageName: "home", homepageVisible: { $ne: false }, status: { $ne: "inactive" } }),
+    PageSection.countDocuments({ pageName: "home", $or: [{ homepageVisible: false }, { status: "inactive" }] }),
+    Appointment.countDocuments(),
+    Appointment.countDocuments({ status: "pending" }),
+    Appointment.countDocuments({ status: "confirmed" }),
+    Appointment.countDocuments({ status: "completed" }),
+    Appointment.countDocuments({ status: "cancelled" }),
+    User.countDocuments(),
+    User.countDocuments({ status: "active" }),
+    User.countDocuments({ status: "blocked" }),
+    TrafficLog.countDocuments(),
+    TrafficLog.countDocuments({ createdAt: { $gte: today } }),
+    TrafficLog.countDocuments({ createdAt: { $gte: monthStart } }),
+    Appointment.find().sort({ createdAt: -1 }).limit(6).lean(),
+    User.find().sort({ createdAt: -1 }).limit(6).select("name email phone status role createdAt").lean(),
+    Product.find().sort({ createdAt: -1 }).limit(6).select("name brand category price salePrice mainImage status isActive").lean(),
+    TrafficLog.aggregate([
+      { $group: { _id: { $dateToString: { date: "$createdAt", format: "%Y-%m-%d" } }, visits: { $sum: 1 } } },
+      { $sort: { _id: 1 } },
+      { $limit: 14 }
+    ])
   ]);
-  res.json({ success: true, stats: { totalUsers, totalStudents, totalTeachers, activeUsers, blockedUsers, pendingUsers, totalCourses, totalLessons, completedLessons, totalBlogs, totalVideoBlogs, totalSubscribers, totalContactMessages, totalNotes, totalComments, totalChatMessages, pendingResetRequests, totalVisits, todayVisits, monthlyVisits, totalHomeSections }, charts: { userGrowth, enrollmentGrowth, trafficByDay, popularPages, popularCourses }, recentActivity: { users: recentUsers, contacts: recentContacts } });
+
+  res.json({
+    success: true,
+    stats: {
+      // Products
+      totalProducts,
+      activeProducts,
+      outOfStockProducts,
+      draftProducts,
+      // Categories
+      totalCategories,
+      activeCategories,
+      // Brands
+      totalBrands,
+      activeBrands,
+      // Collections
+      totalCollections,
+      activeCollections,
+      // Services
+      totalServices,
+      activeServices,
+      // Instagram Posts
+      totalInstagramPosts,
+      activeInstagramPosts,
+      // Banners
+      totalBanners,
+      activeBanners,
+      // Homepage Sections
+      totalHomeSections,
+      activeHomeSections,
+      disabledHomeSections,
+      // Appointments & Enquiries
+      totalAppointments,
+      pendingAppointments,
+      confirmedAppointments,
+      completedAppointments,
+      cancelledAppointments,
+      // Customers
+      totalCustomers,
+      activeCustomers,
+      blockedCustomers,
+      // Traffic
+      totalVisits,
+      todayVisits,
+      monthlyVisits
+    },
+    charts: { trafficByDay },
+    recentActivity: {
+      appointments: recentAppointments,
+      customers: recentCustomers,
+      products: recentProducts
+    }
+  });
 }));
 
 app.get("/api/admin/users", ...adminOnly, asyncHandler(async (req, res) => {
@@ -4739,6 +4875,74 @@ app.get("/api/admin/footer", ...adminOnly, asyncHandler(async (req, res) => res.
 app.put("/api/admin/footer", ...adminOnly, asyncHandler(async (req, res) => res.json({ success: true, footer: await FooterSetting.findOneAndUpdate({ singletonKey: "footer" }, { ...req.body, singletonKey: "footer" }, { new: true, upsert: true }) })));
 app.get("/api/admin/site-settings", ...adminOnly, asyncHandler(async (req, res) => res.json({ success: true, settings: await SiteSetting.findOne({ singletonKey: "site" }).lean() })));
 app.put("/api/admin/site-settings", ...adminOnly, asyncHandler(async (req, res) => res.json({ success: true, settings: await SiteSetting.findOneAndUpdate({ singletonKey: "site" }, { ...req.body, singletonKey: "site" }, { new: true, upsert: true }) })));
+
+app.get("/api/admin/store-location", ...adminOnly, asyncHandler(async (req, res) => {
+  let store = await StoreLocation.findOne().lean();
+  if (!store) {
+    store = await StoreLocation.create({});
+  }
+  res.json({ success: true, store, item: store });
+}));
+app.put("/api/admin/store-location", ...adminOnly, asyncHandler(async (req, res) => {
+  let store = await StoreLocation.findOne();
+  if (store) {
+    Object.assign(store, req.body);
+    await store.save();
+  } else {
+    store = await StoreLocation.create(req.body);
+  }
+  await PageSection.findOneAndUpdate(
+    { sectionKey: "store_visit" },
+    {
+      $set: {
+        "content.storeName": store.name,
+        "content.eyebrow": store.eyebrow,
+        "content.address": store.address,
+        "content.phone": store.phone,
+        "content.hours": store.hours,
+        "content.interiorImage": store.interiorImage,
+        "content.exteriorImage": store.exteriorImage,
+        "content.button1Text": store.button1Text,
+        "content.button1Link": store.button1Url,
+        "content.button2Text": store.button2Text,
+        "content.button2Link": store.button2Url
+      }
+    }
+  ).catch(() => null);
+  res.json({ success: true, store, item: store, message: "Store information saved successfully." });
+}));
+
+app.put("/api/admin/collections/reorder", ...adminOnly, asyncHandler(async (req, res) => {
+  const { orderedIds } = req.body;
+  if (Array.isArray(orderedIds)) {
+    const bulkOps = orderedIds.map((id, index) => ({
+      updateOne: {
+        filter: { _id: id },
+        update: { $set: { order: index + 1 } }
+      }
+    }));
+    if (bulkOps.length > 0) {
+      await Collection.bulkWrite(bulkOps);
+    }
+  }
+  res.json({ success: true, message: "Collections reordered successfully." });
+}));
+
+app.put("/api/admin/gallery-items/reorder", ...adminOnly, asyncHandler(async (req, res) => {
+  const { orderedIds } = req.body;
+  if (Array.isArray(orderedIds)) {
+    const bulkOps = orderedIds.map((id, index) => ({
+      updateOne: {
+        filter: { _id: id },
+        update: { $set: { order: index + 1 } }
+      }
+    }));
+    if (bulkOps.length > 0) {
+      await GalleryItem.bulkWrite(bulkOps);
+    }
+  }
+  res.json({ success: true, message: "Gallery items reordered successfully." });
+}));
 app.put("/api/admin/legal/:slug", ...adminOnly, asyncHandler(async (req, res) => res.json({ success: true, item: await LegalPage.findOneAndUpdate({ slug: req.params.slug }, { ...req.body, slug: req.params.slug }, { new: true, upsert: true }) })));
 app.put("/api/admin/contact-messages/:id/read", ...adminOnly, asyncHandler(async (req, res) => res.json({ success: true, item: await ContactMessage.findByIdAndUpdate(req.params.id, { status: "read" }, { new: true }) })));
 app.get("/api/admin/contact-settings", ...adminOnly, asyncHandler(async (req, res) => {
@@ -4787,7 +4991,25 @@ app.put("/api/admin/contact-settings", ...adminOnly, asyncHandler(async (req, re
   res.json({ success: true, settings, message: "Contact information and map updated successfully." });
 }));
 
-const aliases = { visionaries: "preachers", "media/images": "gallery-images", "media/videos": "gallery-videos", "gallery/images": "gallery-images", "gallery/videos": "gallery-videos", "home-sections": "home-sections", "video-intro": "home-sections" };
+const aliases = {
+  visionaries: "preachers",
+  "media/images": "gallery-images",
+  "media/videos": "gallery-videos",
+  "gallery/images": "gallery-images",
+  "gallery/videos": "gallery-videos",
+  "home-sections": "home-sections",
+  "video-intro": "home-sections",
+  collections: "collections",
+  "frame-collections": "collections",
+  "shop-by-type": "categories",
+  "gallery-items": "gallery-items",
+  gallery: "gallery-items",
+  instagram: "gallery-items",
+  "store-locations": "store-locations",
+  store: "store-locations",
+  "store-settings": "store-locations",
+  banners: "hero-banners"
+};
 const fields = {
   "about-sections": ["sectionTitle", "sectionSubtitle", "description"],
   users: ["name", "email", "phone", "role"],

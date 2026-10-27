@@ -1577,25 +1577,28 @@ export const dashboardLinks = {
   ],
   main_admin: [
     { label: "Dashboard", url: "/admin/dashboard", icon: LayoutDashboard },
-    { label: "Homepage Sections", url: "/admin/homepage", icon: Layers },
-    { label: "About Us Page", url: "/admin/about", icon: FileText },
-    { label: "Eye Test Appointments", url: "/admin/appointments", icon: Calendar },
-    { label: "Product Categories", url: "/admin/categories", icon: Layers },
+    { label: "Products Catalog", url: "/admin/products", icon: Glasses },
+    { label: "Categories (Shop by Type)", url: "/admin/categories", icon: Layers },
     { label: "Eyewear Brands", url: "/admin/brands", icon: Gem },
-    { label: "Products / Catalogue", url: "/admin/products", icon: Glasses },
+    { label: "Frame Collections", url: "/admin/collections", icon: Sparkles },
+    { label: "Homepage Section Manager", url: "/admin/homepage", icon: Layers },
+    { label: "Frame Collections (Section 1)", url: "/admin/frame-collections", icon: Sparkles },
+    { label: "Shop by Type (Section 2)", url: "/admin/shop-by-type", icon: Layers },
+    { label: "Brand Banner (Section 3)", url: "/admin/brand-banner", icon: Gem },
+    { label: "Store & Hours (Section 4)", url: "/admin/store", icon: Compass },
+    { label: "Instagram Feed (Section 5)", url: "/admin/instagram", icon: Instagram },
     { label: "Optical Services", url: "/admin/services", icon: Sparkles },
+    { label: "Eye Test Bookings", url: "/admin/appointments", icon: Calendar },
+    { label: "Contact Enquiries", url: "/admin/contact-messages", icon: MessageSquare },
+    { label: "Customers", url: "/admin/users", icon: Users },
     { label: "Hero Banners", url: "/admin/banners", icon: Image },
-    { label: "Showroom Gallery", url: "/admin/gallery", icon: Image },
-    { label: "Testimonials", url: "/admin/testimonials", icon: MessageSquare },
-    { label: "Store & Location", url: "/admin/store", icon: Compass },
+    { label: "Lifestyle Gallery", url: "/admin/gallery", icon: Image },
+    { label: "Client Testimonials", url: "/admin/testimonials", icon: MessageSquare },
+    { label: "Optical Articles & Blogs", url: "/admin/blogs", icon: FileText },
     { label: "Website Settings", url: "/admin/site-settings", icon: Settings },
-    { label: "Blog Articles", url: "/admin/blogs", icon: FileText },
-    { label: "Custom Pages", url: "/admin/pages", icon: FileText },
-    { label: "Legal Pages", url: "/admin/legal-pages", icon: Shield },
-    { label: "Users", url: "/admin/users", icon: Users },
+    { label: "About Page Content", url: "/admin/about", icon: FileText },
     { label: "Staff & Roles", url: "/admin/roles", icon: Shield },
     { label: "Activity Trail", url: "/admin/activity-log", icon: Clock },
-    { label: "Login Sessions", url: "/admin/sessions", icon: Shield },
     { label: "Traffic Analytics", url: "/admin/traffic", icon: BarChart3 },
     { label: "Asset Manager", url: "/admin/assets", icon: FileText }
   ]
@@ -1604,21 +1607,20 @@ export const dashboardLinks = {
 const sectionOf = (url = "") => {
   const tail = url.split("?")[0].replace(/^\/admin\//, "");
   const map = {
-    journeys: "journeys",
-    pilgrimages: "trips",
-    trips: "trips",
-    "pilgrimage-bookings": "trip-bookings",
-    "trip-bookings": "trip-bookings",
-    "booking-taxes": "booking-taxes",
-    "upcoming-classes": "upcoming-classes",
-    "media/images": "media",
-    "media/videos": "media",
-    "gallery-images": "media",
-    "gallery-videos": "media",
-    preachers: "teachers",
-    teachers: "teachers",
-    visionaries: "visionaries",
-    "video-intro": "home-sections",
+    collections: "collections",
+    "frame-collections": "collections",
+    "shop-by-type": "categories",
+    categories: "categories",
+    brands: "brands",
+    "brand-banner": "home-sections",
+    store: "store-locations",
+    "store-settings": "store-locations",
+    instagram: "gallery-items",
+    gallery: "gallery-items",
+    services: "services",
+    products: "products",
+    appointments: "appointments",
+    homepage: "home-sections",
     "home-sections": "home-sections",
     about: "about-sections",
     "about-sections": "about-sections",
@@ -1626,14 +1628,6 @@ const sectionOf = (url = "") => {
     roles: "roles",
     staff: "roles",
     banners: "banners",
-    courses: "courses",
-    lessons: "lessons",
-    "question-paper-maker": "exams",
-    exams: "exams",
-    "course-requests": "course-requests",
-    books: "books",
-    "book-orders": "book-orders",
-    "book-payment-settings": "book-payment-settings",
     contact: "contact-messages",
     "contact-settings": "contact-messages",
     "contact-messages": "contact-messages",
@@ -1643,16 +1637,13 @@ const sectionOf = (url = "") => {
     "activity-log": "activity-log",
     sessions: "sessions",
     users: "users",
-    subscribers: "subscribers",
-    comments: "comments",
-    chat: "chat",
     footer: "footer",
     "site-settings": "site-settings",
-    "legal-pages": "pages",
-    pages: "pages",
     traffic: "traffic",
     reports: "reports",
-    "password-reset-requests": "users"
+    blogs: "blogs",
+    "legal-pages": "pages",
+    pages: "pages"
   };
   return map[tail] || tail.split("/")[0];
 };
@@ -1712,7 +1703,7 @@ export const DashboardLayout = ({ role }) => {
   return (
     <div className="min-h-screen bg-soft w-full">
       <aside className="fixed inset-y-0 left-0 z-40 hidden w-72 border-r border-black/5 bg-white lg:block">
-        <Link to="/" className="flex h-20 items-center border-b border-black/5 px-6" aria-label="ISKCON Juhu Self-Excellence"><BrandLogo compact /></Link>
+        <Link to="/" className="flex h-20 items-center border-b border-black/5 px-6" aria-label="PrettyVision Eyewear & Clinic"><BrandLogo compact /></Link>
         <nav className="h-[calc(100vh-9rem)] overflow-y-auto custom-scrollbar px-4 py-5">
           {links.map((item) => {
             const Icon = item.icon;

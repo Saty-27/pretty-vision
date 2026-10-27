@@ -568,6 +568,52 @@ export const AdminHomepageSections = () => {
                     <span>{isVisible ? "Active / Visible" : "Hidden"}</span>
                   </button>
 
+                  {sec.sectionKey === "collections" && (
+                    <a
+                      href="/admin/collections"
+                      className="hidden sm:inline-flex items-center gap-1 px-2.5 py-1.5 rounded-full border border-slate-300 text-slate-700 hover:border-[#06264A] text-[11px] font-bold"
+                    >
+                      <span>Manage Cards</span>
+                      <ExternalLink className="h-3 w-3" />
+                    </a>
+                  )}
+                  {sec.sectionKey === "categories" && (
+                    <a
+                      href="/admin/shop-by-type"
+                      className="hidden sm:inline-flex items-center gap-1 px-2.5 py-1.5 rounded-full border border-slate-300 text-slate-700 hover:border-[#06264A] text-[11px] font-bold"
+                    >
+                      <span>Manage Cards</span>
+                      <ExternalLink className="h-3 w-3" />
+                    </a>
+                  )}
+                  {sec.sectionKey === "brand_showcase" && (
+                    <a
+                      href="/admin/brand-banner"
+                      className="hidden sm:inline-flex items-center gap-1 px-2.5 py-1.5 rounded-full border border-slate-300 text-slate-700 hover:border-[#06264A] text-[11px] font-bold"
+                    >
+                      <span>Banner Studio</span>
+                      <ExternalLink className="h-3 w-3" />
+                    </a>
+                  )}
+                  {sec.sectionKey === "store_visit" && (
+                    <a
+                      href="/admin/store"
+                      className="hidden sm:inline-flex items-center gap-1 px-2.5 py-1.5 rounded-full border border-slate-300 text-slate-700 hover:border-[#06264A] text-[11px] font-bold"
+                    >
+                      <span>Store & Hours</span>
+                      <ExternalLink className="h-3 w-3" />
+                    </a>
+                  )}
+                  {sec.sectionKey === "gallery" && (
+                    <a
+                      href="/admin/instagram"
+                      className="hidden sm:inline-flex items-center gap-1 px-2.5 py-1.5 rounded-full border border-slate-300 text-slate-700 hover:border-[#06264A] text-[11px] font-bold"
+                    >
+                      <span>Instagram Feed</span>
+                      <ExternalLink className="h-3 w-3" />
+                    </a>
+                  )}
+
                   <button
                     onClick={() => openEdit(sec)}
                     className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#042041] hover:bg-[#0B2A52] text-white text-xs font-bold transition-colors"
@@ -7061,3 +7107,11 @@ export const AdminWebsiteSettings = () => {
     </div>
   );
 };
+
+export {
+  AdminCollections,
+  AdminStoreLocation,
+  AdminInstagramFeed,
+  AdminBrandBanner,
+  AdminShopByType
+} from "./PrettyVisionAdminModules";

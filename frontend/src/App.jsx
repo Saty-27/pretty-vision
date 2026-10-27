@@ -93,6 +93,7 @@ import {
   ContactPage as PrettyVisionContactPage,
   EyecareGuidePage
 } from "./prettyvision/PrettyVisionPages";
+import { PrettyVisionAdminDashboard } from "./prettyvision/PrettyVisionAdminDashboard";
 import {
   AdminHomepageSections,
   AdminAboutSections,
@@ -101,7 +102,12 @@ import {
   AdminProducts,
   AdminAppointments,
   AdminHeroBanners,
-  AdminWebsiteSettings
+  AdminWebsiteSettings,
+  AdminCollections,
+  AdminStoreLocation,
+  AdminInstagramFeed,
+  AdminBrandBanner,
+  AdminShopByType
 } from "./prettyvision/PrettyVisionAdmin";
 
 const PageDisabledGuard = ({ sectionKey, pageName, children }) => {
@@ -306,9 +312,17 @@ const App = () => {
 
       <Route path="/admin" element={<AdminPanelGate />}>
         <Route index element={<Navigate to="dashboard" replace />} />
-        <Route path="dashboard" element={<AdminDashboard />} />
+        <Route path="dashboard" element={<PrettyVisionAdminDashboard />} />
         <Route path="homepage" element={<AdminHomepageSections />} />
         <Route path="home-sections" element={<AdminHomepageSections />} />
+        <Route path="collections" element={<AdminCollections />} />
+        <Route path="frame-collections" element={<AdminCollections />} />
+        <Route path="shop-by-type" element={<AdminShopByType />} />
+        <Route path="brand-banner" element={<AdminBrandBanner />} />
+        <Route path="store" element={<AdminStoreLocation />} />
+        <Route path="store-settings" element={<AdminStoreLocation />} />
+        <Route path="instagram" element={<AdminInstagramFeed />} />
+        <Route path="gallery" element={<AdminInstagramFeed />} />
         <Route path="about" element={<AdminAboutSections />} />
         <Route path="about-sections" element={<AdminAboutSections />} />
         <Route path="categories" element={<AdminCategories />} />
@@ -319,50 +333,21 @@ const App = () => {
         <Route path="appointments" element={<AdminAppointments />} />
         <Route path="banners" element={<AdminHeroBanners />} />
         <Route path="site-settings" element={<AdminWebsiteSettings />} />
-        <Route path="courses" element={<AdminCoursesPage />} />
-        <Route path="courses/:courseId/lessons" element={<AdminCourseLessonsPage />} />
-        <Route path="courses/:courseId/lessons/:lessonId/content" element={<AdminLessonContentPage />} />
-        <Route path="courses/:courseId/lessons/:lessonId/questions" element={<AdminQuestionBankPage />} />
-        <Route path="courses/:courseId/lessons/:lessonId/analytics" element={<AdminLessonAnalyticsPage />} />
-        <Route path="courses/:courseId/requests" element={<AdminCourseRequestsPage />} />
-        <Route path="books" element={<AdminBooksPage />} />
-        <Route path="book-orders" element={<AdminBookOrdersPage />} />
-        <Route path="book-payment-settings" element={<AdminBookPaymentSettingsPage />} />
-        <Route path="teachers" element={<AdminTeachersPage />} />
-        <Route path="users" element={<AdminUsersPage />} />
-        <Route path="password-reset-requests" element={<AdminResetRequestsPage />} />
-        <Route path="comments" element={<AdminCommentsPage />} />
-        <Route path="chat" element={<AdminChatPage />} />
+        <Route path="testimonials" element={<AdminTestimonialsPage />} />
         <Route path="contact" element={<AdminContactPage />} />
         <Route path="contact-messages" element={<AdminContactPage />} />
         <Route path="contact-settings" element={<AdminContactPage />} />
-        <Route path="testimonials" element={<AdminTestimonialsPage />} />
-        <Route path="course-requests" element={<AdminCourseRequestsPage />} />
-        <Route path="upcoming-classes" element={<AdminClassesPage />} />
-        <Route path="journeys" element={<AdminJourneysPage />} />
-        <Route path="pilgrimages" element={<AdminTripsPage />} />
-        <Route path="trips" element={<AdminTripsPage />} />
-        <Route path="pilgrimage-bookings" element={<AdminPilgrimageBookingsPage />} />
-        <Route path="notifications" element={<NotificationsPage />} />
-        <Route path="question-paper-maker" element={<AdminExamDashboardPage />} />
-        <Route path="question-paper-maker/banks" element={<AdminExamBanksPage />} />
-        <Route path="question-paper-maker/banks/:id/questions" element={<AdminExamQuestionsPage />} />
-        <Route path="question-paper-maker/exams" element={<AdminExamsPage />} />
-        <Route path="question-paper-maker/assignments" element={<AdminExamAssignmentsPage />} />
-        <Route path="question-paper-maker/results" element={<AdminExamResultsPage />} />
-        <Route path="home-sections" element={<AdminHomeSectionsPage />} />
-        <Route path="homepage" element={<AdminHomeSectionsPage />} />
-        {adminRoutes.map(([path, resource]) => (
-          <Route key={path} path={path} element={<AdminRoutePage resource={resource} />} />
-        ))}
+        <Route path="users" element={<AdminUsersPage />} />
+        <Route path="customers" element={<AdminUsersPage />} />
         <Route path="roles" element={<AdminAccessPage />} />
         <Route path="activity-log" element={<AdminAccessPage tab="activity" />} />
         <Route path="sessions" element={<AdminAccessPage tab="sessions" />} />
-        <Route path="footer" element={<AdminSettingsPage type="footer" />} />
-        <Route path="site-settings" element={<AdminSettingsPage type="site" />} />
         <Route path="traffic" element={<AdminTrafficPage />} />
         <Route path="reports" element={<ReportsPage />} />
         <Route path="assets" element={<AdminAssetsPage />} />
+        {adminRoutes.map(([path, resource]) => (
+          <Route key={path} path={path} element={<AdminRoutePage resource={resource} />} />
+        ))}
       </Route>
 
       <Route path="*" element={<NotFoundPage />} />
