@@ -1599,8 +1599,7 @@ export const dashboardLinks = {
     { label: "About Page Content", url: "/admin/about", icon: FileText },
     { label: "Staff & Roles", url: "/admin/roles", icon: Shield },
     { label: "Activity Trail", url: "/admin/activity-log", icon: Clock },
-    { label: "Traffic Analytics", url: "/admin/traffic", icon: BarChart3 },
-    { label: "Asset Manager", url: "/admin/assets", icon: FileText }
+    { label: "Traffic Analytics", url: "/admin/traffic", icon: BarChart3 }
   ]
 };
 
