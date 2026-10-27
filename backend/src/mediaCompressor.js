@@ -1,7 +1,22 @@
 import fs from "fs";
 import path from "path";
 import { execFile, execSync } from "child_process";
-import sharp from "sharp";
+
+let sharpModule = null;
+let sharpLoadAttempted = false;
+const getSharp = async () => {
+  if (sharpLoadAttempted) return sharpModule;
+  sharpLoadAttempted = true;
+  try {
+    const mod = await import("sharp");
+    sharpModule = mod.default || mod;
+    return sharpModule;
+  } catch (err) {
+    console.warn("[MediaCompressor] Notice: 'sharp' package not installed yet. Images will be stored directly until 'npm install' runs.");
+    sharpModule = null;
+    return null;
+  }
+};
 
 const TARGET_MAX_IMAGE_BYTES = 350 * 1024; // 350 KB
 const TARGET_MAX_VIDEO_BYTES = 380 * 1024; // 380 KB
@@ -42,6 +57,9 @@ export async function compressImage(filePath) {
     const ext = path.extname(filePath).toLowerCase();
     // Skip SVGs and non-image formats
     if (ext === ".svg" || ext === ".pdf") return { size: originalSize, path: filePath };
+
+    const sharp = await getSharp();
+    if (!sharp) return { size: originalSize, path: filePath, compressed: false };
 
     const image = sharp(filePath, { failOnError: false });
     const metadata = await image.metadata();

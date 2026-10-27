@@ -5,58 +5,58 @@
         xmlns:video="http://www.google.com/schemas/sitemap-video/1.1"
         xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <!-- Dynamic Real-Time Google- & AI-Optimized Sitemap for PrettyVision -->
-  <!-- Total Indexed URLs: 40 | Generated: 2026-10-26T20:57:06.954Z -->
+  <!-- Total Indexed URLs: 40 | Generated: 2026-10-27T08:02:45.758Z -->
   <url>
     <loc>https://prettyvision.in/</loc>
-    <lastmod>2026-10-26</lastmod>
+    <lastmod>2026-10-27</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
     <loc>https://prettyvision.in/eyewear</loc>
-    <lastmod>2026-10-26</lastmod>
+    <lastmod>2026-10-27</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.95</priority>
   </url>
   <url>
     <loc>https://prettyvision.in/brands</loc>
-    <lastmod>2026-10-26</lastmod>
+    <lastmod>2026-10-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
     <loc>https://prettyvision.in/services</loc>
-    <lastmod>2026-10-26</lastmod>
+    <lastmod>2026-10-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
     <loc>https://prettyvision.in/about</loc>
-    <lastmod>2026-10-26</lastmod>
+    <lastmod>2026-10-27</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://prettyvision.in/contact</loc>
-    <lastmod>2026-10-26</lastmod>
+    <lastmod>2026-10-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.85</priority>
   </url>
   <url>
     <loc>https://prettyvision.in/guide</loc>
-    <lastmod>2026-10-26</lastmod>
+    <lastmod>2026-10-27</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://prettyvision.in/guide/comprehensive-eyecare</loc>
-    <lastmod>2026-10-26</lastmod>
+    <lastmod>2026-10-27</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://prettyvision.in/sitemap</loc>
-    <lastmod>2026-10-26</lastmod>
+    <lastmod>2026-10-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -187,7 +187,7 @@
     <image:image>
       <image:loc>https://prettyvision.in/service_exam.jpg</image:loc>
       <image:title>Comprehensive Eye Examination — PrettyVision Eye Care Clinic</image:title>
-      <image:caption>Advanced computerized refraction testing and clinical vision assessment in Kalina.</image:caption>
+      <image:caption>Detailed eye tests with advanced equipment.</image:caption>
     </image:image>
   </url>
   <url>
@@ -198,7 +198,7 @@
     <image:image>
       <image:loc>https://prettyvision.in/service_prescription.jpg</image:loc>
       <image:title>Prescription Eyewear — PrettyVision Eye Care Clinic</image:title>
-      <image:caption>Precision lens customization with premium single vision, bifocal &amp; progressive lenses.</image:caption>
+      <image:caption>Expert guidance to find the right frames and lenses.</image:caption>
     </image:image>
   </url>
   <url>
@@ -209,7 +209,7 @@
     <image:image>
       <image:loc>https://prettyvision.in/service_fitting.jpg</image:loc>
       <image:title>Contact Lens Fitting — PrettyVision Eye Care Clinic</image:title>
-      <image:caption>Daily, monthly, toric and multifocal contact lens trials with expert hygiene guidance.</image:caption>
+      <image:caption>Wide range of contact lenses and professional fitting.</image:caption>
     </image:image>
   </url>
   <url>
@@ -220,7 +220,7 @@
     <image:image>
       <image:loc>https://prettyvision.in/service_kids.jpg</image:loc>
       <image:title>Kids &amp; Family Eye Care — PrettyVision Eye Care Clinic</image:title>
-      <image:caption>Pediatric eye exams and durable, lightweight, shatterproof frames for children.</image:caption>
+      <image:caption>Eye care for all ages, including children.</image:caption>
     </image:image>
   </url>
   <url>
@@ -231,7 +231,7 @@
     <image:image>
       <image:loc>https://prettyvision.in/service_coating.jpg</image:loc>
       <image:title>Lens &amp; Coating Consultation — PrettyVision Eye Care Clinic</image:title>
-      <image:caption>Blue-light defense, anti-glare coatings, and high-index thin lens solutions.</image:caption>
+      <image:caption>Guidance on the best lenses, coatings and solutions for your needs.</image:caption>
     </image:image>
   </url>
   <url>
@@ -302,21 +302,36 @@
   </url>
   <url>
     <loc>https://prettyvision.in/eyewear?category=Optical+Frames</loc>
-    <lastmod>2026-10-26</lastmod>
+    <lastmod>2026-10-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://prettyvision.in/cat_optical_frames.jpg</image:loc>
+      <image:title>Optical Frames — PrettyVision Eyewear</image:title>
+      <image:caption>Classic. Modern. Timeless.</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://prettyvision.in/eyewear?category=Blue-Light+Glasses</loc>
-    <lastmod>2026-10-26</lastmod>
+    <lastmod>2026-10-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://prettyvision.in/cat_bluelight.jpg</image:loc>
+      <image:title>Blue-Light Glasses — PrettyVision Eyewear</image:title>
+      <image:caption>Work. Study. Digital Comfort.</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://prettyvision.in/eyewear?category=Sports+Eyewear</loc>
-    <lastmod>2026-10-26</lastmod>
+    <lastmod>2026-10-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://prettyvision.in/cat_sports.jpg</image:loc>
+      <image:title>Sports Eyewear — PrettyVision Eyewear</image:title>
+      <image:caption>Active. Durable. Performance.</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://prettyvision.in/blogs/how-often-should-you-get-your-eyes-tested</loc>

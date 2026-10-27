@@ -3,7 +3,7 @@ const getApiUrl = () => {
   const isLocalhost = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
   
   if (isLocalhost) {
-    return envUrl || `http://localhost:5055/api`;
+    return envUrl || `http://localhost:5057/api`;
   }
   
   if (envUrl && !envUrl.includes("localhost") && !envUrl.includes("127.0.0.1")) {
