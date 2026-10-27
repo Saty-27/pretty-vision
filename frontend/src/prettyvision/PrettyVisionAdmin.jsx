@@ -7163,5 +7163,6 @@ export {
   AdminBrandBanner,
   AdminShopByType,
   AdminFloatingContact,
-  AdminExpertEyeCare
+  AdminExpertEyeCare,
+  AdminFooter
 } from "./PrettyVisionAdminModules";

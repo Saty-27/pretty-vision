@@ -30,6 +30,10 @@ import {
   Compass,
   ArrowRight,
   RefreshCw,
+  Facebook,
+  Youtube,
+  Linkedin,
+  Globe,
   X
 } from "lucide-react";
 import { apiFetch, assetUrl } from "../api";
@@ -3762,6 +3766,984 @@ export const AdminExpertEyeCare = () => {
                   className="px-5 py-2 rounded-xl bg-[#06264A] text-white text-xs font-bold uppercase tracking-wider hover:bg-[#0A3360]"
                 >
                   Save Feature
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+
+/* ============================================================
+   8. ADMIN FOOTER MANAGER MODULE
+   Route: /admin/footer & /admin/footer-settings
+   Controls: Footer Logo, Description, Navigation Columns & Links,
+             Contact Details, Social Links, Newsletter, Copyright
+   ============================================================ */
+export const AdminFooter = () => {
+  const [footer, setFooter] = useState({
+    logo: "/pv_logo.png",
+    description: "PrettyVision is Kalina's premier optical store and eye care clinic, providing qualified optometrist eye testing, luxury eyewear, and contact lens fitting.",
+    columns: [],
+    contactDetails: {
+      address: "Shop No 11, Agarwal Building, Market, opposite Nilesh Dryfruits, Kolivery Village, Vidya Nagari, Kalina, Santacruz East, Mumbai, Maharashtra 400098",
+      phone: "095940 30310",
+      email: "prettyvisionkalina@gmail.com"
+    },
+    socialLinks: {
+      instagram: "https://instagram.com/prettyvision_kalina",
+      facebook: "https://facebook.com/prettyvision_kalina",
+      whatsapp: "9594030310",
+      youtube: "",
+      linkedin: "",
+      website: ""
+    },
+    copyrightText: "Pretty Vision. All Rights Reserved.",
+    copyrightYear: 2026,
+    newsletterEnabled: true
+  });
+
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [notice, setNotice] = useState("");
+  const [activeTab, setActiveTab] = useState("columns"); // columns | branding | contact | socials | copyright
+  const [previewDevice, setPreviewDevice] = useState("desktop");
+
+  // Link Modal: { columnIndex: number, linkIndex: number (-1 for new), label: string, url: string }
+  const [linkModal, setLinkModal] = useState(null);
+  const [showAddCol, setShowAddCol] = useState(false);
+  const [newColTitle, setNewColTitle] = useState("");
+
+  const loadFooter = async () => {
+    try {
+      setLoading(true);
+      const res = await apiFetch("/admin/footer").catch(() => apiFetch("/footer"));
+      if (res && res.footer) {
+        setFooter({
+          logo: res.footer.logo || "/pv_logo.png",
+          description: res.footer.description || "",
+          columns: Array.isArray(res.footer.columns) ? res.footer.columns : [],
+          contactDetails: res.footer.contactDetails || {
+            address: "",
+            phone: "",
+            email: ""
+          },
+          socialLinks: res.footer.socialLinks || {
+            instagram: "",
+            facebook: "",
+            whatsapp: "",
+            youtube: "",
+            linkedin: "",
+            website: ""
+          },
+          copyrightText: res.footer.copyrightText || "Pretty Vision. All Rights Reserved.",
+          copyrightYear: res.footer.copyrightYear || new Date().getFullYear(),
+          newsletterEnabled: res.footer.newsletterEnabled !== false
+        });
+      }
+    } catch (err) {
+      console.warn("Failed to load footer:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadFooter();
+  }, []);
+
+  const handleSave = async (e) => {
+    if (e) e.preventDefault();
+    try {
+      setSaving(true);
+      const res = await apiFetch("/admin/footer", {
+        method: "PUT",
+        body: footer
+      });
+      if (res && res.footer) {
+        setFooter(res.footer);
+      }
+      setNotice("Footer settings saved successfully! Live website updated.");
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new Event("footer-updated"));
+      }
+      setTimeout(() => setNotice(""), 4000);
+    } catch (err) {
+      alert("Failed to save footer: " + err.message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleRestoreStandardTemplate = () => {
+    if (
+      !window.confirm(
+        "Load standard PrettyVision optical columns and navigation links? This replaces current column links in editor (remember to click Save Changes to apply)."
+      )
+    )
+      return;
+
+    setFooter((prev) => ({
+      ...prev,
+      columns: [
+        {
+          title: "Quick Links",
+          links: [
+            { label: "Home", url: "/" },
+            { label: "Eyewear Catalog", url: "/eyewear" },
+            { label: "Optical Services", url: "/services" },
+            { label: "Designer Brands", url: "/brands" },
+            { label: "About Clinic", url: "/about" },
+            { label: "Store & Hours", url: "/contact" }
+          ]
+        },
+        {
+          title: "Clinical Services",
+          links: [
+            { label: "Eye Examination", url: "/services" },
+            { label: "Prescription Glasses", url: "/eyewear" },
+            { label: "Contact Lens Fitting", url: "/eyewear" },
+            { label: "Kids Eye Care", url: "/services" },
+            { label: "Frame Adjustments", url: "/services" }
+          ]
+        },
+        {
+          title: "Customer Support",
+          links: [
+            { label: "Book Appointment", url: "/contact" },
+            { label: "Locate Store", url: "/contact" },
+            { label: "Call Support", url: "tel:09594030310" },
+            { label: "WhatsApp Store", url: "https://wa.me/919594030310" }
+          ]
+        }
+      ]
+    }));
+  };
+
+  const handleAddColumn = (e) => {
+    e.preventDefault();
+    if (!newColTitle.trim()) return;
+    setFooter((prev) => ({
+      ...prev,
+      columns: [...prev.columns, { title: newColTitle.trim(), links: [] }]
+    }));
+    setNewColTitle("");
+    setShowAddCol(false);
+  };
+
+  const handleDeleteColumn = (index) => {
+    const colName = footer.columns[index]?.title || "this column";
+    if (!window.confirm(`Delete column "${colName}" and all its links?`)) return;
+    setFooter((prev) => ({
+      ...prev,
+      columns: prev.columns.filter((_, i) => i !== index)
+    }));
+  };
+
+  const handleMoveColumn = (index, dir) => {
+    const target = index + dir;
+    if (target < 0 || target >= footer.columns.length) return;
+    const cols = [...footer.columns];
+    const [item] = cols.splice(index, 1);
+    cols.splice(target, 0, item);
+    setFooter((prev) => ({ ...prev, columns: cols }));
+  };
+
+  const handleUpdateColTitle = (index, newTitle) => {
+    setFooter((prev) => {
+      const cols = [...prev.columns];
+      cols[index] = { ...cols[index], title: newTitle };
+      return { ...prev, columns: cols };
+    });
+  };
+
+  const handleSaveLink = (e) => {
+    e.preventDefault();
+    if (!linkModal || !linkModal.label.trim() || !linkModal.url.trim()) return;
+    const { columnIndex, linkIndex, label, url } = linkModal;
+    setFooter((prev) => {
+      const cols = [...prev.columns];
+      const col = { ...cols[columnIndex] };
+      const links = [...(col.links || [])];
+      if (linkIndex === -1) {
+        links.push({ label: label.trim(), url: url.trim() });
+      } else {
+        links[linkIndex] = { label: label.trim(), url: url.trim() };
+      }
+      col.links = links;
+      cols[columnIndex] = col;
+      return { ...prev, columns: cols };
+    });
+    setLinkModal(null);
+  };
+
+  const handleDeleteLink = (colIdx, linkIdx) => {
+    setFooter((prev) => {
+      const cols = [...prev.columns];
+      const col = { ...cols[colIdx] };
+      col.links = col.links.filter((_, i) => i !== linkIdx);
+      cols[colIdx] = col;
+      return { ...prev, columns: cols };
+    });
+  };
+
+  const handleMoveLink = (colIdx, linkIdx, dir) => {
+    const target = linkIdx + dir;
+    setFooter((prev) => {
+      const cols = [...prev.columns];
+      const col = { ...cols[colIdx] };
+      const links = [...(col.links || [])];
+      if (target < 0 || target >= links.length) return prev;
+      const [moved] = links.splice(linkIdx, 1);
+      links.splice(target, 0, moved);
+      col.links = links;
+      cols[colIdx] = col;
+      return { ...prev, columns: cols };
+    });
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center p-12 text-xs font-bold text-slate-500">
+        <RefreshCw className="w-4 h-4 animate-spin mr-2" />
+        <span>Loading footer configuration...</span>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6 max-w-7xl mx-auto pb-16">
+      {/* Top Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#06264A]/5 text-[#06264A] text-xs font-bold uppercase tracking-wider mb-2">
+            <Layers className="w-3.5 h-3.5 text-[#06264A]" />
+            <span>Global Website Shell • Footer Manager</span>
+          </div>
+          <h1 className="font-serif text-2xl sm:text-3xl font-bold text-slate-900">
+            Footer & Navigation Manager
+          </h1>
+          <p className="text-xs text-slate-500 mt-1 max-w-2xl">
+            100% dynamic control over footer branding, navigation column lists, store contact info, social media icons, newsletter, and copyright.
+          </p>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2.5 sm:gap-3">
+          <button
+            type="button"
+            onClick={handleRestoreStandardTemplate}
+            className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 rounded-xl border border-slate-300 bg-white px-3.5 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 transition"
+            title="Restore 3 standard optical columns"
+          >
+            <RotateCcw className="w-3.5 h-3.5" />
+            <span>Preset Template</span>
+          </button>
+          <button
+            type="button"
+            onClick={handleSave}
+            disabled={saving}
+            className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 rounded-xl bg-[#06264A] text-white px-5 py-2.5 text-xs font-bold uppercase tracking-wider shadow hover:bg-[#0A3360] transition"
+          >
+            <Save className="w-4 h-4" />
+            <span>{saving ? "Saving..." : "Save Footer"}</span>
+          </button>
+        </div>
+      </div>
+
+      {notice && (
+        <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold flex items-center justify-between shadow-xs animate-in fade-in">
+          <div className="flex items-center gap-2">
+            <Check className="w-4 h-4 text-emerald-600" />
+            <span>{notice}</span>
+          </div>
+          <button onClick={() => setNotice("")} className="text-emerald-700 hover:text-emerald-900">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
+
+      {/* Tabs Row */}
+      <div className="flex items-center gap-2 border-b border-slate-200 overflow-x-auto pb-2 -mx-3 px-3 sm:mx-0 sm:px-0 no-scrollbar custom-scrollbar">
+        {[
+          { key: "columns", label: `Navigation Columns (${footer.columns?.length || 0})`, icon: Layers },
+          { key: "branding", label: "Logo & Tagline", icon: ImageIcon },
+          { key: "contact", label: "Store Contact List", icon: Phone },
+          { key: "socials", label: "Social Media Icons", icon: Globe },
+          { key: "copyright", label: "Newsletter & Copyright", icon: Shield }
+        ].map((tab) => {
+          const Icon = tab.icon;
+          const isActive = activeTab === tab.key;
+          return (
+            <button
+              key={tab.key}
+              type="button"
+              onClick={() => setActiveTab(tab.key)}
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition whitespace-nowrap ${
+                isActive
+                  ? "bg-[#06264A] text-white shadow-xs"
+                  : "bg-white text-slate-600 hover:bg-slate-100 border border-slate-200"
+              }`}
+            >
+              <Icon className="w-3.5 h-3.5" />
+              <span>{tab.label}</span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Main Grid: Form Controls (7 cols) + Live Footer Preview (5 cols) */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        {/* Left Form (7 cols) */}
+        <div className="lg:col-span-7 space-y-6">
+          {/* TAB 1: NAVIGATION COLUMNS */}
+          {activeTab === "columns" && (
+            <div className="space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">
+                <div>
+                  <h3 className="text-sm font-bold text-slate-900">Footer Navigation Columns</h3>
+                  <p className="text-xs text-slate-500">
+                    Add or organize link columns (e.g. Quick Links, Our Services, Customer Care).
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowAddCol(true)}
+                  className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#06264A] text-white text-xs font-bold shadow-xs hover:bg-[#0A3360] transition"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>Add Column</span>
+                </button>
+              </div>
+
+              {/* Add Column Mini Box */}
+              {showAddCol && (
+                <form
+                  onSubmit={handleAddColumn}
+                  className="bg-sky-50/70 border border-sky-200 rounded-2xl p-4 flex flex-col sm:flex-row gap-2.5 items-stretch sm:items-center"
+                >
+                  <input
+                    type="text"
+                    required
+                    autoFocus
+                    placeholder="e.g. Optical Services, Frame Collections..."
+                    value={newColTitle}
+                    onChange={(e) => setNewColTitle(e.target.value)}
+                    className="flex-1 px-3.5 py-2 text-xs rounded-xl border border-sky-300 bg-white text-slate-900 focus:outline-none focus:border-[#06264A]"
+                  />
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="submit"
+                      className="px-4 py-2 rounded-xl bg-[#06264A] text-white text-xs font-bold"
+                    >
+                      Create Column
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setShowAddCol(false)}
+                      className="px-3 py-2 rounded-xl border border-slate-300 text-xs text-slate-600 hover:bg-slate-100"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </form>
+              )}
+
+              {/* Columns List */}
+              {(!footer.columns || footer.columns.length === 0) ? (
+                <div className="p-8 text-center bg-white rounded-2xl border border-dashed border-slate-300 text-xs text-slate-500 space-y-2">
+                  <p>No navigation columns created yet.</p>
+                  <button
+                    type="button"
+                    onClick={handleRestoreStandardTemplate}
+                    className="inline-flex items-center gap-1.5 text-xs font-bold text-[#06264A] hover:underline"
+                  >
+                    <span>Click here to load standard optical columns</span>
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {footer.columns.map((col, colIdx) => (
+                    <div
+                      key={col._id || colIdx}
+                      className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden"
+                    >
+                      {/* Column Header */}
+                      <div className="p-4 bg-slate-50/80 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                        <div className="flex items-center gap-2 flex-1 min-w-0">
+                          {/* Column reorder */}
+                          <div className="flex items-center gap-1 shrink-0">
+                            <button
+                              type="button"
+                              onClick={() => handleMoveColumn(colIdx, -1)}
+                              disabled={colIdx === 0}
+                              className="p-1 rounded text-slate-400 hover:text-slate-800 disabled:opacity-20"
+                              title="Move Left"
+                            >
+                              <ArrowUp className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleMoveColumn(colIdx, 1)}
+                              disabled={colIdx === footer.columns.length - 1}
+                              className="p-1 rounded text-slate-400 hover:text-slate-800 disabled:opacity-20"
+                              title="Move Right"
+                            >
+                              <ArrowDown className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                            Col {colIdx + 1}:
+                          </span>
+
+                          <input
+                            type="text"
+                            value={col.title}
+                            onChange={(e) => handleUpdateColTitle(colIdx, e.target.value)}
+                            placeholder="Column Title (e.g. Quick Links)"
+                            className="font-bold text-slate-900 text-xs bg-transparent border-b border-dashed border-slate-300 focus:border-[#06264A] focus:outline-none px-1 py-0.5 max-w-xs"
+                          />
+                        </div>
+
+                        <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setLinkModal({
+                                columnIndex: colIdx,
+                                linkIndex: -1,
+                                label: "",
+                                url: "/"
+                              })
+                            }
+                            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-xs font-bold border border-emerald-200"
+                          >
+                            <Plus className="w-3 h-3" />
+                            <span>Add Link</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteColumn(colIdx)}
+                            className="p-1.5 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded-lg"
+                            title="Delete this entire column"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Links Table inside Column */}
+                      <div className="p-3 divide-y divide-slate-100">
+                        {(!col.links || col.links.length === 0) ? (
+                          <div className="py-4 text-center text-xs text-slate-400">
+                            No links in this column. Click "Add Link" above.
+                          </div>
+                        ) : (
+                          col.links.map((link, linkIdx) => (
+                            <div
+                              key={link._id || linkIdx}
+                              className="py-2.5 flex items-center justify-between gap-3 text-xs"
+                            >
+                              <div className="flex items-center gap-2 min-w-0 flex-1">
+                                <div className="flex flex-col gap-0.5">
+                                  <button
+                                    type="button"
+                                    onClick={() => handleMoveLink(colIdx, linkIdx, -1)}
+                                    disabled={linkIdx === 0}
+                                    className="p-0.5 text-slate-300 hover:text-slate-700 disabled:opacity-20"
+                                    title="Move Up"
+                                  >
+                                    <ArrowUp className="w-3 h-3" />
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleMoveLink(colIdx, linkIdx, 1)}
+                                    disabled={linkIdx === col.links.length - 1}
+                                    className="p-0.5 text-slate-300 hover:text-slate-700 disabled:opacity-20"
+                                    title="Move Down"
+                                  >
+                                    <ArrowDown className="w-3 h-3" />
+                                  </button>
+                                </div>
+
+                                <div className="min-w-0 flex-1">
+                                  <p className="font-bold text-slate-800 truncate">{link.label}</p>
+                                  <p className="text-[11px] text-slate-400 font-mono truncate">{link.url}</p>
+                                </div>
+                              </div>
+
+                              <div className="flex items-center gap-1.5 shrink-0">
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    setLinkModal({
+                                      columnIndex: colIdx,
+                                      linkIndex: linkIdx,
+                                      label: link.label,
+                                      url: link.url
+                                    })
+                                  }
+                                  className="p-1.5 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-lg"
+                                  title="Edit Link"
+                                >
+                                  <Edit2 className="w-3.5 h-3.5" />
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleDeleteLink(colIdx, linkIdx)}
+                                  className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg"
+                                  title="Delete Link"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                              </div>
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* TAB 2: BRANDING & ABOUT */}
+          {activeTab === "branding" && (
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-xs p-5 sm:p-6 space-y-5">
+              <div className="border-b border-slate-100 pb-3">
+                <h3 className="text-sm font-bold text-slate-900">Footer Logo & Editorial Bio</h3>
+                <p className="text-xs text-slate-500">
+                  Logo displayed on the deep navy footer background and short store bio.
+                </p>
+              </div>
+
+              {/* Logo Uploader */}
+              <MediaUploaderWithScreenSize
+                label="Footer Brand Logo"
+                value={footer.logo}
+                onChange={(url) => setFooter({ ...footer, logo: url })}
+                folder="logo"
+                targetScreen="desktop"
+                screenBadge="Footer Dark Navy Surface"
+                recommendedDimensions="400 × 120 px"
+                aspectRatio="3.3:1 Horizontal (Transparent PNG or SVG)"
+                helperText="Use a bright or transparent logo version that stands out against deep navy."
+                placeholder="/pv_logo.png or upload image"
+              />
+
+              {/* Description */}
+              <div>
+                <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-700 mb-1">
+                  Footer Description / Store Bio
+                </label>
+                <textarea
+                  rows={4}
+                  value={footer.description || ""}
+                  onChange={(e) => setFooter({ ...footer, description: e.target.value })}
+                  placeholder="PrettyVision is Kalina's premier optical store and eye care clinic, providing qualified optometrist eye testing, luxury eyewear, and contact lens fitting."
+                  className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-300 focus:outline-none focus:border-[#06264A] text-slate-800"
+                />
+                <p className="text-[11px] text-slate-400 mt-1">
+                  Displayed beneath the logo on the left side of the footer.
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* TAB 3: CONTACT DETAILS LIST */}
+          {activeTab === "contact" && (
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-xs p-5 sm:p-6 space-y-5">
+              <div className="border-b border-slate-100 pb-3">
+                <h3 className="text-sm font-bold text-slate-900">Physical Store Contact List</h3>
+                <p className="text-xs text-slate-500">
+                  Store address, telephone number, and support email displayed in the bottom footer row.
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-700 mb-1">
+                  Store Physical Address
+                </label>
+                <textarea
+                  rows={3}
+                  value={footer.contactDetails?.address || ""}
+                  onChange={(e) =>
+                    setFooter({
+                      ...footer,
+                      contactDetails: { ...footer.contactDetails, address: e.target.value }
+                    })
+                  }
+                  placeholder="Shop No 11, Agarwal Building, Market, opposite Nilesh Dryfruits, Kolivery Village, Vidya Nagari, Kalina, Santacruz East, Mumbai, Maharashtra 400098"
+                  className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-300 focus:outline-none focus:border-[#06264A]"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-700 mb-1">
+                    Store Phone Number
+                  </label>
+                  <input
+                    type="text"
+                    value={footer.contactDetails?.phone || ""}
+                    onChange={(e) =>
+                      setFooter({
+                        ...footer,
+                        contactDetails: { ...footer.contactDetails, phone: e.target.value }
+                      })
+                    }
+                    placeholder="095940 30310"
+                    className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-300 focus:outline-none focus:border-[#06264A]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-700 mb-1">
+                    Store Support Email
+                  </label>
+                  <input
+                    type="email"
+                    value={footer.contactDetails?.email || ""}
+                    onChange={(e) =>
+                      setFooter({
+                        ...footer,
+                        contactDetails: { ...footer.contactDetails, email: e.target.value }
+                      })
+                    }
+                    placeholder="prettyvisionkalina@gmail.com"
+                    className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-300 focus:outline-none focus:border-[#06264A]"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* TAB 4: SOCIAL MEDIA CHANNELS */}
+          {activeTab === "socials" && (
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-xs p-5 sm:p-6 space-y-4">
+              <div className="border-b border-slate-100 pb-3">
+                <h3 className="text-sm font-bold text-slate-900">Social Media Channels & Icons</h3>
+                <p className="text-xs text-slate-500">
+                  Icons only appear in the footer when their link is provided. Leave blank to hide.
+                </p>
+              </div>
+
+              {[
+                { key: "instagram", label: "Instagram Profile", icon: Instagram, placeholder: "https://instagram.com/prettyvision_kalina" },
+                { key: "whatsapp", label: "WhatsApp Direct Number / Link", icon: PhoneCall, placeholder: "9594030310 or https://wa.me/919594030310" },
+                { key: "facebook", label: "Facebook Page", icon: Facebook, placeholder: "https://facebook.com/prettyvision_kalina" },
+                { key: "youtube", label: "YouTube Channel", icon: Youtube, placeholder: "https://youtube.com/@prettyvision" },
+                { key: "linkedin", label: "LinkedIn Page", icon: Linkedin, placeholder: "https://linkedin.com/company/prettyvision" },
+                { key: "website", label: "Additional Website", icon: Globe, placeholder: "https://prettyvision.in" }
+              ].map((item) => {
+                const Icon = item.icon;
+                const val = footer.socialLinks?.[item.key] || "";
+                return (
+                  <div key={item.key} className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center shrink-0 text-slate-700">
+                      <Icon className="w-4 h-4" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <label className="block text-[11px] font-bold text-slate-700 mb-0.5">{item.label}</label>
+                      <input
+                        type="text"
+                        value={val}
+                        onChange={(e) =>
+                          setFooter({
+                            ...footer,
+                            socialLinks: { ...footer.socialLinks, [item.key]: e.target.value }
+                          })
+                        }
+                        placeholder={item.placeholder}
+                        className="w-full px-3 py-1.5 text-xs rounded-xl border border-slate-300 focus:outline-none focus:border-[#06264A]"
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {/* TAB 5: NEWSLETTER & COPYRIGHT */}
+          {activeTab === "copyright" && (
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-xs p-5 sm:p-6 space-y-5">
+              <div className="border-b border-slate-100 pb-3">
+                <h3 className="text-sm font-bold text-slate-900">Newsletter & Bottom Copyright Bar</h3>
+                <p className="text-xs text-slate-500">
+                  Toggle newsletter subscription form and customize copyright credits.
+                </p>
+              </div>
+
+              {/* Newsletter Toggle */}
+              <div className="flex items-center justify-between p-3.5 rounded-xl border border-slate-200 bg-slate-50/50">
+                <div>
+                  <p className="text-xs font-bold text-slate-900">Show Newsletter Subscription Box</p>
+                  <p className="text-[11px] text-slate-500">
+                    Displays email input form above social icons for customer signups.
+                  </p>
+                </div>
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={footer.newsletterEnabled !== false}
+                    onChange={(e) => setFooter({ ...footer, newsletterEnabled: e.target.checked })}
+                    className="sr-only peer"
+                  />
+                  <div className="w-10 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#06264A]"></div>
+                </label>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-700 mb-1">
+                    Copyright Text
+                  </label>
+                  <input
+                    type="text"
+                    value={footer.copyrightText || ""}
+                    onChange={(e) => setFooter({ ...footer, copyrightText: e.target.value })}
+                    placeholder="Pretty Vision. All Rights Reserved."
+                    className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-300 focus:outline-none focus:border-[#06264A]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-700 mb-1">
+                    Copyright Year
+                  </label>
+                  <input
+                    type="number"
+                    value={footer.copyrightYear || 2026}
+                    onChange={(e) => setFooter({ ...footer, copyrightYear: Number(e.target.value) })}
+                    placeholder="2026"
+                    className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-300 focus:outline-none focus:border-[#06264A]"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Right Preview Column (5 cols) */}
+        <div className="lg:col-span-5 space-y-4">
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-xs p-4 sm:p-5">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100 mb-3">
+              <div className="flex items-center gap-1.5">
+                <Eye className="w-4 h-4 text-[#06264A]" />
+                <span className="text-xs font-bold text-slate-800">Live Footer Mockup</span>
+              </div>
+              <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-lg">
+                <button
+                  type="button"
+                  onClick={() => setPreviewDevice("desktop")}
+                  className={`px-2 py-1 rounded text-[10px] font-bold flex items-center gap-1 transition ${
+                    previewDevice === "desktop" ? "bg-white text-slate-900 shadow-xs" : "text-slate-500"
+                  }`}
+                >
+                  <Monitor className="w-3 h-3" />
+                  <span>Desktop</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPreviewDevice("mobile")}
+                  className={`px-2 py-1 rounded text-[10px] font-bold flex items-center gap-1 transition ${
+                    previewDevice === "mobile" ? "bg-white text-slate-900 shadow-xs" : "text-slate-500"
+                  }`}
+                >
+                  <Smartphone className="w-3 h-3" />
+                  <span>Mobile</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Mockup Frame */}
+            <div
+              className={`relative mx-auto rounded-2xl border border-slate-800 bg-[#05182F] text-[#F5EFE6] overflow-x-hidden overflow-y-auto max-h-[560px] shadow-inner transition-all duration-300 p-5 ${
+                previewDevice === "mobile" ? "w-full max-w-[320px]" : "w-full"
+              }`}
+            >
+              {/* Header inside mockup */}
+              <div className="mb-4">
+                <div className="h-7 w-28 bg-white/10 rounded flex items-center justify-center text-[10px] font-bold text-white mb-2 overflow-hidden">
+                  {footer.logo ? (
+                    <img src={assetUrl(footer.logo)} alt="Logo" className="h-full object-contain" />
+                  ) : (
+                    <span>PRETTY VISION</span>
+                  )}
+                </div>
+                <p className="text-[11px] text-[#A89C8F] leading-relaxed line-clamp-3">
+                  {footer.description || "PrettyVision is Kalina's premier optical store and eye care clinic."}
+                </p>
+
+                {/* Social icons preview */}
+                <div className="flex items-center gap-2 mt-3 flex-wrap">
+                  {footer.socialLinks?.instagram && (
+                    <span className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center text-white text-[10px]">
+                      <Instagram className="w-3 h-3" />
+                    </span>
+                  )}
+                  {footer.socialLinks?.whatsapp && (
+                    <span className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center text-white text-[10px]">
+                      <PhoneCall className="w-3 h-3" />
+                    </span>
+                  )}
+                  {footer.socialLinks?.facebook && (
+                    <span className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center text-white text-[10px]">
+                      <Facebook className="w-3 h-3" />
+                    </span>
+                  )}
+                  {footer.socialLinks?.youtube && (
+                    <span className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center text-white text-[10px]">
+                      <Youtube className="w-3 h-3" />
+                    </span>
+                  )}
+                </div>
+
+                {footer.newsletterEnabled !== false && (
+                  <div className="mt-4 flex gap-1.5">
+                    <div className="h-7 bg-white/10 rounded-full px-3 text-[10px] text-slate-400 flex items-center flex-1">
+                      Email address...
+                    </div>
+                    <div className="h-7 px-3 bg-[#08264A] rounded-full text-[10px] text-white flex items-center font-bold">
+                      Subscribe
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Columns Preview */}
+              <div
+                className={`pt-3 border-t border-white/10 ${
+                  previewDevice === "mobile" ? "space-y-4" : "grid grid-cols-2 gap-4"
+                }`}
+              >
+                {footer.columns?.map((col, idx) => (
+                  <div key={idx} className="space-y-1.5">
+                    <h4 className="text-[10px] font-bold uppercase tracking-wider text-[#C5A880]">
+                      {col.title || "Column"}
+                    </h4>
+                    <div className="space-y-1">
+                      {col.links?.map((link, lIdx) => (
+                        <p key={lIdx} className="text-[10px] text-[#BEB2A4] hover:text-white truncate">
+                          • {link.label}
+                        </p>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Bottom Copyright Preview */}
+              <div className="mt-5 pt-3 border-t border-white/10 text-[9px] text-[#8C8073] flex flex-col gap-1">
+                <span>© {footer.copyrightYear || 2026} {footer.copyrightText}</span>
+                <span>{footer.contactDetails?.phone} · {footer.contactDetails?.email}</span>
+              </div>
+            </div>
+
+            <div className="mt-3 text-[11px] text-slate-500 space-y-1">
+              <div className="flex justify-between">
+                <span>Active Columns:</span>
+                <span className="font-bold text-slate-700">{footer.columns?.length || 0}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Total Navigation Links:</span>
+                <span className="font-bold text-slate-700">
+                  {footer.columns?.reduce((acc, c) => acc + (c.links?.length || 0), 0) || 0}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* LINK ADD / EDIT MODAL */}
+      {linkModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-xs">
+          <div className="bg-white rounded-2xl sm:rounded-3xl max-w-full sm:max-w-md w-full p-5 sm:p-6 shadow-2xl border border-slate-100 space-y-4 max-h-[88vh] overflow-y-auto">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <h3 className="font-serif text-base font-bold text-slate-900">
+                {linkModal.linkIndex === -1 ? "Add Navigation Link" : "Edit Navigation Link"}
+              </h3>
+              <button
+                type="button"
+                onClick={() => setLinkModal(null)}
+                className="p-1 text-slate-400 hover:text-slate-800 rounded-full"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveLink} className="space-y-4 text-xs">
+              <div>
+                <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                  Link Label <span className="text-rose-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  autoFocus
+                  value={linkModal.label}
+                  onChange={(e) => setLinkModal({ ...linkModal, label: e.target.value })}
+                  placeholder="e.g. Eye Examination, About Us..."
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:border-[#06264A] text-slate-800 font-semibold"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                  Destination URL <span className="text-rose-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={linkModal.url}
+                  onChange={(e) => setLinkModal({ ...linkModal, url: e.target.value })}
+                  placeholder="e.g. /services, /eyewear, tel:09594030310..."
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:border-[#06264A] text-slate-800 font-mono text-xs"
+                />
+
+                {/* Quick Presets */}
+                <div className="mt-2 flex flex-wrap gap-1 text-[10px]">
+                  <span className="text-slate-400 py-0.5">Quick targets:</span>
+                  {[
+                    { label: "Home", url: "/" },
+                    { label: "Eyewear", url: "/eyewear" },
+                    { label: "Services", url: "/services" },
+                    { label: "Brands", url: "/brands" },
+                    { label: "About", url: "/about" },
+                    { label: "Contact", url: "/contact" },
+                    { label: "Call Store", url: "tel:09594030310" },
+                    { label: "WhatsApp", url: "https://wa.me/919594030310" }
+                  ].map((p) => (
+                    <button
+                      key={p.label}
+                      type="button"
+                      onClick={() => setLinkModal({ ...linkModal, label: p.label, url: p.url })}
+                      className="px-2 py-0.5 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium"
+                    >
+                      {p.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setLinkModal(null)}
+                  className="px-4 py-2 rounded-xl border border-slate-300 text-xs font-bold text-slate-600 hover:bg-slate-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 rounded-xl bg-[#06264A] text-white text-xs font-bold uppercase tracking-wider hover:bg-[#0A3360]"
+                >
+                  Save Link
                 </button>
               </div>
             </form>

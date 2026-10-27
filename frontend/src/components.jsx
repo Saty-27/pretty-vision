@@ -45,7 +45,8 @@ import {
   Gem,
   Sparkles,
   PhoneCall,
-  Eye
+  Eye,
+  MessageCircle
 } from "lucide-react";
 import { apiFetch, assetUrl, trackPage, uploadFile } from "./api";
 import { footer as fallbackFooter } from "./fallback";
@@ -751,7 +752,14 @@ export const Footer = () => {
   const [message, setMessage] = useState("");
 
   useEffect(() => {
-    apiFetch("/footer").then((data) => data.footer && setFooter(data.footer)).catch(() => {});
+    const loadFooter = () => {
+      apiFetch("/footer")
+        .then((data) => data.footer && setFooter(data.footer))
+        .catch(() => {});
+    };
+    loadFooter();
+    window.addEventListener("footer-updated", loadFooter);
+    return () => window.removeEventListener("footer-updated", loadFooter);
   }, []);
 
   const subscribe = async (event) => {
@@ -765,14 +773,25 @@ export const Footer = () => {
     }
   };
 
+  const formatSocialUrl = (key, val) => {
+    if (!val) return "";
+    if (key === "whatsapp") {
+      if (/^\+?[0-9\s-]+$/.test(val.trim())) {
+        return `https://wa.me/${val.replace(/[^0-9]/g, "")}`;
+      }
+    }
+    return val;
+  };
+
   /* Only the networks the CMS actually holds get an icon. */
   const socials = [
     { key: "facebook", Icon: Facebook, label: "Facebook" },
     { key: "instagram", Icon: Instagram, label: "Instagram" },
+    { key: "whatsapp", Icon: MessageCircle, label: "WhatsApp" },
     { key: "youtube", Icon: Youtube, label: "YouTube" },
     { key: "linkedin", Icon: Linkedin, label: "LinkedIn" },
     { key: "website", Icon: Globe, label: "Website" }
-  ].filter(({ key }) => footer.socialLinks?.[key]);
+  ].filter(({ key }) => Boolean(footer.socialLinks?.[key]));
 
   return (
     /* Deep near-black so the warm page lands on something solid;
@@ -789,7 +808,7 @@ export const Footer = () => {
                 {socials.map(({ key, Icon, label }) => (
                   <a
                     key={key}
-                    href={footer.socialLinks[key]}
+                    href={formatSocialUrl(key, footer.socialLinks[key])}
                     target="_blank"
                     rel="noreferrer noopener"
                     aria-label={label}
@@ -826,11 +845,33 @@ export const Footer = () => {
               <div key={column.title}>
                 <h3 className="mb-5 font-display text-[13px] font-bold uppercase tracking-[0.14em] text-gold">{column.title}</h3>
                 <div className="flex flex-col gap-3">
-                  {column.links?.map((link) => (
-                    <Link key={link.url} to={link.url} className="font-ui text-[14px] text-[#BEB2A4] transition-colors duration-300 hover:text-white">
-                      {link.label}
-                    </Link>
-                  ))}
+                  {column.links?.map((link, idx) => {
+                    const isExternal =
+                      link.url?.startsWith("http://") ||
+                      link.url?.startsWith("https://") ||
+                      link.url?.startsWith("tel:") ||
+                      link.url?.startsWith("mailto:");
+
+                    return isExternal ? (
+                      <a
+                        key={idx}
+                        href={link.url}
+                        target={link.url?.startsWith("http") ? "_blank" : undefined}
+                        rel={link.url?.startsWith("http") ? "noreferrer noopener" : undefined}
+                        className="font-ui text-[14px] text-[#BEB2A4] transition-colors duration-300 hover:text-white"
+                      >
+                        {link.label}
+                      </a>
+                    ) : (
+                      <Link
+                        key={idx}
+                        to={link.url || "/"}
+                        className="font-ui text-[14px] text-[#BEB2A4] transition-colors duration-300 hover:text-white"
+                      >
+                        {link.label}
+                      </Link>
+                    );
+                  })}
                 </div>
               </div>
             ))}
@@ -840,8 +881,22 @@ export const Footer = () => {
 
       <div className="border-t border-white/[0.09]">
         <div className="shell flex flex-col gap-3 py-6 font-ui text-[13px] text-[#8C8073] md:flex-row md:items-center md:justify-between">
-          <span>© {footer.copyrightYear || new Date().getFullYear()} {footer.copyrightText}</span>
-          <span>{footer.contactDetails?.email} · {footer.contactDetails?.phone}</span>
+          <span>© {footer.copyrightYear || new Date().getFullYear()} {footer.copyrightText || "PrettyVision. All rights reserved."}</span>
+          <span className="flex flex-wrap items-center gap-x-3 gap-y-1">
+            {footer.contactDetails?.address && <span>{footer.contactDetails.address}</span>}
+            {footer.contactDetails?.address && (footer.contactDetails?.phone || footer.contactDetails?.email) && <span>·</span>}
+            {footer.contactDetails?.phone && (
+              <a href={`tel:${footer.contactDetails.phone}`} className="hover:text-white transition">
+                {footer.contactDetails.phone}
+              </a>
+            )}
+            {footer.contactDetails?.phone && footer.contactDetails?.email && <span>·</span>}
+            {footer.contactDetails?.email && (
+              <a href={`mailto:${footer.contactDetails.email}`} className="hover:text-white transition">
+                {footer.contactDetails.email}
+              </a>
+            )}
+          </span>
         </div>
       </div>
     </footer>
@@ -1600,6 +1655,7 @@ export const dashboardLinks = {
     { label: "Optical Articles & Blogs", url: "/admin/blogs", icon: FileText },
     { label: "Floating Call & WhatsApp", url: "/admin/floating-contact", icon: PhoneCall },
     { label: "Website Settings", url: "/admin/site-settings", icon: Settings },
+    { label: "Website Footer", url: "/admin/footer", icon: Layers },
     { label: "About Page Content", url: "/admin/about", icon: FileText },
     { label: "Staff & Roles", url: "/admin/roles", icon: Shield },
     { label: "Activity Trail", url: "/admin/activity-log", icon: Clock },

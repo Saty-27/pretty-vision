@@ -138,14 +138,51 @@ export const galleryVideos = Array.from({ length: 4 }).map((_, index) => ({
 }));
 
 export const footer = {
-  logo: "/logo-black-header.png",
-  description: "ISKCON Juhu Self-Excellence helps students grow through scripture, discipline, community, and practical spiritual learning.",
+  logo: "/pv_logo.png",
+  description: "PrettyVision is Kalina's premier optical store and eye care clinic, providing qualified optometrist eye testing, luxury eyewear, and contact lens fitting.",
   columns: [
-    { title: "Quick Links", links: [{ label: "Home", url: "/" }, { label: "About", url: "/about" }, { label: "Courses", url: "/courses" }, { label: "Contact", url: "/contact" }] },
-    { title: "Learning", links: [{ label: "Visionaries", url: "/visionaries" }, { label: "Blogs", url: "/blogs" }, { label: "Video Blogs", url: "/video-blogs" }] },
-    { title: "Legal", links: [{ label: "Privacy Policy", url: "/privacy-policy" }, { label: "Terms and Conditions", url: "/terms-and-conditions" }, { label: "Sitemap", url: "/sitemap" }] }
+    {
+      title: "Quick Links",
+      links: [
+        { label: "Home", url: "/" },
+        { label: "Eyewear Catalog", url: "/eyewear" },
+        { label: "Optical Services", url: "/services" },
+        { label: "Designer Brands", url: "/brands" },
+        { label: "About Clinic", url: "/about" },
+        { label: "Store & Hours", url: "/contact" }
+      ]
+    },
+    {
+      title: "Clinical Services",
+      links: [
+        { label: "Eye Examination", url: "/services" },
+        { label: "Prescription Glasses", url: "/eyewear" },
+        { label: "Contact Lens Fitting", url: "/eyewear" },
+        { label: "Kids Eye Care", url: "/services" },
+        { label: "Frame Adjustments", url: "/services" }
+      ]
+    },
+    {
+      title: "Customer Support",
+      links: [
+        { label: "Book Appointment", url: "/contact" },
+        { label: "Locate Store", url: "/contact" },
+        { label: "Call Support", url: "tel:09594030310" },
+        { label: "WhatsApp Store", url: "https://wa.me/919594030310" }
+      ]
+    }
   ],
-  contactDetails: { address: "ISKCON Juhu, Hare Krishna Land, Juhu, Mumbai", phone: "+91 22 2620 6860", email: "selfexcellence@iskconjuhu.in" },
-  copyrightText: "ISKCON Juhu Self-Excellence. All Rights Reserved.",
-  copyrightYear: 2026
+  contactDetails: {
+    address: "Shop No 11, Agarwal Building, Market, opposite Nilesh Dryfruits, Kolivery Village, Vidya Nagari, Kalina, Santacruz East, Mumbai, Maharashtra 400098",
+    phone: "095940 30310",
+    email: "prettyvisionkalina@gmail.com"
+  },
+  socialLinks: {
+    facebook: "https://facebook.com/prettyvision_kalina",
+    instagram: "https://instagram.com/prettyvision_kalina",
+    whatsapp: "9594030310"
+  },
+  copyrightText: "Pretty Vision. All Rights Reserved.",
+  copyrightYear: 2026,
+  newsletterEnabled: true
 };
