@@ -86,6 +86,7 @@ import {
   Appointment,
   modelRegistry
 } from "./models.js";
+import { processUploadedFile } from "./mediaCompressor.js";
 import { booksRouter, attachProtectedBookRoutes, attachAdminBookRoutes } from "./booksRoutes.js";
 import {
   generateSitemapXml,
@@ -1227,7 +1228,8 @@ app.post(
   upload.single("file"),
   asyncHandler(async (req, res) => {
     if (!req.file) return res.status(400).json({ success: false, message: "No file uploaded" });
-    const file = { url: `/uploads/${req.file.path.split("/uploads/")[1]}`, filename: req.file.filename };
+    await processUploadedFile(req.file);
+    const file = { url: `/uploads/${req.file.path.split("/uploads/")[1]}`, filename: req.file.filename, size: req.file.size };
     await FileUpload.create({ user: req.user._id, ...file, folder: cleanUploadFolder(req.query.folder), mimeType: req.file.mimetype, size: req.file.size }).catch(() => null);
     res.status(201).json({ success: true, file });
   })
@@ -4545,7 +4547,8 @@ app.post("/api/admin/testimonials/bulk", ...adminOnly, asyncHandler(async (req, 
 
 app.post("/api/admin/upload", ...adminOnly, uploadLimiter, upload.single("file"), asyncHandler(async (req, res) => {
   if (!req.file) return res.status(400).json({ success: false, message: "No file uploaded" });
-  const file = { url: `/uploads/${req.file.path.split("/uploads/")[1]}`, filename: req.file.filename };
+  await processUploadedFile(req.file);
+  const file = { url: `/uploads/${req.file.path.split("/uploads/")[1]}`, filename: req.file.filename, size: req.file.size };
   await FileUpload.create({ user: req.user._id, ...file, folder: cleanUploadFolder(req.query.folder), mimeType: req.file.mimetype, size: req.file.size }).catch(() => null);
   res.status(201).json({ success: true, file });
 }));

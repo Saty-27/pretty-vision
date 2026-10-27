@@ -53,7 +53,85 @@ export const apiFetch = async (path, options = {}) => {
   return data;
 };
 
-export const uploadFile = async (file, folder = "general") => {
+export const compressImageInBrowser = async (file, maxBytes = 350 * 1024) => {
+  if (!file || typeof window === "undefined") return file;
+  const isImage = file.type && file.type.startsWith("image/");
+  if (!isImage || file.type === "image/svg+xml" || file.type === "image/gif") {
+    return file;
+  }
+
+  if (file.size <= maxBytes) {
+    return file;
+  }
+
+  try {
+    return await new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          let { width, height } = img;
+          const maxDim = 1600;
+
+          if (width > maxDim || height > maxDim) {
+            if (width > height) {
+              height = Math.round((height * maxDim) / width);
+              width = maxDim;
+            } else {
+              width = Math.round((width * maxDim) / height);
+              height = maxDim;
+            }
+          }
+
+          const canvas = document.createElement("canvas");
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext("2d");
+          ctx.drawImage(img, 0, 0, width, height);
+
+          const format = file.type === "image/png" ? "image/webp" : (file.type || "image/jpeg");
+
+          let quality = 0.82;
+          const attempt = (q) => {
+            canvas.toBlob(
+              (blob) => {
+                if (!blob) {
+                  resolve(file);
+                  return;
+                }
+                if (blob.size > maxBytes && q > 0.45) {
+                  attempt(q - 0.12);
+                } else {
+                  const newName = file.name.replace(/\.[^.]+$/, format === "image/webp" ? ".webp" : ".jpg");
+                  const compressed = new File([blob], newName, {
+                    type: blob.type || format,
+                    lastModified: Date.now()
+                  });
+                  console.log(`[ClientCompressor] Reduced ${(file.size / 1024).toFixed(1)} KB -> ${(compressed.size / 1024).toFixed(1)} KB`);
+                  resolve(compressed);
+                }
+              },
+              format,
+              q
+            );
+          };
+
+          attempt(quality);
+        };
+        img.onerror = () => resolve(file);
+        img.src = e.target.result;
+      };
+      reader.onerror = () => resolve(file);
+      reader.readAsDataURL(file);
+    });
+  } catch (err) {
+    console.warn("Client image compression fallback:", err);
+    return file;
+  }
+};
+
+export const uploadFile = async (rawFile, folder = "general") => {
+  const file = await compressImageInBrowser(rawFile, 350 * 1024);
   const token = getToken();
   const form = new FormData();
   form.append("file", file);
