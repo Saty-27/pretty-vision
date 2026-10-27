@@ -107,18 +107,18 @@ export const TopBar = ({ settings, onBookClick }) => {
           {ctaUrl === "/contact" && onBookClick ? (
             <button
               onClick={onBookClick}
-              className="inline-flex items-center gap-1.5 bg-[#0B3363] hover:bg-[#0D3F7A] text-white border border-blue-400/30 px-4.5 py-1.5 rounded-full text-xs font-bold tracking-wide transition-all shadow-2xs cursor-pointer"
+              className="inline-flex items-center justify-center gap-2 bg-[#0E3D73] hover:bg-[#134D8F] text-white border border-blue-400/40 px-5 py-1.5 rounded-full text-xs font-bold tracking-wide transition-all shadow-xs cursor-pointer select-none whitespace-nowrap group"
             >
-              <span>{ctaText}</span>
-              <ArrowRight className="h-3 w-3" />
+              <span className="leading-none">{ctaText}</span>
+              <ArrowRight className="h-3.5 w-3.5 shrink-0 transition-transform group-hover:translate-x-0.5" />
             </button>
           ) : (
             <Link
               to={ctaUrl}
-              className="inline-flex items-center gap-1.5 bg-[#0B3363] hover:bg-[#0D3F7A] text-white border border-blue-400/30 px-4.5 py-1.5 rounded-full text-xs font-bold tracking-wide transition-all shadow-2xs"
+              className="inline-flex items-center justify-center gap-2 bg-[#0E3D73] hover:bg-[#134D8F] text-white border border-blue-400/40 px-5 py-1.5 rounded-full text-xs font-bold tracking-wide transition-all shadow-xs select-none whitespace-nowrap group"
             >
-              <span>{ctaText}</span>
-              <ArrowRight className="h-3 w-3" />
+              <span className="leading-none">{ctaText}</span>
+              <ArrowRight className="h-3.5 w-3.5 shrink-0 transition-transform group-hover:translate-x-0.5" />
             </Link>
           )}
         </div>
