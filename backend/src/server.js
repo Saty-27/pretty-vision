@@ -443,7 +443,9 @@ const SECTION_ALIASES = {
   instagram: "gallery-items",
   homepage: "home-sections",
   "floating-contact": "site-settings",
-  "floating-contacts": "site-settings"
+  "floating-contacts": "site-settings",
+  "expert-eye-care": "home-sections",
+  "final-cta": "home-sections"
 };
 
 const sectionFor = (resource = "") => {
@@ -1261,6 +1263,15 @@ app.get("/api/floating-contact", asyncHandler(async (req, res) => {
     ...(site?.floatingContact || {})
   };
   res.json({ success: true, floatingContact });
+}));
+
+app.get("/api/expert-eye-care", asyncHandler(async (req, res) => {
+  let section = await PageSection.findOne({ pageName: "home", sectionKey: "final_cta" }).lean();
+  if (!section) {
+    const def = DEFAULT_HOMEPAGE_SECTIONS.find((s) => s.sectionKey === "final_cta");
+    section = def;
+  }
+  res.json({ success: true, section });
 }));
 
 app.get("/api/site-settings", asyncHandler(async (req, res) => res.json({ success: true, settings: await SiteSetting.findOne({ singletonKey: "site" }).lean() })));
@@ -4914,6 +4925,87 @@ app.get("/api/admin/floating-contact", ...adminOnly, asyncHandler(async (req, re
     ...(site?.floatingContact || {})
   };
   res.json({ success: true, floatingContact });
+}));
+
+app.get("/api/admin/expert-eye-care", ...adminOnly, asyncHandler(async (req, res) => {
+  let section = await PageSection.findOne({ pageName: "home", sectionKey: "final_cta" }).lean();
+  if (!section) {
+    const def = DEFAULT_HOMEPAGE_SECTIONS.find((s) => s.sectionKey === "final_cta");
+    section = def;
+  }
+  res.json({ success: true, section, item: section });
+}));
+
+app.put("/api/admin/expert-eye-care", ...adminOnly, asyncHandler(async (req, res) => {
+  const def = DEFAULT_HOMEPAGE_SECTIONS.find((s) => s.sectionKey === "final_cta");
+  const {
+    sectionTitle,
+    sectionSubtitle,
+    description,
+    content,
+    homepageVisible,
+    websiteEnabled,
+    sortOrder
+  } = req.body;
+
+  const updateData = {};
+  if (sectionTitle !== undefined) updateData.sectionTitle = sectionTitle;
+  if (sectionSubtitle !== undefined) updateData.sectionSubtitle = sectionSubtitle;
+  if (description !== undefined) updateData.description = description;
+  if (content !== undefined) updateData.content = content;
+  if (sortOrder !== undefined) updateData.sortOrder = Number(sortOrder);
+  if (homepageVisible !== undefined) {
+    updateData.homepageVisible = Boolean(homepageVisible);
+    updateData.websiteEnabled = Boolean(homepageVisible);
+    updateData.status = Boolean(homepageVisible) ? "active" : "inactive";
+  }
+  if (websiteEnabled !== undefined) {
+    updateData.websiteEnabled = Boolean(websiteEnabled);
+    updateData.status = Boolean(websiteEnabled) ? "active" : "inactive";
+  }
+
+  const updated = await PageSection.findOneAndUpdate(
+    { pageName: "home", sectionKey: "final_cta" },
+    {
+      $set: {
+        pageName: "home",
+        sectionKey: "final_cta",
+        sectionName: def.sectionName,
+        routePath: def.routePath,
+        navLabel: def.navLabel,
+        ...updateData
+      }
+    },
+    { upsert: true, new: true, setDefaultsOnInsert: true }
+  );
+
+  res.json({ success: true, section: updated, item: updated });
+}));
+
+app.post("/api/admin/expert-eye-care/reset", ...adminOnly, asyncHandler(async (req, res) => {
+  const def = DEFAULT_HOMEPAGE_SECTIONS.find((s) => s.sectionKey === "final_cta");
+  const reset = await PageSection.findOneAndUpdate(
+    { pageName: "home", sectionKey: "final_cta" },
+    {
+      $set: {
+        pageName: "home",
+        sectionKey: "final_cta",
+        sectionName: def.sectionName,
+        sectionTitle: def.sectionTitle,
+        sectionSubtitle: def.sectionSubtitle,
+        description: def.description,
+        routePath: def.routePath,
+        navLabel: def.navLabel,
+        homepageVisible: def.homepageVisible,
+        websiteEnabled: def.websiteEnabled,
+        sortOrder: def.sortOrder,
+        status: "active",
+        content: def.content
+      }
+    },
+    { upsert: true, new: true, setDefaultsOnInsert: true }
+  );
+  res.json({ success: true, section: reset, message: "Expert Eye Care section reset to defaults" });
 }));
 
 app.put("/api/admin/floating-contact", ...adminOnly, asyncHandler(async (req, res) => {

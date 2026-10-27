@@ -108,7 +108,8 @@ import {
   AdminInstagramFeed,
   AdminBrandBanner,
   AdminShopByType,
-  AdminFloatingContact
+  AdminFloatingContact,
+  AdminExpertEyeCare
 } from "./prettyvision/PrettyVisionAdmin";
 import { FloatingContactButtons } from "./prettyvision/FloatingContactButtons";
 
@@ -326,6 +327,8 @@ const App = () => {
         <Route path="store-settings" element={<AdminStoreLocation />} />
         <Route path="instagram" element={<AdminInstagramFeed />} />
         <Route path="gallery" element={<AdminInstagramFeed />} />
+        <Route path="expert-eye-care" element={<AdminExpertEyeCare />} />
+        <Route path="final-cta" element={<AdminExpertEyeCare />} />
         <Route path="about" element={<AdminAboutSections />} />
         <Route path="about-sections" element={<AdminAboutSections />} />
         <Route path="categories" element={<AdminCategories />} />

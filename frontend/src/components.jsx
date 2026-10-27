@@ -44,7 +44,8 @@ import {
   Glasses,
   Gem,
   Sparkles,
-  PhoneCall
+  PhoneCall,
+  Eye
 } from "lucide-react";
 import { apiFetch, assetUrl, trackPage, uploadFile } from "./api";
 import { footer as fallbackFooter } from "./fallback";
@@ -1588,6 +1589,7 @@ export const dashboardLinks = {
     { label: "Brand Banner (Section 3)", url: "/admin/brand-banner", icon: Gem },
     { label: "Store & Hours (Section 4)", url: "/admin/store", icon: Compass },
     { label: "Instagram Feed (Section 5)", url: "/admin/instagram", icon: Instagram },
+    { label: "Expert Eye Care CTA (Section 6)", url: "/admin/expert-eye-care", icon: Eye },
     { label: "Optical Services", url: "/admin/services", icon: Sparkles },
     { label: "Eye Test Bookings", url: "/admin/appointments", icon: Calendar },
     { label: "Contact Enquiries", url: "/admin/contact-messages", icon: MessageSquare },
@@ -1641,6 +1643,8 @@ const sectionOf = (url = "") => {
     footer: "footer",
     "site-settings": "site-settings",
     "floating-contact": "site-settings",
+    "expert-eye-care": "home-sections",
+    "final-cta": "home-sections",
     traffic: "traffic",
     reports: "reports",
     blogs: "blogs",

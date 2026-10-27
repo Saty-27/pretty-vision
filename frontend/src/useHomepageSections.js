@@ -136,15 +136,41 @@ export const DEFAULT_HOMEPAGE_SECTIONS = [
   },
   {
     sectionKey: "final_cta",
-    sectionName: "Final CTA Banner",
+    sectionName: "Expert Eye Care CTA",
     sectionTitle: "YOUR VISION DESERVES EXPERT CARE.",
-    sectionSubtitle: "EXPERIENCE THE DIFFERENCE",
-    description: "Visit Pretty Vision Kalina and experience better vision with our expert optometrists.",
+    sectionSubtitle: "EXPERT EYE CARE AT PRETTYVISION KALINA",
+    description: "Visit PrettyVision Kalina and experience better vision with our trusted optometrists, advanced technology and personalized care.",
     routePath: "/contact",
-    navLabel: "Final CTA",
+    navLabel: "Expert Eye Care CTA",
     homepageVisible: true,
     websiteEnabled: true,
-    sortOrder: 12
+    sortOrder: 13,
+    content: {
+      eyebrow: "EXPERT EYE CARE AT PRETTYVISION KALINA",
+      showEyebrow: true,
+      heading: "YOUR VISION DESERVES EXPERT CARE.",
+      showHeading: true,
+      description: "Visit PrettyVision Kalina and experience better vision with our trusted optometrists, advanced technology and personalized care.",
+      showDescription: true,
+      features: [
+        { id: "1", icon: "Eye", title: "Professional Eye Examination", description: "", enabled: true, sortOrder: 1 },
+        { id: "2", icon: "Users", title: "Expert Optometrists", description: "", enabled: true, sortOrder: 2 },
+        { id: "3", icon: "Shield", title: "Advanced Technology", description: "", enabled: true, sortOrder: 3 },
+        { id: "4", icon: "Heart", title: "Personalized Care", description: "", enabled: true, sortOrder: 4 }
+      ],
+      showFeatures: true,
+      primaryCtaText: "Book an Eye Test",
+      primaryCtaLink: "/contact",
+      showPrimaryCta: true,
+      secondaryCtaText: "Explore Our Store",
+      secondaryCtaLink: "/eyewear",
+      showSecondaryCta: true,
+      image: "/uploads/sunglasses_hero_wood.jpg",
+      showImage: true,
+      showImageMobile: true,
+      imageAlt: "Luxury Eyewear at PrettyVision Kalina",
+      overlayOpacity: 85
+    }
   }
 ];
 

@@ -39,27 +39,30 @@ import {
 } from "lucide-react";
 import { assetUrl, apiFetch } from "../api";
 
-export const DynamicIcon = ({ name, className = "h-5 w-5" }) => {
+export const DynamicIcon = ({ name = "", className = "h-5 w-5" }) => {
   const iconMap = {
-    Eye,
-    Glasses,
-    Gem,
-    Disc,
-    Users,
-    Sparkles,
-    Wrench,
-    MapPin,
-    Phone,
-    Sun,
-    Laptop,
-    Activity,
-    Heart,
-    ShieldCheck,
-    Clock,
-    Calendar,
-    Star
+    eye: Eye,
+    glasses: Glasses,
+    gem: Gem,
+    disc: Disc,
+    users: Users,
+    sparkles: Sparkles,
+    wrench: Wrench,
+    mappin: MapPin,
+    phone: Phone,
+    sun: Sun,
+    laptop: Laptop,
+    activity: Activity,
+    heart: Heart,
+    shield: ShieldCheck,
+    shieldcheck: ShieldCheck,
+    clock: Clock,
+    calendar: Calendar,
+    star: Star,
+    check: Check
   };
-  const IconComponent = iconMap[name] || Glasses;
+  const key = String(name || "").toLowerCase().replace(/[^a-z]/g, "");
+  const IconComponent = iconMap[key] || Glasses;
   return <IconComponent className={className} />;
 };
 
@@ -2454,54 +2457,235 @@ export const OpticalGuideSection = ({ sectionData = {}, onBookClick }) => {
 };
 
 /* ============================================================
-   14. FINAL CTA BANNER (FULL-WIDTH DARK NAVY HERO BANNER)
+   14. EXPERT EYE CARE FINAL CTA SECTION
+   Redesigned 1:1 to Reference:
+   - Deep PrettyVision navy (#06264A) card
+   - Eyebrow: "EXPERT EYE CARE AT PRETTYVISION KALINA"
+   - Large Serif Heading: "YOUR VISION DESERVES EXPERT CARE."
+   - Paragraph Description: "Visit PrettyVision Kalina and experience better vision with our trusted optometrists, advanced technology and personalized care."
+   - Dynamic repeatable feature benefits row with circular icon badges:
+     * Professional Eye Examination
+     * Expert Optometrists
+     * Advanced Technology
+     * Personalized Care
+   - Primary pill CTA ("Book an Eye Test →") + Secondary link CTA ("Explore Our Store →")
+   - Seamless gradient fade into right-side eyewear image
+   - Clean aesthetics with NO white store/timing card overlay
+   - Fully dynamic and admin-controllable
    ============================================================ */
 export const FinalCTA = ({ sectionData = {}, onBookClick }) => {
+  if (
+    sectionData.homepageVisible === false ||
+    sectionData.status === "inactive" ||
+    sectionData.websiteEnabled === false
+  ) {
+    return null;
+  }
+
   const content = sectionData.content || {};
-  const title = sectionData.sectionTitle || "YOUR VISION DESERVES EXPERT CARE.";
+
+  // Visibility flags
+  const showEyebrow = content.showEyebrow !== false;
+  const showHeading = content.showHeading !== false;
+  const showDescription = content.showDescription !== false;
+  const showFeatures = content.showFeatures !== false;
+  const showPrimaryCta = content.showPrimaryCta !== false;
+  const showSecondaryCta = content.showSecondaryCta !== false;
+  const showImage = content.showImage !== false;
+  const showImageMobile = content.showImageMobile !== false;
+
+  // Copy
+  const eyebrow =
+    content.eyebrow ||
+    sectionData.sectionSubtitle ||
+    "EXPERT EYE CARE AT PRETTYVISION KALINA";
+  const heading =
+    content.heading ||
+    sectionData.sectionTitle ||
+    "YOUR VISION DESERVES EXPERT CARE.";
   const description =
+    content.description ||
     sectionData.description ||
-    "Visit Pretty Vision Kalina and experience better vision with our expert optometrists.";
-  const buttonText = content.buttonText || "Book an Eye Test";
-  const bgImage =
+    "Visit PrettyVision Kalina and experience better vision with our trusted optometrists, advanced technology and personalized care.";
+
+  // CTAs
+  const primaryCtaText = content.primaryCtaText || content.buttonText || "Book an Eye Test";
+  const primaryCtaLink = content.primaryCtaLink || content.buttonLink || "/contact";
+  const secondaryCtaText = content.secondaryCtaText || "Explore Our Store";
+  const secondaryCtaLink = content.secondaryCtaLink || "/eyewear";
+
+  // Feature Items (Repeatable Admin-managed list)
+  const defaultFeatures = [
+    { id: "1", icon: "Eye", title: "Professional Eye Examination", description: "", enabled: true, sortOrder: 1 },
+    { id: "2", icon: "Users", title: "Expert Optometrists", description: "", enabled: true, sortOrder: 2 },
+    { id: "3", icon: "ShieldCheck", title: "Advanced Technology", description: "", enabled: true, sortOrder: 3 },
+    { id: "4", icon: "Heart", title: "Personalized Care", description: "", enabled: true, sortOrder: 4 }
+  ];
+  const features = Array.isArray(content.features) && content.features.length > 0
+    ? content.features
+    : defaultFeatures;
+
+  // Image & Blend
+  const image =
     content.image ||
-    "https://images.unsplash.com/photo-1511499767150-a48a237f0083?auto=format&fit=crop&w=1600&q=85";
+    "/uploads/sunglasses_hero_wood.jpg";
+  const imageAlt = content.imageAlt || "Luxury Eyewear at PrettyVision Kalina";
+  const overlayOpacity = typeof content.overlayOpacity === "number" ? content.overlayOpacity : 85;
+
+  const handleCtaClick = (link, e) => {
+    if (!link) return;
+    if (link === "/contact" || link.includes("appointment") || link.includes("book")) {
+      if (typeof onBookClick === "function") {
+        e.preventDefault();
+        onBookClick();
+        return;
+      }
+    }
+  };
 
   return (
-    <section className="w-full bg-[#08264A] text-white py-20 lg:py-28 relative overflow-hidden">
-      <div className="w-full px-5 sm:px-8 md:px-12 lg:px-16 xl:px-20 relative z-10">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-          <div className="lg:col-span-8 space-y-4">
-            <h2 className="font-serif text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-white leading-tight">
-              {title}
-            </h2>
-            <p className="text-base sm:text-lg text-slate-300 max-w-xl leading-relaxed font-normal">
-              {description}
-            </p>
-          </div>
-          <div className="lg:col-span-4 flex lg:justify-end">
-            <button
-              onClick={onBookClick}
-              className="inline-flex items-center gap-2 rounded-full bg-white hover:bg-slate-100 text-[#08264A] px-10 py-4.5 text-sm sm:text-base font-bold tracking-wide transition-all shadow-2xl group"
-            >
-              <span>{buttonText}</span>
-              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-            </button>
+    <section className="w-full py-10 sm:py-14 lg:py-16 bg-slate-50/60" aria-label="Expert Eye Care">
+      <div className="w-full px-4 sm:px-6 md:px-10 lg:px-14 xl:px-16 max-w-[1440px] mx-auto">
+        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#06264A] via-[#051E3B] to-[#04162B] text-white shadow-2xl border border-white/10">
+          
+          <div className="grid grid-cols-1 lg:grid-cols-12 min-h-[440px] lg:min-h-[480px] items-stretch">
+            {/* LEFT CONTENT COLUMN */}
+            <div className="lg:col-span-7 xl:col-span-7 p-7 sm:p-10 lg:p-12 xl:p-14 flex flex-col justify-center relative z-20 space-y-5 sm:space-y-6">
+              
+              {/* 1. Small Eyebrow */}
+              {showEyebrow && eyebrow && (
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
+                  <p className="text-[10px] sm:text-xs font-bold tracking-[0.2em] uppercase text-sky-200/90 font-mono">
+                    {eyebrow}
+                  </p>
+                </div>
+              )}
+
+              {/* 2. Main Heading */}
+              {showHeading && heading && (
+                <h2 className="font-serif text-3xl sm:text-4xl lg:text-[42px] xl:text-5xl font-bold tracking-tight text-white leading-[1.12]">
+                  {heading}
+                </h2>
+              )}
+
+              {/* 3. Description / Paragraph */}
+              {showDescription && description && (
+                <p className="text-sm sm:text-base text-slate-200/90 leading-relaxed font-normal max-w-xl">
+                  {description}
+                </p>
+              )}
+
+              {/* 4. Feature / Benefit Items (Repeatable Admin-managed list) */}
+              {showFeatures && features && features.length > 0 && (
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-3.5 pt-2 pb-1 border-y border-white/10">
+                  {features
+                    .filter((f) => f.enabled !== false)
+                    .map((feat, idx) => (
+                      <div
+                        key={feat.id || idx}
+                        className="flex items-center gap-2.5 sm:gap-3 py-1 group"
+                      >
+                        <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white/10 border border-white/15 flex items-center justify-center text-sky-300 shrink-0 shadow-inner backdrop-blur-sm transition-all duration-300 group-hover:bg-white/20 group-hover:scale-105">
+                          <DynamicIcon name={feat.icon || "Eye"} className="w-4 h-4 sm:w-4.5 sm:h-4.5" />
+                        </div>
+                        <div className="min-w-0">
+                          <h4 className="text-[11px] sm:text-xs font-bold text-white leading-tight">
+                            {feat.title}
+                          </h4>
+                          {feat.description && (
+                            <p className="text-[10px] text-slate-300/80 truncate mt-0.5">
+                              {feat.description}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              )}
+
+              {/* 5. CTA Buttons */}
+              <div className="flex flex-wrap items-center gap-4 sm:gap-6 pt-2">
+                {showPrimaryCta && primaryCtaText && (
+                  primaryCtaLink.startsWith("http") ? (
+                    <a
+                      href={primaryCtaLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2.5 rounded-full bg-white hover:bg-slate-100 text-[#06264A] px-7 py-3 sm:px-8 sm:py-3.5 text-xs sm:text-sm font-bold tracking-wide transition-all duration-300 shadow-xl hover:shadow-2xl hover:scale-105 active:scale-95 group shrink-0"
+                    >
+                      <span>{primaryCtaText}</span>
+                      <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                    </a>
+                  ) : (
+                    <Link
+                      to={primaryCtaLink}
+                      onClick={(e) => handleCtaClick(primaryCtaLink, e)}
+                      className="inline-flex items-center gap-2.5 rounded-full bg-white hover:bg-slate-100 text-[#06264A] px-7 py-3 sm:px-8 sm:py-3.5 text-xs sm:text-sm font-bold tracking-wide transition-all duration-300 shadow-xl hover:shadow-2xl hover:scale-105 active:scale-95 group shrink-0"
+                    >
+                      <span>{primaryCtaText}</span>
+                      <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                    </Link>
+                  )
+                )}
+
+                {showSecondaryCta && secondaryCtaText && (
+                  secondaryCtaLink.startsWith("http") ? (
+                    <a
+                      href={secondaryCtaLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 text-xs sm:text-sm font-bold text-white/90 hover:text-white transition-colors duration-200 border-b border-transparent hover:border-white/50 py-1 group shrink-0"
+                    >
+                      <span>{secondaryCtaText}</span>
+                      <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
+                    </a>
+                  ) : (
+                    <Link
+                      to={secondaryCtaLink}
+                      onClick={(e) => handleCtaClick(secondaryCtaLink, e)}
+                      className="inline-flex items-center gap-2 text-xs sm:text-sm font-bold text-white/90 hover:text-white transition-colors duration-200 border-b border-transparent hover:border-white/50 py-1 group shrink-0"
+                    >
+                      <span>{secondaryCtaText}</span>
+                      <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
+                    </Link>
+                  )
+                )}
+              </div>
+            </div>
+
+            {/* RIGHT EYEWEAR PHOTOGRAPHY COLUMN */}
+            {showImage && (
+              <div
+                className={`relative ${
+                  showImageMobile ? "block" : "hidden lg:block"
+                } lg:col-span-5 xl:col-span-5 min-h-[260px] sm:min-h-[320px] lg:min-h-full overflow-hidden`}
+              >
+                <img
+                  src={assetUrl(image)}
+                  alt={imageAlt}
+                  className="w-full h-full object-cover object-center lg:object-left transform hover:scale-105 transition-transform duration-700 select-none"
+                  loading="lazy"
+                  onError={(e) => {
+                    e.target.onerror = null;
+                    e.target.src = "/uploads/sunglasses_hero_wood.jpg";
+                  }}
+                />
+
+                {/* Smooth horizontal gradient blend from the left navy into the image */}
+                <div
+                  className="absolute inset-y-0 left-0 w-28 sm:w-44 lg:w-56 bg-gradient-to-r from-[#06264A] via-[#06264A]/80 to-transparent pointer-events-none"
+                  style={{ opacity: `${overlayOpacity / 100}` }}
+                />
+
+                {/* Subtle vertical blend for mobile stacked view */}
+                <div
+                  className="lg:hidden absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-[#06264A] to-transparent pointer-events-none"
+                />
+              </div>
+            )}
           </div>
         </div>
-      </div>
-
-      {/* Decorative Eyewear Silhouette */}
-      <div className="absolute right-0 bottom-0 top-0 w-2/5 opacity-15 pointer-events-none hidden lg:block">
-        <img
-          src={assetUrl(bgImage)}
-          alt=""
-          className="w-full h-full object-cover object-right"
-          onError={(e) => {
-            e.target.onerror = null;
-            e.target.src = "/uploads/final_cta.jpg";
-          }}
-        />
       </div>
     </section>
   );

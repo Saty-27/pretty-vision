@@ -656,6 +656,22 @@ export const AdminHomepageSections = () => {
             </div>
 
             <form onSubmit={saveEdit} className="space-y-4 text-xs">
+              {editingSection.sectionKey === "final_cta" && (
+                <div className="bg-gradient-to-r from-sky-50 to-blue-50 border border-sky-200 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div>
+                    <p className="text-xs font-bold text-[#06264A]">Expert Eye Care CTA Advanced Customizer</p>
+                    <p className="text-[11px] text-slate-500">Manage repeatable benefit items, icon badges, dual CTAs, photography, and live multi-screen preview.</p>
+                  </div>
+                  <Link
+                    to="/admin/expert-eye-care"
+                    className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-[#06264A] text-white text-xs font-bold hover:bg-[#0A3360] transition shrink-0"
+                  >
+                    <span>Open Full Editor</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </Link>
+                </div>
+              )}
+
               {editingSection.sectionKey !== "store_visit" && (
                 <>
                   <div>
@@ -7133,5 +7149,6 @@ export {
   AdminInstagramFeed,
   AdminBrandBanner,
   AdminShopByType,
-  AdminFloatingContact
+  AdminFloatingContact,
+  AdminExpertEyeCare
 } from "./PrettyVisionAdminModules";

@@ -40,6 +40,7 @@ import {
   buildWhatsAppUrl,
   normalizePhoneNumber
 } from "./FloatingContactButtons";
+import { FinalCTA, DynamicIcon } from "./PrettyVisionComponents";
 
 const notifySections = () => {
   if (typeof window !== "undefined") {
@@ -2672,3 +2673,1102 @@ export const AdminFloatingContact = () => {
     </div>
   );
 };
+
+/* ============================================================
+   7. EXPERT EYE CARE FINAL CTA SECTION MODULE
+   Route: /admin/expert-eye-care & /admin/final-cta
+   ============================================================ */
+const FEATURE_ICON_OPTIONS = [
+  { label: "Eye (Eye Examination)", value: "Eye" },
+  { label: "Users (Optometrists)", value: "Users" },
+  { label: "Shield (Advanced Technology / Protection)", value: "ShieldCheck" },
+  { label: "Heart (Personalized Care)", value: "Heart" },
+  { label: "Glasses (Frames & Lenses)", value: "Glasses" },
+  { label: "Calendar (Eye Test Bookings)", value: "Calendar" },
+  { label: "Clock (Quick Service / Hours)", value: "Clock" },
+  { label: "Sparkles (Innovation / Laser / Precision)", value: "Sparkles" },
+  { label: "Star (5-Star Quality)", value: "Star" },
+  { label: "Check (Verified Guarantee)", value: "Check" },
+  { label: "Sun (UV & Polarized Protection)", value: "Sun" },
+  { label: "Laptop (Digital Blue Light)", value: "Laptop" },
+  { label: "Activity (Eye Health & Vision)", value: "Activity" }
+];
+
+export const AdminExpertEyeCare = () => {
+  const [section, setSection] = useState({
+    sectionKey: "final_cta",
+    sectionName: "Expert Eye Care CTA",
+    sectionTitle: "YOUR VISION DESERVES EXPERT CARE.",
+    sectionSubtitle: "EXPERT EYE CARE AT PRETTYVISION KALINA",
+    description: "Visit PrettyVision Kalina and experience better vision with our trusted optometrists, advanced technology and personalized care.",
+    homepageVisible: true,
+    websiteEnabled: true,
+    sortOrder: 13,
+    content: {
+      eyebrow: "EXPERT EYE CARE AT PRETTYVISION KALINA",
+      showEyebrow: true,
+      heading: "YOUR VISION DESERVES EXPERT CARE.",
+      showHeading: true,
+      description: "Visit PrettyVision Kalina and experience better vision with our trusted optometrists, advanced technology and personalized care.",
+      showDescription: true,
+      features: [
+        { id: "1", icon: "Eye", title: "Professional Eye Examination", description: "", enabled: true, sortOrder: 1 },
+        { id: "2", icon: "Users", title: "Expert Optometrists", description: "", enabled: true, sortOrder: 2 },
+        { id: "3", icon: "ShieldCheck", title: "Advanced Technology", description: "", enabled: true, sortOrder: 3 },
+        { id: "4", icon: "Heart", title: "Personalized Care", description: "", enabled: true, sortOrder: 4 }
+      ],
+      showFeatures: true,
+      primaryCtaText: "Book an Eye Test",
+      primaryCtaLink: "/contact",
+      showPrimaryCta: true,
+      secondaryCtaText: "Explore Our Store",
+      secondaryCtaLink: "/eyewear",
+      showSecondaryCta: true,
+      image: "/uploads/sunglasses_hero_wood.jpg",
+      showImage: true,
+      showImageMobile: true,
+      imageAlt: "Luxury Eyewear at PrettyVision Kalina",
+      overlayOpacity: 85
+    }
+  });
+
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [resetting, setResetting] = useState(false);
+  const [notice, setNotice] = useState("");
+  const [activeTab, setActiveTab] = useState("content"); // 'content' | 'features' | 'ctas' | 'image' | 'visibility'
+  const [previewDevice, setPreviewDevice] = useState("desktop"); // 'desktop' | 'tablet' | 'mobile'
+
+  // Feature modal state
+  const [editingFeature, setEditingFeature] = useState(null); // null, 'new', or id
+  const [featureForm, setFeatureForm] = useState({
+    id: "",
+    icon: "Eye",
+    title: "",
+    description: "",
+    enabled: true,
+    sortOrder: 1
+  });
+
+  const loadData = async () => {
+    try {
+      setLoading(true);
+      const res = await apiFetch("/admin/expert-eye-care");
+      if (res && (res.section || res.item)) {
+        const sec = res.section || res.item;
+        setSection((prev) => ({
+          ...prev,
+          ...sec,
+          content: {
+            ...prev.content,
+            ...(sec.content || {})
+          }
+        }));
+      }
+    } catch (err) {
+      console.error("Failed to load Expert Eye Care section:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const handleSave = async (e) => {
+    if (e) e.preventDefault();
+    try {
+      setSaving(true);
+      setNotice("");
+      const res = await apiFetch("/admin/expert-eye-care", {
+        method: "PUT",
+        body: section
+      });
+      if (res.section || res.item) {
+        const sec = res.section || res.item;
+        setSection(sec);
+      }
+      setNotice("Expert Eye Care CTA section saved successfully!");
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new Event("homepage-sections-updated"));
+      }
+      setTimeout(() => setNotice(""), 4000);
+    } catch (err) {
+      alert("Failed to save section: " + (err.message || "Unknown error"));
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleReset = async () => {
+    if (!window.confirm("Reset the Expert Eye Care CTA section back to default configuration?")) {
+      return;
+    }
+    try {
+      setResetting(true);
+      setNotice("");
+      const res = await apiFetch("/admin/expert-eye-care/reset", {
+        method: "POST"
+      });
+      if (res.section || res.item) {
+        setSection(res.section || res.item);
+      }
+      setNotice("Section reset to defaults successfully!");
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new Event("homepage-sections-updated"));
+      }
+      setTimeout(() => setNotice(""), 4000);
+    } catch (err) {
+      alert("Failed to reset: " + (err.message || "Unknown error"));
+    } finally {
+      setResetting(false);
+    }
+  };
+
+  // Feature item handlers
+  const handleOpenAddFeature = () => {
+    const nextOrder = (section.content?.features?.length || 0) + 1;
+    setFeatureForm({
+      id: "feat_" + Date.now(),
+      icon: "Eye",
+      title: "",
+      description: "",
+      enabled: true,
+      sortOrder: nextOrder
+    });
+    setEditingFeature("new");
+  };
+
+  const handleOpenEditFeature = (feat) => {
+    setFeatureForm({ ...feat });
+    setEditingFeature(feat.id);
+  };
+
+  const handleSaveFeature = (e) => {
+    e.preventDefault();
+    if (!featureForm.title.trim()) {
+      alert("Please enter a title for this feature.");
+      return;
+    }
+    const currentFeatures = [...(section.content?.features || [])];
+    if (editingFeature === "new") {
+      currentFeatures.push(featureForm);
+    } else {
+      const idx = currentFeatures.findIndex((f) => f.id === editingFeature);
+      if (idx !== -1) {
+        currentFeatures[idx] = featureForm;
+      }
+    }
+    setSection({
+      ...section,
+      content: {
+        ...section.content,
+        features: currentFeatures
+      }
+    });
+    setEditingFeature(null);
+  };
+
+  const handleDeleteFeature = (id) => {
+    if (!window.confirm("Are you sure you want to delete this feature item?")) return;
+    const filtered = (section.content?.features || []).filter((f) => f.id !== id);
+    setSection({
+      ...section,
+      content: {
+        ...section.content,
+        features: filtered
+      }
+    });
+  };
+
+  const handleToggleFeature = (id) => {
+    const updated = (section.content?.features || []).map((f) =>
+      f.id === id ? { ...f, enabled: !f.enabled } : f
+    );
+    setSection({
+      ...section,
+      content: {
+        ...section.content,
+        features: updated
+      }
+    });
+  };
+
+  const handleMoveFeature = (index, direction) => {
+    const list = [...(section.content?.features || [])];
+    const targetIdx = index + direction;
+    if (targetIdx < 0 || targetIdx >= list.length) return;
+    const [moved] = list.splice(index, 1);
+    list.splice(targetIdx, 0, moved);
+    const reordered = list.map((item, idx) => ({ ...item, sortOrder: idx + 1 }));
+    setSection({
+      ...section,
+      content: {
+        ...section.content,
+        features: reordered
+      }
+    });
+  };
+
+  const content = section.content || {};
+
+  if (loading) {
+    return (
+      <div className="p-8 text-center text-xs text-slate-500 flex items-center justify-center gap-2">
+        <RefreshCw className="w-4 h-4 animate-spin text-[#06264A]" />
+        <span>Loading Expert Eye Care Section Settings...</span>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6 max-w-7xl">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-200 pb-5">
+        <div>
+          <div className="flex items-center gap-2">
+            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-sky-100 text-[#06264A]">
+              Homepage Section #13
+            </span>
+            <span className="text-xs text-slate-400">•</span>
+            <span className="text-xs font-semibold text-slate-500">Expert Eye Care CTA</span>
+          </div>
+          <h1 className="font-serif text-2xl sm:text-3xl font-bold text-slate-900 mt-1">
+            Expert Eye Care CTA Section
+          </h1>
+          <p className="text-xs text-slate-500 mt-1">
+            Completely customize the final luxury optical call-to-action banner right before the footer.
+          </p>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={handleReset}
+            disabled={resetting || saving}
+            className="inline-flex items-center gap-1.5 rounded-xl border border-slate-300 bg-white px-4 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 transition"
+            title="Reset to default copy, features, and imagery"
+          >
+            <RotateCcw className={`w-3.5 h-3.5 ${resetting ? "animate-spin" : ""}`} />
+            <span>{resetting ? "Resetting..." : "Reset Defaults"}</span>
+          </button>
+          <button
+            type="button"
+            onClick={handleSave}
+            disabled={saving || resetting}
+            className="inline-flex items-center gap-2 rounded-xl bg-[#06264A] text-white px-6 py-2.5 text-xs font-bold uppercase tracking-wider shadow hover:bg-[#0A3360] transition"
+          >
+            <Save className="w-4 h-4" />
+            <span>{saving ? "Saving..." : "Save Changes"}</span>
+          </button>
+        </div>
+      </div>
+
+      {notice && (
+        <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold flex items-center justify-between shadow-sm animate-in fade-in">
+          <div className="flex items-center gap-2">
+            <Check className="w-4 h-4 text-emerald-600" />
+            <span>{notice}</span>
+          </div>
+          <button
+            onClick={() => setNotice("")}
+            className="text-emerald-700 hover:text-emerald-900"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
+
+      {/* TABS NAVIGATION */}
+      <div className="flex items-center gap-2 border-b border-slate-200 overflow-x-auto pb-1">
+        {[
+          { key: "content", label: "Copy & Headings", icon: Edit2 },
+          { key: "features", label: `Benefit Features (${content.features?.length || 0})`, icon: Sparkles },
+          { key: "ctas", label: "Action Buttons", icon: ArrowRight },
+          { key: "image", label: "Eyewear Photography", icon: ImageIcon },
+          { key: "visibility", label: "Visibility & Status", icon: Eye }
+        ].map((tab) => {
+          const Icon = tab.icon;
+          const isActive = activeTab === tab.key;
+          return (
+            <button
+              key={tab.key}
+              type="button"
+              onClick={() => setActiveTab(tab.key)}
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition whitespace-nowrap ${
+                isActive
+                  ? "bg-[#06264A] text-white shadow-sm"
+                  : "bg-white text-slate-600 hover:bg-slate-100 border border-slate-200"
+              }`}
+            >
+              <Icon className="w-3.5 h-3.5" />
+              <span>{tab.label}</span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* MAIN FORM GRID */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        {/* Left Controls Column (7 cols) */}
+        <div className="lg:col-span-7 space-y-6">
+          {/* TAB 1: COPY & HEADINGS */}
+          {activeTab === "content" && (
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-5">
+              <div className="border-b border-slate-100 pb-3">
+                <h3 className="text-sm font-bold text-slate-900">Headings & Copywriting</h3>
+                <p className="text-xs text-slate-500">Edit the eyebrow, primary heading, and body description.</p>
+              </div>
+
+              {/* Eyebrow */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600">
+                    Section Eyebrow Text
+                  </label>
+                  <label className="flex items-center gap-1.5 text-xs font-bold text-slate-600 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={content.showEyebrow !== false}
+                      onChange={(e) =>
+                        setSection({
+                          ...section,
+                          content: { ...content, showEyebrow: e.target.checked }
+                        })
+                      }
+                      className="rounded text-[#06264A] focus:ring-[#06264A]"
+                    />
+                    <span>Show Eyebrow</span>
+                  </label>
+                </div>
+                <input
+                  type="text"
+                  value={content.eyebrow || ""}
+                  onChange={(e) =>
+                    setSection({
+                      ...section,
+                      sectionSubtitle: e.target.value,
+                      content: { ...content, eyebrow: e.target.value }
+                    })
+                  }
+                  placeholder="EXPERT EYE CARE AT PRETTYVISION KALINA"
+                  className="w-full px-3.5 py-2.5 text-xs font-semibold rounded-xl border border-slate-300 focus:outline-none focus:border-[#06264A]"
+                />
+              </div>
+
+              {/* Heading */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600">
+                    Main Heading (Serif)
+                  </label>
+                  <label className="flex items-center gap-1.5 text-xs font-bold text-slate-600 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={content.showHeading !== false}
+                      onChange={(e) =>
+                        setSection({
+                          ...section,
+                          content: { ...content, showHeading: e.target.checked }
+                        })
+                      }
+                      className="rounded text-[#06264A] focus:ring-[#06264A]"
+                    />
+                    <span>Show Heading</span>
+                  </label>
+                </div>
+                <textarea
+                  rows={2}
+                  value={content.heading || section.sectionTitle || ""}
+                  onChange={(e) =>
+                    setSection({
+                      ...section,
+                      sectionTitle: e.target.value,
+                      content: { ...content, heading: e.target.value }
+                    })
+                  }
+                  placeholder="YOUR VISION DESERVES EXPERT CARE."
+                  className="w-full px-3.5 py-2.5 text-xs font-serif font-bold text-slate-900 rounded-xl border border-slate-300 focus:outline-none focus:border-[#06264A]"
+                />
+              </div>
+
+              {/* Description */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600">
+                    Paragraph Description
+                  </label>
+                  <label className="flex items-center gap-1.5 text-xs font-bold text-slate-600 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={content.showDescription !== false}
+                      onChange={(e) =>
+                        setSection({
+                          ...section,
+                          content: { ...content, showDescription: e.target.checked }
+                        })
+                      }
+                      className="rounded text-[#06264A] focus:ring-[#06264A]"
+                    />
+                    <span>Show Description</span>
+                  </label>
+                </div>
+                <textarea
+                  rows={3}
+                  value={content.description || section.description || ""}
+                  onChange={(e) =>
+                    setSection({
+                      ...section,
+                      description: e.target.value,
+                      content: { ...content, description: e.target.value }
+                    })
+                  }
+                  placeholder="Visit PrettyVision Kalina and experience better vision with our trusted optometrists, advanced technology and personalized care."
+                  className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-300 focus:outline-none focus:border-[#06264A]"
+                />
+              </div>
+            </div>
+          )}
+
+          {/* TAB 2: BENEFIT FEATURES (REPEATABLE CRUD) */}
+          {activeTab === "features" && (
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-5">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-slate-100 pb-3">
+                <div>
+                  <h3 className="text-sm font-bold text-slate-900">Feature Benefit Items</h3>
+                  <p className="text-xs text-slate-500">
+                    Add, edit, reorder or disable benefit badges shown across the banner.
+                  </p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <label className="flex items-center gap-1.5 text-xs font-bold text-slate-600 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={content.showFeatures !== false}
+                      onChange={(e) =>
+                        setSection({
+                          ...section,
+                          content: { ...content, showFeatures: e.target.checked }
+                        })
+                      }
+                      className="rounded text-[#06264A] focus:ring-[#06264A]"
+                    />
+                    <span>Show Features Row</span>
+                  </label>
+                  <button
+                    type="button"
+                    onClick={handleOpenAddFeature}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#06264A] text-white text-xs font-bold hover:bg-[#0A3360] transition"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>Add Feature</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Feature Items List */}
+              <div className="space-y-3">
+                {(!content.features || content.features.length === 0) ? (
+                  <div className="p-8 text-center bg-slate-50 rounded-xl border border-dashed border-slate-300 text-xs text-slate-500">
+                    No features configured yet. Click "Add Feature" to create one.
+                  </div>
+                ) : (
+                  content.features.map((feat, idx) => (
+                    <div
+                      key={feat.id || idx}
+                      className={`flex items-center justify-between p-3.5 rounded-xl border transition ${
+                        feat.enabled !== false
+                          ? "bg-slate-50/80 border-slate-200"
+                          : "bg-slate-100/50 border-slate-200 opacity-60"
+                      }`}
+                    >
+                      <div className="flex items-center gap-3 min-w-0">
+                        {/* Reorder Buttons */}
+                        <div className="flex flex-col gap-0.5">
+                          <button
+                            type="button"
+                            onClick={() => handleMoveFeature(idx, -1)}
+                            disabled={idx === 0}
+                            className="p-0.5 text-slate-400 hover:text-slate-800 disabled:opacity-20"
+                            title="Move Up"
+                          >
+                            <ArrowUp className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleMoveFeature(idx, 1)}
+                            disabled={idx === content.features.length - 1}
+                            className="p-0.5 text-slate-400 hover:text-slate-800 disabled:opacity-20"
+                            title="Move Down"
+                          >
+                            <ArrowDown className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+
+                        {/* Icon badge */}
+                        <div className="w-9 h-9 rounded-full bg-[#06264A] text-white flex items-center justify-center shrink-0 shadow-sm">
+                          <DynamicIcon name={feat.icon || "Eye"} className="w-4 h-4 text-sky-300" />
+                        </div>
+
+                        {/* Text info */}
+                        <div className="min-w-0">
+                          <p className="text-xs font-bold text-slate-800 truncate">{feat.title}</p>
+                          <p className="text-[10px] text-slate-500 truncate">
+                            Icon: {feat.icon} {feat.description ? `• ${feat.description}` : ""}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Actions */}
+                      <div className="flex items-center gap-2 shrink-0">
+                        <button
+                          type="button"
+                          onClick={() => handleToggleFeature(feat.id)}
+                          className={`p-1.5 rounded-lg border transition ${
+                            feat.enabled !== false
+                              ? "bg-emerald-50 border-emerald-200 text-emerald-700"
+                              : "bg-slate-200 border-slate-300 text-slate-500"
+                          }`}
+                          title={feat.enabled !== false ? "Disable" : "Enable"}
+                        >
+                          {feat.enabled !== false ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleOpenEditFeature(feat)}
+                          className="p-1.5 rounded-lg border border-slate-200 bg-white text-slate-700 hover:bg-slate-100"
+                          title="Edit"
+                        >
+                          <Edit2 className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteFeature(feat.id)}
+                          className="p-1.5 rounded-lg border border-rose-200 bg-rose-50 text-rose-600 hover:bg-rose-100"
+                          title="Delete"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* TAB 3: CTA BUTTONS */}
+          {activeTab === "ctas" && (
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-6">
+              <div className="border-b border-slate-100 pb-3">
+                <h3 className="text-sm font-bold text-slate-900">Call to Action Buttons</h3>
+                <p className="text-xs text-slate-500">Configure the primary pill button and secondary text link.</p>
+              </div>
+
+              {/* Primary CTA */}
+              <div className="p-4 rounded-xl border border-slate-200 bg-slate-50 space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-black uppercase tracking-wider text-slate-700">
+                    Primary CTA Button
+                  </span>
+                  <label className="flex items-center gap-1.5 text-xs font-bold text-slate-600 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={content.showPrimaryCta !== false}
+                      onChange={(e) =>
+                        setSection({
+                          ...section,
+                          content: { ...content, showPrimaryCta: e.target.checked }
+                        })
+                      }
+                      className="rounded text-[#06264A] focus:ring-[#06264A]"
+                    />
+                    <span>Enabled</span>
+                  </label>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-[10px] font-bold uppercase text-slate-500 mb-1">
+                      Button Label
+                    </label>
+                    <input
+                      type="text"
+                      value={content.primaryCtaText || ""}
+                      onChange={(e) =>
+                        setSection({
+                          ...section,
+                          content: { ...content, primaryCtaText: e.target.value }
+                        })
+                      }
+                      placeholder="Book an Eye Test"
+                      className="w-full px-3 py-2 text-xs font-semibold rounded-lg border border-slate-300"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-bold uppercase text-slate-500 mb-1">
+                      Destination Link
+                    </label>
+                    <input
+                      type="text"
+                      value={content.primaryCtaLink || ""}
+                      onChange={(e) =>
+                        setSection({
+                          ...section,
+                          content: { ...content, primaryCtaLink: e.target.value }
+                        })
+                      }
+                      placeholder="/contact"
+                      className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 font-mono"
+                    />
+                  </div>
+                </div>
+                <p className="text-[10px] text-slate-400">
+                  Tip: Use <code>/contact</code> to open the booking modal or route to your appointment page.
+                </p>
+              </div>
+
+              {/* Secondary CTA */}
+              <div className="p-4 rounded-xl border border-slate-200 bg-slate-50 space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-black uppercase tracking-wider text-slate-700">
+                    Secondary CTA Link
+                  </span>
+                  <label className="flex items-center gap-1.5 text-xs font-bold text-slate-600 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={content.showSecondaryCta !== false}
+                      onChange={(e) =>
+                        setSection({
+                          ...section,
+                          content: { ...content, showSecondaryCta: e.target.checked }
+                        })
+                      }
+                      className="rounded text-[#06264A] focus:ring-[#06264A]"
+                    />
+                    <span>Enabled</span>
+                  </label>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-[10px] font-bold uppercase text-slate-500 mb-1">
+                      Link Text
+                    </label>
+                    <input
+                      type="text"
+                      value={content.secondaryCtaText || ""}
+                      onChange={(e) =>
+                        setSection({
+                          ...section,
+                          content: { ...content, secondaryCtaText: e.target.value }
+                        })
+                      }
+                      placeholder="Explore Our Store"
+                      className="w-full px-3 py-2 text-xs font-semibold rounded-lg border border-slate-300"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-bold uppercase text-slate-500 mb-1">
+                      Destination Link
+                    </label>
+                    <input
+                      type="text"
+                      value={content.secondaryCtaLink || ""}
+                      onChange={(e) =>
+                        setSection({
+                          ...section,
+                          content: { ...content, secondaryCtaLink: e.target.value }
+                        })
+                      }
+                      placeholder="/eyewear"
+                      className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 font-mono"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* TAB 4: EYEWEAR PHOTOGRAPHY & BLEND */}
+          {activeTab === "image" && (
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-5">
+              <div className="border-b border-slate-100 pb-3">
+                <h3 className="text-sm font-bold text-slate-900">Eyewear Photography & Visual Blend</h3>
+                <p className="text-xs text-slate-500">
+                  Upload luxury eyewear product photography and control gradient overlay effects.
+                </p>
+              </div>
+
+              {/* Image Preview & Upload */}
+              <div className="space-y-3">
+                <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600">
+                  Section Right Image
+                </label>
+                {content.image && (
+                  <div className="relative rounded-xl overflow-hidden border border-slate-200 h-48 bg-slate-100">
+                    <img
+                      src={assetUrl(content.image)}
+                      alt="Banner Preview"
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-r from-[#06264A] via-[#06264A]/60 to-transparent pointer-events-none w-1/2" />
+                  </div>
+                )}
+
+                <div className="pt-2">
+                  <MediaUploaderWithScreenSize
+                    label="Upload / Replace Eyewear Image"
+                    folder="homepage"
+                    value={content.image || ""}
+                    onChange={(url) =>
+                      setSection({
+                        ...section,
+                        content: { ...content, image: url }
+                      })
+                    }
+                  />
+                  <p className="text-[10px] text-slate-400 mt-1">
+                    Recommended: 1600 × 1000 px WebP/JPG. Auto-compressed under 300KB.
+                  </p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-3 border-t border-slate-100">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={content.showImage !== false}
+                    onChange={(e) =>
+                      setSection({
+                        ...section,
+                        content: { ...content, showImage: e.target.checked }
+                      })
+                    }
+                    className="rounded text-[#06264A] focus:ring-[#06264A]"
+                  />
+                  <span className="text-xs font-bold text-slate-700">Show Image on Desktop</span>
+                </label>
+
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={content.showImageMobile !== false}
+                    onChange={(e) =>
+                      setSection({
+                        ...section,
+                        content: { ...content, showImageMobile: e.target.checked }
+                      })
+                    }
+                    className="rounded text-[#06264A] focus:ring-[#06264A]"
+                  />
+                  <span className="text-xs font-bold text-slate-700">Show Image on Mobile</span>
+                </label>
+              </div>
+
+              <div className="space-y-2 pt-2">
+                <div className="flex items-center justify-between">
+                  <label className="text-[11px] font-bold uppercase tracking-wider text-slate-600">
+                    Gradient Blend Opacity
+                  </label>
+                  <span className="text-xs font-mono font-bold text-slate-700">
+                    {content.overlayOpacity ?? 85}%
+                  </span>
+                </div>
+                <input
+                  type="range"
+                  min={20}
+                  max={100}
+                  step={5}
+                  value={content.overlayOpacity ?? 85}
+                  onChange={(e) =>
+                    setSection({
+                      ...section,
+                      content: { ...content, overlayOpacity: Number(e.target.value) }
+                    })
+                  }
+                  className="w-full accent-[#06264A]"
+                />
+                <p className="text-[10px] text-slate-400">
+                  Controls the soft horizontal transition between the deep navy background and the photo.
+                </p>
+              </div>
+
+              <div className="space-y-1 pt-2">
+                <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600">
+                  Image Alt Text (SEO & Accessibility)
+                </label>
+                <input
+                  type="text"
+                  value={content.imageAlt || ""}
+                  onChange={(e) =>
+                    setSection({
+                      ...section,
+                      content: { ...content, imageAlt: e.target.value }
+                    })
+                  }
+                  placeholder="Luxury Eyewear at PrettyVision Kalina"
+                  className="w-full px-3 py-2 text-xs rounded-xl border border-slate-300"
+                />
+              </div>
+            </div>
+          )}
+
+          {/* TAB 5: VISIBILITY & GENERAL */}
+          {activeTab === "visibility" && (
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-5">
+              <div className="border-b border-slate-100 pb-3">
+                <h3 className="text-sm font-bold text-slate-900">Section Status & Positioning</h3>
+                <p className="text-xs text-slate-500">Enable or disable the complete section from the live homepage.</p>
+              </div>
+
+              <div className="flex items-center justify-between p-4 rounded-xl border border-slate-200 bg-slate-50">
+                <div>
+                  <h4 className="text-xs font-bold text-slate-900">Homepage Section Visibility</h4>
+                  <p className="text-[11px] text-slate-500">
+                    When disabled, the section disappears completely with zero gap or broken layout.
+                  </p>
+                </div>
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={section.homepageVisible !== false && section.status !== "inactive"}
+                    onChange={(e) =>
+                      setSection({
+                        ...section,
+                        homepageVisible: e.target.checked,
+                        websiteEnabled: e.target.checked,
+                        status: e.target.checked ? "active" : "inactive"
+                      })
+                    }
+                    className="sr-only peer"
+                  />
+                  <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#06264A]"></div>
+                  <span className="ml-2 text-xs font-bold text-slate-700">
+                    {section.homepageVisible !== false && section.status !== "inactive" ? "Active" : "Disabled"}
+                  </span>
+                </label>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                <div>
+                  <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1">
+                    Display Sort Order
+                  </label>
+                  <input
+                    type="number"
+                    min={1}
+                    max={50}
+                    value={section.sortOrder ?? 13}
+                    onChange={(e) => setSection({ ...section, sortOrder: Number(e.target.value) })}
+                    className="w-full px-3.5 py-2 text-xs font-semibold rounded-xl border border-slate-300"
+                  />
+                  <p className="text-[10px] text-slate-400 mt-1">Default order: 13 (before footer)</p>
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1">
+                    Section Identifier
+                  </label>
+                  <input
+                    type="text"
+                    disabled
+                    value={section.sectionKey}
+                    className="w-full px-3.5 py-2 text-xs font-mono font-semibold rounded-xl border border-slate-200 bg-slate-100 text-slate-500"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+
+          <div className="flex justify-end pt-2">
+            <button
+              type="button"
+              onClick={handleSave}
+              disabled={saving}
+              className="inline-flex items-center gap-2 rounded-xl bg-[#06264A] text-white px-8 py-3 text-xs font-bold uppercase tracking-wider shadow-md hover:bg-[#0A3360] transition"
+            >
+              <Save className="w-4 h-4" />
+              <span>{saving ? "Saving Changes..." : "Save Section Configuration"}</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Right Sticky Column: Live Simulation & Preview (5 cols) */}
+        <div className="lg:col-span-5 sticky top-24 space-y-4">
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <div>
+                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-700">
+                  Interactive Live Preview
+                </h3>
+                <p className="text-[11px] text-slate-500">Simulates real component on devices</p>
+              </div>
+              <div className="flex items-center bg-slate-100 p-0.5 rounded-lg">
+                <button
+                  type="button"
+                  onClick={() => setPreviewDevice("desktop")}
+                  className={`px-2 py-1 rounded text-[10px] font-bold flex items-center gap-1 transition ${
+                    previewDevice === "desktop" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500"
+                  }`}
+                >
+                  <Monitor className="w-3 h-3" />
+                  <span>Desktop</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPreviewDevice("mobile")}
+                  className={`px-2 py-1 rounded text-[10px] font-bold flex items-center gap-1 transition ${
+                    previewDevice === "mobile" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500"
+                  }`}
+                >
+                  <Smartphone className="w-3 h-3" />
+                  <span>Mobile</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Live component preview frame */}
+            <div
+              className={`relative mx-auto rounded-2xl border border-slate-300 bg-slate-100 overflow-y-auto max-h-[580px] shadow-inner transition-all duration-300 ${
+                previewDevice === "mobile" ? "w-[340px]" : "w-full"
+              }`}
+            >
+              <div className="scale-[0.82] origin-top sm:scale-[0.88] lg:scale-[0.82]">
+                <FinalCTA sectionData={section} onBookClick={() => alert("Appointment modal triggered in live view")} />
+              </div>
+            </div>
+
+            {/* Quick Summary list */}
+            <div className="space-y-2 text-[11px] text-slate-500 pt-2 border-t border-slate-100">
+              <div className="flex items-center justify-between">
+                <span>Section Status:</span>
+                <span className={`font-bold ${section.homepageVisible !== false ? "text-emerald-600" : "text-rose-500"}`}>
+                  {section.homepageVisible !== false ? "Active on Homepage" : "Disabled"}
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span>Total Active Features:</span>
+                <span className="font-bold text-slate-700">
+                  {content.features?.filter((f) => f.enabled !== false).length || 0}
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span>Mobile Photography:</span>
+                <span className="font-semibold text-slate-700">
+                  {content.showImageMobile !== false ? "Enabled" : "Hidden"}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* FEATURE ADD / EDIT MODAL */}
+      {editingFeature && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
+          <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl border border-slate-200 overflow-hidden">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50">
+              <h3 className="text-sm font-bold text-slate-900">
+                {editingFeature === "new" ? "Add Benefit Feature" : "Edit Benefit Feature"}
+              </h3>
+              <button
+                type="button"
+                onClick={() => setEditingFeature(null)}
+                className="text-slate-400 hover:text-slate-600"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveFeature} className="p-6 space-y-4">
+              {/* Icon Selector */}
+              <div>
+                <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1">
+                  Feature Icon
+                </label>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-[#06264A] text-white flex items-center justify-center shrink-0 shadow-sm">
+                    <DynamicIcon name={featureForm.icon || "Eye"} className="w-5 h-5 text-sky-300" />
+                  </div>
+                  <select
+                    value={featureForm.icon || "Eye"}
+                    onChange={(e) => setFeatureForm({ ...featureForm, icon: e.target.value })}
+                    className="w-full px-3 py-2 text-xs font-semibold rounded-xl border border-slate-300 bg-white"
+                  >
+                    {FEATURE_ICON_OPTIONS.map((opt) => (
+                      <option key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {/* Title */}
+              <div>
+                <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1">
+                  Feature Title (Required)
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={featureForm.title || ""}
+                  onChange={(e) => setFeatureForm({ ...featureForm, title: e.target.value })}
+                  placeholder="e.g. Professional Eye Examination"
+                  className="w-full px-3.5 py-2 text-xs font-semibold rounded-xl border border-slate-300 focus:outline-none focus:border-[#06264A]"
+                />
+              </div>
+
+              {/* Description */}
+              <div>
+                <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1">
+                  Short Subtitle / Description (Optional)
+                </label>
+                <input
+                  type="text"
+                  value={featureForm.description || ""}
+                  onChange={(e) => setFeatureForm({ ...featureForm, description: e.target.value })}
+                  placeholder="e.g. Qualified Optometrists"
+                  className="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-300 focus:outline-none focus:border-[#06264A]"
+                />
+              </div>
+
+              {/* Status */}
+              <div className="flex items-center justify-between pt-2 border-t border-slate-100">
+                <span className="text-xs font-bold text-slate-700">Feature Active</span>
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={featureForm.enabled !== false}
+                    onChange={(e) => setFeatureForm({ ...featureForm, enabled: e.target.checked })}
+                    className="sr-only peer"
+                  />
+                  <div className="w-10 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#06264A]"></div>
+                </label>
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setEditingFeature(null)}
+                  className="px-4 py-2 rounded-xl border border-slate-300 text-xs font-bold text-slate-600 hover:bg-slate-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 rounded-xl bg-[#06264A] text-white text-xs font-bold uppercase tracking-wider hover:bg-[#0A3360]"
+                >
+                  Save Feature
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
